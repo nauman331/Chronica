@@ -1,42 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Svg, { Path, Circle, Rect, Polyline, Line } from 'react-native-svg';
+import { MapIcon, CalendarIcon, ChartIcon, UserIcon } from '../utils/icons';
 
 const darkText = '#1A1824';
 const mutedText = '#8A8F99';
 const borderLight = '#F0F0F0';
-
-const MapIcon = ({ color }: { color: string }) => (
-    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <Polyline points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6" />
-        <Line x1="9" y1="3" x2="9" y2="18" />
-        <Line x1="15" y1="6" x2="15" y2="21" />
-    </Svg>
-);
-
-const CalendarIcon = ({ color }: { color: string }) => (
-    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <Rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-        <Line x1="16" y1="2" x2="16" y2="6" />
-        <Line x1="8" y1="2" x2="8" y2="6" />
-        <Line x1="3" y1="10" x2="21" y2="10" />
-    </Svg>
-);
-
-const ChartIcon = ({ color }: { color: string }) => (
-    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <Polyline points="3 17 8 11 13 14 18 7 21 10" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <Circle cx="21" cy="10" r="2" fill={color} />
-    </Svg>
-);
-
-const UserIcon = ({ color }: { color: string }) => (
-    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-        <Circle cx="12" cy="7" r="4" />
-    </Svg>
-);
 
 interface BottomTabBarProps {
     activeTab: 'map' | 'today' | 'insights' | 'profile';

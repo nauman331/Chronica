@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
+import { useNavigation } from '@react-navigation/native';
 import { blue, white, yellow } from '../../utils/colors';
 
 const { height } = Dimensions.get('window');
@@ -11,7 +12,9 @@ const StarIcon = ({ size = 24, color = white }) => (
     </Svg>
 );
 
-const Screen3 = ({ onNext, onSkip }: any) => {
+const Screen3 = () => {
+    const navigation = useNavigation<any>();
+
     return (
         <View style={styles.container}>
             <View style={styles.centerSection}>
@@ -27,11 +30,11 @@ const Screen3 = ({ onNext, onSkip }: any) => {
             </View>
 
             <View style={styles.bottomSection}>
-                <Pressable style={styles.button} onPress={onNext}>
+                <Pressable style={styles.button} onPress={() => navigation.navigate('EnhanceCrown')}>
                     <Text style={styles.buttonText}>Begin Today's Ritual</Text>
                     <StarIcon size={14} color={white} />
                 </Pressable>
-                <Pressable style={styles.skipButton} onPress={onSkip}>
+                <Pressable style={styles.skipButton} onPress={() => navigation.navigate('EnhanceCrown')}>
                     <Text style={styles.skipText}>Skip intro</Text>
                 </Pressable>
             </View>

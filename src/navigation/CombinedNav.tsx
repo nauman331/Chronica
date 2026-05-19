@@ -7,7 +7,7 @@ import UnAuthNav from './UnAuthNav'
 enableScreens(true)
 
 const CombinedNav: React.FC = () => {
-    const token = true
+    const token = null
 
     return (
         <NavigationContainer>

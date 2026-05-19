@@ -44,7 +44,7 @@ const ArrowUpIcon = () => (
     </Svg>
 );
 
-const EnhanceCrown: React.FC<any> = () => {
+const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
     const today = new Date();
     const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
     const formattedDate = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -99,7 +99,7 @@ const EnhanceCrown: React.FC<any> = () => {
 
                 <View style={styles.bottomActionContainer}>
                     <View style={styles.divider} />
-                    <Pressable style={styles.primaryButton}>
+                    <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('EnhanceCrownEmotion')}>
                         <Text style={styles.primaryButtonText}>Crown This Day</Text>
                         <SparkIcon color="#FFFFFF" />
                     </Pressable>
