@@ -25,12 +25,12 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
             scrollViewRef.current?.scrollTo({ x: (activeIndex + 1) * width, animated: true });
         } else {
             // Reached the end, navigate to main app dashboard
-            navigation.navigate('GetStarted');
+            navigation.navigate('EnhanceCrown');
         }
     };
 
     const skipOnboarding = () => {
-        navigation.navigate('GetStarted');
+        navigation.navigate('EnhanceCrown');
     };
 
     return (

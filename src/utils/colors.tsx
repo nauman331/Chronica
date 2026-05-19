@@ -4,3 +4,7 @@ export const blue = '#1E162C';
 export const lightBlue = '#3B82F6';
 export const lightGreen = '#10B981';
 export const gray = '#8C8B9C';
+export const COLOR_UNDOCUMENTED = '#7B8089';
+export const COLOR_DOCUMENTED = '#88C0FA';
+export const COLOR_CROWNED = '#C8A43C';
+export const COLOR_TEXT_MUTED = '#B4B4B4';

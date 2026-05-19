@@ -29,7 +29,6 @@ const GetStarted: React.FC<any> = ({ navigation }) => {
     };
 
     const handleContinue = () => {
-        // Navigate to the master Onboarding wrapper, passing the date
         navigation.navigate('Onboarding', { birthDate: date.toISOString() });
     };
 
@@ -111,7 +110,7 @@ const styles = StyleSheet.create({
     title: { fontSize: 32, lineHeight: 40, color: blue, fontWeight: '800', textAlign: 'center' },
     accent: { color: yellow },
     subtitle: { marginTop: 16, color: gray, textAlign: 'center', lineHeight: 22, fontSize: 15 },
-    card: { borderRadius: 24, backgroundColor: "#fff", padding: 24, borderWidth: 1, borderColor: '#f3f2f2', gap: 16, shadowColor: blue, shadowOpacity: 0.06, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 1 },
+    card: { borderRadius: 24, backgroundColor: "#fff", padding: 24, borderWidth: 1, borderColor: '#F0F0F0', gap: 16, shadowColor: blue, shadowOpacity: 0.06, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 1 },
     inputGroup: { gap: 8, marginBottom: 4 },
     inputLabel: { color: blue, fontSize: 14, fontWeight: '600', marginLeft: 4 },
     input: { borderWidth: 1, borderColor: yellow, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: white, justifyContent: 'center' },

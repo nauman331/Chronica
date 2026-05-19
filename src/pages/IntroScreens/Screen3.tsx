@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { white } from '../../utils/colors';
+import { blue, white, yellow } from '../../utils/colors';
 
 const { height } = Dimensions.get('window');
 
@@ -43,12 +43,12 @@ export default Screen3;
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: white, justifyContent: 'space-between', paddingTop: 80 },
     centerSection: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32, marginTop: -20 },
-    iconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#1C1525', justifyContent: 'center', alignItems: 'center', marginBottom: 32, shadowColor: '#1C1525', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
-    title: { color: '#1C1525', fontSize: 34, fontWeight: '800', textAlign: 'center', lineHeight: 40, marginBottom: 20 },
-    subtitleYellow: { color: '#C8A43C', fontSize: 16, fontWeight: '700', textAlign: 'center', marginBottom: 12 },
+    iconContainer: { width: 80, height: 80, borderRadius: 40, backgroundColor: blue, justifyContent: 'center', alignItems: 'center', marginBottom: 32, shadowColor: '#1C1525', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
+    title: { color: blue, fontSize: 34, fontWeight: '800', textAlign: 'center', lineHeight: 40, marginBottom: 20 },
+    subtitleYellow: { color: yellow, fontSize: 16, fontWeight: '700', textAlign: 'center', marginBottom: 12 },
     bodyText: { color: '#8A8F99', fontSize: 15, textAlign: 'center', lineHeight: 24 },
     bottomSection: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: height > 800 ? 50 : 30, borderTopWidth: 1, borderTopColor: '#F0EAE1', backgroundColor: white },
-    button: { backgroundColor: '#C8A43C', paddingVertical: 18, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, shadowColor: '#C8A43C', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
+    button: { backgroundColor: yellow, paddingVertical: 18, borderRadius: 16, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, shadowColor: yellow, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 4 },
     buttonText: { color: white, fontSize: 16, fontWeight: '600' },
     skipButton: { alignSelf: 'flex-end', marginTop: 24 },
     skipText: { color: '#B4B4B4', fontSize: 14, fontWeight: '500' },

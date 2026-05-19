@@ -1,7 +1,6 @@
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import GetStarted from '../pages/GetStarted'
-import EnhanceCrown from '../pages/EnhanceCrown'
 import Onboarding from '../pages/Onboarding'
 
 
@@ -10,7 +9,6 @@ type UnAuthStackParamList = {
     Screen2: undefined
     Screen3: undefined
     GetStarted: undefined
-    EnhanceCrown: undefined
     Onboarding: undefined
 }
 
@@ -24,7 +22,6 @@ const UnAuthNav: React.FC = () => {
         >
             <Stack.Screen name="GetStarted" component={GetStarted} />
             <Stack.Screen name="Onboarding" component={Onboarding} />
-            <Stack.Screen name="EnhanceCrown" component={EnhanceCrown} />
         </Stack.Navigator>
     )
 }

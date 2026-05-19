@@ -1,17 +1,13 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, Dimensions } from 'react-native';
 import { Canvas, Group, Skia, Path } from '@shopify/react-native-skia';
-import { blue, gray, white } from '../../utils/colors';
+import { blue, gray, white, COLOR_CROWNED, COLOR_DOCUMENTED, COLOR_TEXT_MUTED, COLOR_UNDOCUMENTED } from '../../utils/colors';
 
 const { height } = Dimensions.get('window');
 const NODES_PER_ROW = 26;
 const RADIUS = 3.2;
 const SPACING = 3.5;
 const CELL_SIZE = (RADIUS * 2) + SPACING;
-const COLOR_UNDOCUMENTED = '#7B8089';
-const COLOR_DOCUMENTED = '#88C0FA';
-const COLOR_CROWNED = '#C8A43C';
-const COLOR_TEXT_MUTED = '#B4B4B4';
 
 const YearRow = ({ year, age, dotsCount }: any) => {
     const paths = useMemo(() => {
@@ -115,11 +111,11 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
 export default Screen2;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FCFCFC', justifyContent: 'space-between', paddingTop: 80 },
+    container: { flex: 1, backgroundColor: white, justifyContent: 'space-between', paddingTop: 80 },
     header: { paddingHorizontal: 36, alignItems: 'center', marginTop: 24 },
     title: { color: blue, fontSize: 32, fontWeight: '800', textAlign: 'center', marginBottom: 16 },
     subtitle: { color: '#8A8F99', fontSize: 15, textAlign: 'center', lineHeight: 22 },
-    card: { backgroundColor: white, marginHorizontal: 24, borderRadius: 24, paddingTop: 24, paddingHorizontal: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.04, shadowRadius: 20, elevation: 3, borderWidth: 1, borderColor: '#F4F4F4' },
+    card: { backgroundColor: white, marginHorizontal: 24, borderRadius: 24, paddingTop: 24, paddingHorizontal: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.04, shadowRadius: 20, elevation: 1, borderWidth: 1, borderColor: '#F4F4F4' },
     listContent: { paddingBottom: 10 },
     yearRowContainer: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 },
     yearLabel: { width: 35, fontSize: 11, color: COLOR_TEXT_MUTED, fontFamily: 'Courier', marginTop: -1 },
