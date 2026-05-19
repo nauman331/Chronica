@@ -1,9 +1,8 @@
 import React from 'react'
+import CombinedNav from './src/navigation/CombinedNav'
 
 const App: React.FC = () => {
-  return (
-    <div>App</div>
-  )
+  return <CombinedNav />
 }
 
 export default App
