@@ -1,0 +1,84 @@
+import React, { useRef, useState } from 'react';
+import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { white } from '../utils/colors';
+import PaginationDots from '../components/PaginationDots';
+import Screen1 from './IntroScreens/Screen1';
+import Screen2 from './IntroScreens/Screen2';
+import Screen3 from './IntroScreens/Screen3';
+
+const { width } = Dimensions.get('window');
+
+const Onboarding: React.FC<any> = ({ navigation, route }) => {
+    const scrollViewRef = useRef<ScrollView>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    const birthDate = route?.params?.birthDate || new Date(1996, 0, 1).toISOString();
+
+    const handleScroll = (event: any) => {
+        const scrollPosition = event.nativeEvent.contentOffset.x;
+        const currentIndex = Math.round(scrollPosition / width);
+        setActiveIndex(currentIndex);
+    };
+
+    const goToNext = () => {
+        if (activeIndex < 2) {
+            scrollViewRef.current?.scrollTo({ x: (activeIndex + 1) * width, animated: true });
+        } else {
+            // Reached the end, navigate to main app dashboard
+            navigation.navigate('GetStarted');
+        }
+    };
+
+    const skipOnboarding = () => {
+        navigation.navigate('GetStarted');
+    };
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.topSection}>
+                <PaginationDots activeIndex={activeIndex} total={3} />
+            </View>
+
+            <ScrollView
+                ref={scrollViewRef}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={handleScroll}
+                bounces={false}
+                style={styles.scrollView}
+            >
+                <View style={{ width }}>
+                    <Screen1 birthDate={birthDate} onNext={goToNext} onSkip={skipOnboarding} />
+                </View>
+                <View style={{ width }}>
+                    <Screen2 birthDate={birthDate} onNext={goToNext} onSkip={skipOnboarding} />
+                </View>
+                <View style={{ width }}>
+                    <Screen3 onNext={goToNext} onSkip={skipOnboarding} />
+                </View>
+            </ScrollView>
+        </View>
+    );
+};
+
+export default Onboarding;
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: white,
+    },
+    topSection: {
+        paddingTop: 60,
+        alignItems: 'center',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+    },
+    scrollView: {
+        flex: 1,
+    },
+});
