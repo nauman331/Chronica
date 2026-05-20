@@ -56,7 +56,7 @@ const MonthViewScreen = ({ navigation, route }: any) => {
                     <Pressable style={styles.iconButton}>
                         <ChevronRightIcon color={COLOR_TEXT_MAIN} />
                     </Pressable>
-                    <Pressable style={styles.todayButton}>
+                    <Pressable style={styles.todayButton} onPress={() => navigation.navigate("EnhanceCrown")}>
                         <Text style={styles.todayButtonText}>Today</Text>
                         <SolidSparkleIcon color={white} />
                     </Pressable>

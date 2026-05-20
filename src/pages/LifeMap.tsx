@@ -96,7 +96,7 @@ const LifeMap = ({ navigation }: any) => {
                 <Text style={styles.headerSubtitle}>Your Life Map</Text>
                 <View style={styles.statsRow}>
                     <Text style={styles.statsLargeNumber}>11,791 <Text style={styles.statsDays}>days</Text></Text>
-                    <Pressable style={styles.todayButton}>
+                    <Pressable style={styles.todayButton} onPress={() => navigation.navigate("EnhanceCrown")}>
                         <Text style={styles.todayButtonText}>Today ✦</Text>
                     </Pressable>
                 </View>
