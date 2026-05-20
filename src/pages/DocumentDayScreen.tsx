@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -35,13 +35,19 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
     const [intention, setIntention] = useState('');
     const [reflection, setReflection] = useState('');
     const [achievement, setAchievement] = useState('');
+    const scrollRef = useRef<ScrollView>(null);
+
+    const handleInputFocus = () => {
+        setTimeout(() => {
+            scrollRef.current?.scrollToEnd({ animated: true });
+        }, 120);
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView
                 style={styles.keyboardAvoid}
-                // 'padding' pushes the view up on iOS, Android usually handles this natively
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
                 {/* Header (Stays completely fixed at the top) */}
                 <View style={styles.header}>
@@ -59,10 +65,8 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                     </View>
                 </View>
 
-                {/* flexGrow: 1 ensures it feels solid, 
-                    but allows scrolling when keyboard opens so inputs don't get stuck 
-                */}
                 <ScrollView
+                    ref={scrollRef}
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
@@ -88,6 +92,7 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             textAlignVertical="top"
                             value={intention}
                             onChangeText={setIntention}
+                            onFocus={handleInputFocus}
                         />
                     </View>
 
@@ -105,6 +110,7 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             textAlignVertical="top"
                             value={reflection}
                             onChangeText={setReflection}
+                            onFocus={handleInputFocus}
                         />
                     </View>
 
@@ -122,6 +128,7 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             textAlignVertical="top"
                             value={achievement}
                             onChangeText={setAchievement}
+                            onFocus={handleInputFocus}
                         />
                     </View>
 
