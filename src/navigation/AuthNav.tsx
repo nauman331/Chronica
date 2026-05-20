@@ -5,6 +5,8 @@ import EnhanceCrownEmotion from '../pages/EnhanceCrownEmotion'
 import Profile from '../pages/Profile'
 import LifeMap from '../pages/LifeMap'
 import Insights from '../pages/Insights'
+import MonthViewScreen from '../pages/MonthViewScreen'
+import YearViewScreen from '../pages/YearViewScreen'
 
 
 type AuthStackParamList = {
@@ -13,6 +15,8 @@ type AuthStackParamList = {
     Profile: undefined
     LifeMap: undefined
     Insights: undefined
+    YearView: undefined
+    MonthView: undefined
 }
 
 const Stack = createStackNavigator<AuthStackParamList>()
@@ -23,6 +27,8 @@ const AuthNav: React.FC = () => {
             initialRouteName="EnhanceCrown"
             screenOptions={{ headerShown: false }}
         >
+            <Stack.Screen name="YearView" component={YearViewScreen} />
+            <Stack.Screen name="MonthView" component={MonthViewScreen} />
             <Stack.Screen name="EnhanceCrown" component={EnhanceCrown} />
             <Stack.Screen name="EnhanceCrownEmotion" component={EnhanceCrownEmotion} />
             <Stack.Screen name="Profile" component={Profile} />

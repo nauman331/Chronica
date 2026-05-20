@@ -9,6 +9,8 @@ import EnhanceCrownEmotion from '../pages/EnhanceCrownEmotion'
 import Profile from '../pages/Profile'
 import LifeMap from '../pages/LifeMap'
 import Insights from '../pages/Insights'
+import MonthViewScreen from '../pages/MonthViewScreen'
+import YearViewScreen from '../pages/YearViewScreen'
 
 
 type UnAuthStackParamList = {
@@ -24,6 +26,8 @@ type UnAuthStackParamList = {
     Profile: undefined
     LifeMap: undefined
     Insights: undefined
+    YearView: undefined
+    MonthView: undefined
 }
 
 const Stack = createStackNavigator<UnAuthStackParamList>()
@@ -40,7 +44,8 @@ const UnAuthNav: React.FC = () => {
             <Stack.Screen name="Profile" component={Profile} />
             <Stack.Screen name="LifeMap" component={LifeMap} />
             <Stack.Screen name="Insights" component={Insights} />
-
+            <Stack.Screen name="YearView" component={YearViewScreen} />
+            <Stack.Screen name="MonthView" component={MonthViewScreen} />
 
             <Stack.Screen name="GetStarted" component={GetStarted} />
             <Stack.Screen name="Onboarding" component={Onboarding} />
