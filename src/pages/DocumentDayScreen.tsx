@@ -6,11 +6,10 @@ import {
     View,
     Pressable,
     TextInput,
-    ScrollView,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    ScrollView
 } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 import BottomTabBar from '../components/BottomTabBar';
 import {
     white,
@@ -41,9 +40,10 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView
                 style={styles.keyboardAvoid}
+                // 'padding' pushes the view up on iOS, Android usually handles this natively
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             >
-                {/* Header */}
+                {/* Header (Stays completely fixed at the top) */}
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
                         <Pressable style={styles.backButton} onPress={() => navigation?.goBack()}>
@@ -59,10 +59,14 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                     </View>
                 </View>
 
+                {/* flexGrow: 1 ensures it feels solid, 
+                    but allows scrolling when keyboard opens so inputs don't get stuck 
+                */}
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
+                    bounces={false}
                 >
                     {/* Page Title */}
                     <View style={styles.titleSection}>
@@ -121,7 +125,7 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                         />
                     </View>
 
-                    {/* Action Buttons */}
+                    {/* Action Buttons - Now sit right below the last input */}
                     <View style={styles.buttonRow}>
                         <Pressable
                             style={styles.cancelButton}
@@ -133,15 +137,8 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                         <Pressable
                             style={styles.crownButton}
                             onPress={() => {
-                                // Navigate and pass the state so the next screen can use it
                                 navigation.navigate('EnhanceCrownEmotion', {
-                                    day,
-                                    month,
-                                    year,
-                                    dayOfWeek,
-                                    intention,
-                                    reflection,
-                                    achievement
+                                    day, month, year, dayOfWeek, intention, reflection, achievement
                                 });
                             }}
                         >
@@ -220,12 +217,13 @@ const styles = StyleSheet.create({
     },
 
     scrollContent: {
+        flexGrow: 1,
         paddingHorizontal: 20,
         paddingTop: 24,
-        paddingBottom: 40,
+        paddingBottom: 60, // Increased padding to ensure the bottom can scroll up past the keyboard
     },
     titleSection: {
-        marginBottom: 32
+        marginBottom: 24
     },
     mainTitle: {
         fontSize: 22,
@@ -240,7 +238,7 @@ const styles = StyleSheet.create({
     },
 
     inputSection: {
-        marginBottom: 24
+        marginBottom: 16
     },
     labelRow: {
         flexDirection: 'row',
@@ -260,12 +258,13 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase'
     },
     textInput: {
+        height: 85,
         backgroundColor: white,
         borderWidth: 1,
         borderColor: '#EAEAEA',
         borderRadius: 16,
-        height: 110,
         padding: 16,
+        paddingTop: 16,
         fontSize: 15,
         color: COLOR_TEXT_MAIN,
         shadowColor: '#000',
@@ -279,8 +278,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 12,
-        marginTop: 16,
-        marginBottom: 20
+        marginTop: 16, // Changed from 'auto' to sit directly beneath the last input
+        marginBottom: 20 // Extra breathing room at the bottom
     },
     cancelButton: {
         flex: 1,

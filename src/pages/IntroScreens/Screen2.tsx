@@ -130,7 +130,7 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
 
                     {/* Updated Legend to show the glow effect */}
                     <View style={styles.legendItem}>
-                        <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: COLOR_CROWNED, shadowColor: COLOR_CROWNED, shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
+                        <View style={[styles.legendDot, { backgroundColor: COLOR_CROWNED }]} />
                         <Text style={styles.legendText}>Crowned</Text>
                     </View>
                 </View>
