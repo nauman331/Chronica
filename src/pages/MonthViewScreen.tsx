@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Pressable, ScrollView, Dimensions } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import BottomTabBar from '../components/BottomTabBar';
 import {
     white,
@@ -11,6 +12,32 @@ import {
     COLOR_FUTURE,
     COLOR_TEXT_MAIN
 } from '../utils/colors';
+
+// --- Custom SVGs for Pixel-Perfect Header Icons ---
+const ArrowLeftIcon = ({ color }: { color: string }) => (
+    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const ChevronLeftIcon = ({ color }: { color: string }) => (
+    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <Path d="M15 18l-6-6 6-6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const ChevronRightIcon = ({ color }: { color: string }) => (
+    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <Path d="M9 18l6-6-6-6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const SolidSparkleIcon = ({ color }: { color: string }) => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+        <Path d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z" fill={color} />
+    </Svg>
+);
+// -------------------------------------------------
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const { width } = Dimensions.get('window');
@@ -43,22 +70,25 @@ const MonthViewScreen = ({ navigation, route }: any) => {
             <View style={styles.header}>
                 <View style={styles.headerControls}>
                     <Pressable style={styles.iconButton} onPress={() => navigation?.goBack()}>
-                        <Text style={styles.iconText}>←</Text>
+                        <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
                     </Pressable>
                     <Pressable style={styles.iconButton}>
-                        <Text style={styles.iconText}>‹</Text>
+                        <ChevronLeftIcon color={COLOR_TEXT_MAIN} />
                     </Pressable>
                 </View>
+
                 <View style={styles.headerTitleContainer}>
                     <Text style={styles.headerTitle}>{month} {year}</Text>
                     <Text style={styles.headerSubtitle}>31 days - 35% documented</Text>
                 </View>
+
                 <View style={styles.headerControlsRight}>
                     <Pressable style={styles.iconButton}>
-                        <Text style={styles.iconText}>›</Text>
+                        <ChevronRightIcon color={COLOR_TEXT_MAIN} />
                     </Pressable>
                     <Pressable style={styles.todayButton}>
-                        <Text style={styles.todayButtonText}>Today ✦</Text>
+                        <Text style={styles.todayButtonText}>Today</Text>
+                        <SolidSparkleIcon color={white} />
                     </Pressable>
                 </View>
             </View>
@@ -176,7 +206,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: white
     },
-    // --- Header ---
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -187,33 +216,33 @@ const styles = StyleSheet.create({
     headerControls: { flexDirection: 'row', gap: 8 },
     headerControlsRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     iconButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 34,
+        height: 34,
+        borderRadius: 17,
         backgroundColor: '#F7F7F9',
         alignItems: 'center',
         justifyContent: 'center'
     },
-    iconText: { fontSize: 16, color: COLOR_TEXT_MAIN, fontWeight: '400' },
     headerTitleContainer: { alignItems: 'center' },
     headerTitle: { fontSize: 18, fontWeight: '700', color: COLOR_TEXT_MAIN },
     headerSubtitle: { fontSize: 12, color: COLOR_TEXT_MUTED, marginTop: 2 },
     todayButton: {
         backgroundColor: blue,
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 9,
+        paddingHorizontal: 14,
         borderRadius: 20
     },
-    todayButtonText: { color: white, fontSize: 12, fontWeight: '600' },
+    todayButtonText: { color: white, fontSize: 13, fontWeight: '600' },
 
-    // --- Main Content ---
     scrollContent: {
         paddingHorizontal: 20,
         paddingBottom: 40,
         paddingTop: 12,
     },
 
-    // --- Progress Section ---
     progressContainer: {
         marginBottom: 24,
         alignItems: 'center'
@@ -236,19 +265,16 @@ const styles = StyleSheet.create({
         fontWeight: '500'
     },
 
-    // --- Calendar Card ---
     calendarCard: {
         backgroundColor: white,
         borderRadius: 24,
         paddingVertical: 24,
         paddingHorizontal: 16,
         marginBottom: 24,
-        // iOS Shadow
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.05,
         shadowRadius: 15,
-        // Android Elevation
         elevation: 3,
         borderWidth: 1,
         borderColor: '#F8F8F8'
@@ -268,7 +294,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     dayCellContainer: {
-        width: '14.28%', // Exactly 1/7th of the width for perfect column alignment
+        width: '14.28%',
         alignItems: 'center',
         marginBottom: 10
     },
@@ -284,17 +310,14 @@ const styles = StyleSheet.create({
         fontWeight: '500'
     },
 
-    // --- Stats Card ---
     statsCard: {
         backgroundColor: white,
         borderRadius: 20,
         padding: 20,
-        // iOS Shadow
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
         shadowRadius: 10,
-        // Android Elevation
         elevation: 2,
         borderWidth: 1,
         borderColor: '#F8F8F8'
@@ -339,7 +362,6 @@ const styles = StyleSheet.create({
         fontWeight: '400'
     },
 
-    // --- Footer ---
     bottomTabContainer: {
         borderTopWidth: 1,
         borderTopColor: '#F5F5F5',

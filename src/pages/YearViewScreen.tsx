@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import BottomTabBar from '../components/BottomTabBar';
 import {
     white,
@@ -12,9 +13,33 @@ import {
     COLOR_TEXT_MAIN
 } from '../utils/colors';
 
+const ArrowLeftIcon = ({ color }: { color: string }) => (
+    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const ChevronLeftIcon = ({ color }: { color: string }) => (
+    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <Path d="M15 18l-6-6 6-6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const ChevronRightIcon = ({ color }: { color: string }) => (
+    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <Path d="M9 18l6-6-6-6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+const SolidSparkleIcon = ({ color }: { color: string }) => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+        <Path d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z" fill={color} />
+    </Svg>
+);
+
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Increased dot size and decreased gap to make them sit tighter together
 const DOT_SIZE = 9;
 const HALO_SIZE = 16;
 
@@ -55,22 +80,25 @@ const YearViewScreen = ({ navigation, route }: any) => {
             <View style={styles.header}>
                 <View style={styles.headerControls}>
                     <Pressable style={styles.iconButton} onPress={() => navigation.goBack()}>
-                        <Text style={styles.iconText}>←</Text>
+                        <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
                     </Pressable>
                     <Pressable style={styles.iconButton}>
-                        <Text style={styles.iconText}>‹</Text>
+                        <ChevronLeftIcon color={COLOR_TEXT_MAIN} />
                     </Pressable>
                 </View>
+
                 <View style={styles.headerTitleContainer}>
                     <Text style={styles.headerTitle}>{year}</Text>
                     <Text style={styles.headerSubtitle}>Age {age}</Text>
                 </View>
+
                 <View style={styles.headerControlsRight}>
                     <Pressable style={styles.iconButton}>
-                        <Text style={styles.iconText}>›</Text>
+                        <ChevronRightIcon color={COLOR_TEXT_MAIN} />
                     </Pressable>
                     <Pressable style={styles.todayButton}>
-                        <Text style={styles.todayButtonText}>Today ✦</Text>
+                        <Text style={styles.todayButtonText}>Today</Text>
+                        <SolidSparkleIcon color={white} />
                     </Pressable>
                 </View>
             </View>
@@ -161,7 +189,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: white
     },
-    // Header Styles
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -179,17 +206,12 @@ const styles = StyleSheet.create({
         gap: 8
     },
     iconButton: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        width: 34,
+        height: 34,
+        borderRadius: 17,
         backgroundColor: COLOR_FUTURE,
         alignItems: 'center',
         justifyContent: 'center'
-    },
-    iconText: {
-        fontSize: 16,
-        color: COLOR_TEXT_MAIN,
-        fontWeight: '500'
     },
     headerTitleContainer: {
         alignItems: 'center'
@@ -206,22 +228,23 @@ const styles = StyleSheet.create({
     },
     todayButton: {
         backgroundColor: blue,
-        paddingVertical: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingVertical: 9,
         paddingHorizontal: 14,
         borderRadius: 20
     },
     todayButtonText: {
         color: white,
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '600'
     },
-    // Main Content
     scrollContent: {
         paddingHorizontal: 20,
         paddingTop: 16,
         paddingBottom: 40
     },
-    // Summary Card Styles
     summaryCard: {
         backgroundColor: white,
         borderRadius: 16,
@@ -233,7 +256,7 @@ const styles = StyleSheet.create({
         shadowRadius: 16,
         elevation: 3,
         borderWidth: 1,
-        borderColor: COLOR_FUTURE
+        borderColor: '#F6F6F6'
     },
     summaryStatsRow: {
         flexDirection: 'row',
@@ -294,7 +317,7 @@ const styles = StyleSheet.create({
     dotGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 1.5, // Reduced gap significantly to pull dots closer
+        gap: 1.5,
         marginBottom: 14
     },
     dotContainer: {

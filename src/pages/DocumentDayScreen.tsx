@@ -10,6 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import BottomTabBar from '../components/BottomTabBar';
 import {
     white,
@@ -22,8 +23,13 @@ import {
     COLOR_FUTURE
 } from '../utils/colors';
 
+const ArrowLeftIcon = ({ color }: { color: string }) => (
+    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
 const DocumentDayScreen = ({ navigation, route }: any) => {
-    // These route params carry over from the DayDetail screen
     const {
         day = 6,
         month = 'January',
@@ -32,7 +38,6 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
         status = 'Not documented'
     } = route?.params || {};
 
-    // State for the text inputs
     const [intention, setIntention] = useState('');
     const [reflection, setReflection] = useState('');
     const [achievement, setAchievement] = useState('');
@@ -47,7 +52,7 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
                         <Pressable style={styles.backButton} onPress={() => navigation?.goBack()}>
-                            <Text style={styles.backButtonText}>←</Text>
+                            <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
                         </Pressable>
                         <View style={styles.headerTitles}>
                             <Text style={styles.headerTitle}>{month} {day}, {year}</Text>
@@ -171,7 +176,6 @@ const styles = StyleSheet.create({
     keyboardAvoid: {
         flex: 1,
     },
-    // --- Header ---
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -194,11 +198,6 @@ const styles = StyleSheet.create({
         borderColor: COLOR_FUTURE,
         alignItems: 'center',
         justifyContent: 'center'
-    },
-    backButtonText: {
-        fontSize: 18,
-        color: COLOR_TEXT_MAIN,
-        fontWeight: '400'
     },
     headerTitles: {
         justifyContent: 'center'
@@ -225,7 +224,6 @@ const styles = StyleSheet.create({
         fontWeight: '500'
     },
 
-    // --- Main Content ---
     scrollContent: {
         paddingHorizontal: 20,
         paddingTop: 24,
@@ -246,7 +244,6 @@ const styles = StyleSheet.create({
         fontWeight: '400'
     },
 
-    // --- Input Sections ---
     inputSection: {
         marginBottom: 24
     },
@@ -276,7 +273,6 @@ const styles = StyleSheet.create({
         padding: 16,
         fontSize: 15,
         color: COLOR_TEXT_MAIN,
-        // Shadow for input
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.03,
@@ -284,7 +280,6 @@ const styles = StyleSheet.create({
         elevation: 1,
     },
 
-    // --- Buttons ---
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -314,7 +309,6 @@ const styles = StyleSheet.create({
         paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        // Shadow for primary button
         shadowColor: yellow,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.3,
@@ -327,7 +321,6 @@ const styles = StyleSheet.create({
         fontWeight: '700'
     },
 
-    // --- Footer ---
     bottomTabContainer: {
         borderTopWidth: 1,
         borderTopColor: '#F5F5F5',

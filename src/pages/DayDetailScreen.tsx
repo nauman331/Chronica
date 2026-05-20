@@ -11,7 +11,12 @@ import {
     gray
 } from '../utils/colors';
 
-// Custom SVG to perfectly match the Figma spark icon
+const ArrowLeftIcon = ({ color }: { color: string }) => (
+    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
 const SparkleIcon = ({ color }: { color: string }) => (
     <Svg width="28" height="28" viewBox="0 0 24 24" fill="none">
         {/* Main 4-pointed outlined star */}
@@ -48,7 +53,7 @@ const DayDetailScreen = ({ navigation, route }: any) => {
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <Pressable style={styles.backButton} onPress={() => navigation?.goBack()}>
-                        <Text style={styles.backButtonText}>←</Text>
+                        <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
                     </Pressable>
                     <View style={styles.headerTitles}>
                         <Text style={styles.headerTitle}>{month} {day}, {year}</Text>
@@ -113,7 +118,6 @@ const styles = StyleSheet.create({
         backgroundColor: white
     },
 
-    // --- Header ---
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -136,11 +140,6 @@ const styles = StyleSheet.create({
         borderColor: COLOR_FUTURE,
         alignItems: 'center',
         justifyContent: 'center'
-    },
-    backButtonText: {
-        fontSize: 18,
-        color: COLOR_TEXT_MAIN,
-        fontWeight: '400'
     },
     headerTitles: {
         justifyContent: 'center'
@@ -167,14 +166,12 @@ const styles = StyleSheet.create({
         fontWeight: '500'
     },
 
-    // --- Main Content ---
     content: {
         flex: 1,
         paddingHorizontal: 20,
         paddingTop: 24,
     },
 
-    // --- Card ---
     card: {
         backgroundColor: white,
         borderRadius: 24,
@@ -199,7 +196,7 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 32,
-        backgroundColor: '#FFF8E6', // Very pale version of the yellow color
+        backgroundColor: '#FFF8E6',
         alignItems: 'center',
         justifyContent: 'center'
     },
@@ -217,19 +214,16 @@ const styles = StyleSheet.create({
         fontWeight: '400'
     },
 
-    // --- Button ---
     documentButton: {
         backgroundColor: blue,
         borderRadius: 16,
         paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        // iOS Shadow
         shadowColor: blue,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.25,
         shadowRadius: 12,
-        // Android Elevation
         elevation: 6,
     },
     documentButtonText: {
@@ -238,7 +232,6 @@ const styles = StyleSheet.create({
         fontWeight: '600'
     },
 
-    // --- Footer ---
     bottomTabContainer: {
         borderTopWidth: 1,
         borderTopColor: '#F5F5F5',
