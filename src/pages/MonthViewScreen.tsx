@@ -200,7 +200,13 @@ const styles = StyleSheet.create({
         gap: 6,
         paddingVertical: 9,
         paddingHorizontal: 14,
-        borderRadius: 20
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.22,
+        shadowRadius: 12,
+        elevation: 8,
+        zIndex: 2
     },
     todayButtonText: { color: white, fontSize: 13, fontWeight: '600' },
 

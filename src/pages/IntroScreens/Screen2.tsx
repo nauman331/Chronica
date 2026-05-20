@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, FlatList, Dimensions } from 'react-native';
-import { Canvas, Group, Skia, Path } from '@shopify/react-native-skia';
+import { View, Text, StyleSheet, Pressable, FlatList, Dimensions, Platform } from 'react-native';
+// ADDED: Blur and Shadow imports from Skia
+import { Canvas, Group, Skia, Path, Blur, Shadow } from '@shopify/react-native-skia';
 import { blue, gray, white, COLOR_CROWNED, COLOR_DOCUMENTED, COLOR_TEXT_MUTED, COLOR_UNDOCUMENTED } from '../../utils/colors';
 
 const { height } = Dimensions.get('window');
@@ -9,39 +10,72 @@ const RADIUS = 3.2;
 const SPACING = 3.5;
 const CELL_SIZE = (RADIUS * 2) + SPACING;
 
+// NEW: Constants for the glow effect
+const CROWN_RADIUS = RADIUS * 1.2;
+const HALO_RADIUS = RADIUS * 2.5;
+const GLOW_PADDING = 8; // Extra space to prevent canvas clipping the shadow
+
 const YearRow = ({ year, age, dotsCount }: any) => {
     const paths = useMemo(() => {
         const pUndocumented = Skia.Path.Make();
         const pDocumented = Skia.Path.Make();
         const pCrowned = Skia.Path.Make();
+        const pCrownedHalo = Skia.Path.Make(); // New path for the halo
 
         for (let d = 0; d < dotsCount; d++) {
             const col = d % NODES_PER_ROW;
             const row = Math.floor(d / NODES_PER_ROW);
-            const cx = col * CELL_SIZE + RADIUS;
-            const cy = row * CELL_SIZE + RADIUS;
+
+            // Offset coordinates by GLOW_PADDING so outer shadows aren't cut off
+            const cx = col * CELL_SIZE + RADIUS + GLOW_PADDING;
+            const cy = row * CELL_SIZE + RADIUS + GLOW_PADDING;
             const rand = Math.random();
 
-            if (rand > 0.95) pCrowned.addCircle(cx, cy, RADIUS);
-            else if (rand > 0.70) pDocumented.addCircle(cx, cy, RADIUS);
-            else pUndocumented.addCircle(cx, cy, RADIUS);
+            if (rand > 0.95) {
+                pCrownedHalo.addCircle(cx, cy, HALO_RADIUS);
+                pCrowned.addCircle(cx, cy, CROWN_RADIUS);
+            }
+            else if (rand > 0.70) {
+                pDocumented.addCircle(cx, cy, RADIUS);
+            }
+            else {
+                pUndocumented.addCircle(cx, cy, RADIUS);
+            }
         }
-        return { pUndocumented, pDocumented, pCrowned };
+        return { pUndocumented, pDocumented, pCrowned, pCrownedHalo };
     }, [dotsCount]);
 
-    const canvasHeight = Math.ceil(dotsCount / NODES_PER_ROW) * CELL_SIZE;
+    // Add padding to the total canvas height
+    const baseCanvasHeight = Math.ceil(dotsCount / NODES_PER_ROW) * CELL_SIZE;
+    const canvasHeight = baseCanvasHeight > 0 ? baseCanvasHeight + (GLOW_PADDING * 2) : 0;
 
     return (
         <View style={styles.yearRowContainer}>
-            <Text style={styles.yearLabel}>{year}</Text>
-            <Canvas style={[styles.yearCanvas, { height: canvasHeight }]}>
+            {/* Added marginTop to keep text aligned with the newly padded grid */}
+            <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING - 1 }]}>{year}</Text>
+
+            {/* Adjusted horizontal margins slightly to compensate for the internal GLOW_PADDING */}
+            <Canvas style={[styles.yearCanvas, { height: canvasHeight, marginLeft: 12 - GLOW_PADDING }]}>
                 <Group>
                     <Group color={COLOR_UNDOCUMENTED}><Path path={paths.pUndocumented} /></Group>
                     <Group color={COLOR_DOCUMENTED}><Path path={paths.pDocumented} /></Group>
-                    <Group color={COLOR_CROWNED}><Path path={paths.pCrowned} /></Group>
+
+                    {/* Scattered Background Halo */}
+                    <Group color={COLOR_CROWNED} opacity={0.15}>
+                        <Blur blur={4} />
+                        <Path path={paths.pCrownedHalo} />
+                    </Group>
+
+                    {/* Core Crowned Dot with glow */}
+                    <Group color={COLOR_CROWNED}>
+                        <Shadow dx={0} dy={0} blur={6} color={COLOR_CROWNED} />
+                        <Path path={paths.pCrowned} />
+                    </Group>
                 </Group>
             </Canvas>
-            <Text style={styles.ageLabel}>{age}y</Text>
+
+            {/* Added marginTop to keep text aligned */}
+            <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING - 1 }]}>{age}y</Text>
         </View>
     );
 };
@@ -93,7 +127,12 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
                 <View style={styles.legendContainer}>
                     <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: COLOR_UNDOCUMENTED }]} /><Text style={styles.legendText}>Undocumented</Text></View>
                     <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: COLOR_DOCUMENTED }]} /><Text style={styles.legendText}>Documented</Text></View>
-                    <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: COLOR_CROWNED }]} /><Text style={styles.legendText}>Crowned</Text></View>
+
+                    {/* Updated Legend to show the glow effect */}
+                    <View style={styles.legendItem}>
+                        <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: COLOR_CROWNED, shadowColor: COLOR_CROWNED, shadowOpacity: 0.8, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
+                        <Text style={styles.legendText}>Crowned</Text>
+                    </View>
                 </View>
             </View>
 
@@ -125,9 +164,26 @@ const styles = StyleSheet.create({
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     legendDot: { width: 10, height: 10, borderRadius: 5 },
     legendText: { fontSize: 12, color: gray, fontWeight: '500' },
-    bottomSection: { paddingHorizontal: 24, paddingBottom: height > 800 ? 50 : 30, borderTopWidth: 1, borderTopColor: '#F0EAE1', paddingTop: 24, backgroundColor: white },
-    button: { backgroundColor: blue, paddingVertical: 18, borderRadius: 16, alignItems: 'center', shadowColor: blue, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4 },
-    buttonText: { color: white, fontSize: 16, fontWeight: '600' },
+    bottomSection: { marginTop: 24, paddingHorizontal: 24, paddingBottom: height > 800 ? 50 : 30, borderTopWidth: 1, borderTopColor: '#F0EAE1', paddingTop: 24, backgroundColor: white },
+    button: {
+        backgroundColor: blue,
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        marginBottom: 16,
+        ...Platform.select({
+            ios: {
+                shadowColor: blue,
+                shadowOpacity: 0.4,
+                shadowRadius: 16,
+                shadowOffset: { width: 0, height: 12 },
+            },
+            android: {
+                elevation: 10,
+            }
+        })
+    },
+    buttonText: { color: white, fontSize: 16, fontWeight: '500' },
     skipButton: { alignSelf: 'flex-end', marginTop: 24 },
     skipText: { color: '#B4B4B4', fontSize: 14, fontWeight: '500' },
 });

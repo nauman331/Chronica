@@ -2,14 +2,53 @@ import { View, StyleSheet } from 'react-native'
 import DropShadow from 'react-native-drop-shadow';
 
 import React from 'react'
-import { yellow } from '../utils/colors';
+import { white, yellow } from '../utils/colors';
 
-const CircularBadge = ({ Icon }: { Icon: React.ComponentType }) => {
+type BadgeIconProps = {
+    color?: string;
+    size?: number;
+};
+
+type CircularBadgeProps = {
+    Icon: React.ComponentType<BadgeIconProps>;
+    badgeColor?: string;
+    shadowColor?: string;
+    shadowOpacity?: number;
+    innerShadowOpacity?: number;
+    shadowRadius?: number;
+    innerShadowRadius?: number;
+    iconColor?: string;
+    iconSize?: number;
+    outerSize?: number;
+    innerSize?: number;
+    iconCircleSize?: number;
+    marginBottom?: number;
+};
+
+const CircularBadge = ({
+    Icon,
+    badgeColor = yellow,
+    shadowColor = yellow,
+    shadowOpacity = 0.26,
+    innerShadowOpacity = 0.7,
+    shadowRadius = 56,
+    innerShadowRadius = 26,
+    iconColor = white,
+    iconSize = 54,
+    outerSize = 200,
+    innerSize = 80,
+    iconCircleSize = 120,
+    marginBottom = 12,
+}: CircularBadgeProps) => {
+    const outerRadius = outerSize / 2;
+    const innerRadius = innerSize / 2;
+    const iconCircleRadius = iconCircleSize / 2;
+
     return (
-        <DropShadow style={styles.outerGlow}>
-            <DropShadow style={styles.innerGlow}>
-                <View style={styles.iconCircle}>
-                    <Icon />
+        <DropShadow style={[styles.outerGlow, { shadowColor, shadowOpacity, shadowRadius, width: outerSize, height: outerSize, borderRadius: outerRadius, marginBottom }]}>
+            <DropShadow style={[styles.innerGlow, { shadowColor, shadowOpacity: innerShadowOpacity, shadowRadius: innerShadowRadius, width: innerSize, height: innerSize, borderRadius: innerRadius }]}>
+                <View style={[styles.iconCircle, { backgroundColor: badgeColor, width: iconCircleSize, height: iconCircleSize, borderRadius: iconCircleRadius }]}>
+                    <Icon color={iconColor} size={iconSize} />
                 </View>
             </DropShadow>
         </DropShadow>
@@ -24,12 +63,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 14 },
         shadowOpacity: 0.26,
         shadowRadius: 56,
-        width: 200,
-        height: 200,
-        borderRadius: 100,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 12,
         elevation: 14,
         backgroundColor: 'transparent',
     },
@@ -38,9 +73,6 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 14 },
         shadowOpacity: 0.7,
         shadowRadius: 26,
-        width: 80,
-        height: 80,
-        borderRadius: 77,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 8,
@@ -48,9 +80,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     iconCircle: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
         backgroundColor: yellow,
         alignItems: 'center',
         justifyContent: 'center',

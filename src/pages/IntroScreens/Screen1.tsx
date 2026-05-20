@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Dimensions, Platform } from 'react-native';
 import React, { useMemo } from 'react';
 import Svg, { Circle } from 'react-native-svg';
 import { blue, gray, white, yellow } from '../../utils/colors';
@@ -57,8 +57,25 @@ const styles = StyleSheet.create({
     logo: { color: yellow },
     subtitle: { color: gray, fontSize: 15, fontWeight: '500', textAlign: 'center' },
     bottomSection: { paddingHorizontal: 24, paddingTop: 32, paddingBottom: Dimensions.get('window').height > 800 ? 50 : 30, borderTopWidth: 1, borderTopColor: '#F0EAE1' },
-    button: { backgroundColor: blue, paddingVertical: 18, borderRadius: 16, alignItems: 'center', shadowColor: blue, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4 },
-    buttonText: { color: white, fontSize: 16, fontWeight: '600' },
+    button: {
+        backgroundColor: blue,
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        marginBottom: 16,
+        ...Platform.select({
+            ios: {
+                shadowColor: blue,
+                shadowOpacity: 0.4,
+                shadowRadius: 16,
+                shadowOffset: { width: 0, height: 12 },
+            },
+            android: {
+                elevation: 10,
+            }
+        })
+    },
+    buttonText: { color: white, fontSize: 16, fontWeight: '500' },
     skipButton: { alignSelf: 'flex-end', marginTop: 24 },
     skipText: { color: '#A0A0A0', fontSize: 14, fontWeight: '500' },
 });

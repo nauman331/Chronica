@@ -133,5 +133,5 @@ const styles = StyleSheet.create({
         shadowRadius: 12,
         elevation: 6,
     },
-    primaryButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+    primaryButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '500' },
 });

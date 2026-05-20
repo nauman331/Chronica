@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+// Assuming Svg and Path are used in your actual file, keeping imports
 import Svg, { Path } from 'react-native-svg';
 import BottomTabBar from '../components/BottomTabBar';
 import {
@@ -15,11 +16,10 @@ import {
 
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SolidSparkleIcon } from '../utils/icons';
 
-
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const DOT_SIZE = 9;
-const HALO_SIZE = 16;
+const CONTAINER_SIZE = 16;
 
 const generateMonthData = (monthIndex: number) => {
     const dots = Array.from({ length: 15 }).map((_, i) => {
@@ -123,11 +123,14 @@ const YearViewScreen = ({ navigation, route }: any) => {
                             <View style={styles.dotGrid}>
                                 {month.dots.map((state, i) => (
                                     <View key={i} style={styles.dotContainer}>
-                                        {state === 'crowned' && <View style={[styles.halo, { backgroundColor: COLOR_CROWNED, opacity: 0.25 }]} />}
+                                        {/* Scattered Halo Layer */}
+                                        {state === 'crowned' && <View style={styles.crownedHalo} />}
+
+                                        {/* Core Dot Layer */}
                                         <View
                                             style={[
                                                 styles.dot,
-                                                state === 'crowned' && { backgroundColor: COLOR_CROWNED },
+                                                state === 'crowned' && styles.crownedDot,
                                                 state === 'documented' && { backgroundColor: COLOR_DOCUMENTED },
                                                 state === 'past' && { backgroundColor: COLOR_PAST },
                                                 state === 'future' && { backgroundColor: COLOR_FUTURE }
@@ -211,7 +214,13 @@ const styles = StyleSheet.create({
         gap: 6,
         paddingVertical: 9,
         paddingHorizontal: 14,
-        borderRadius: 20
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.22,
+        shadowRadius: 12,
+        elevation: 8,
+        zIndex: 2
     },
     todayButtonText: {
         color: white,
@@ -246,7 +255,7 @@ const styles = StyleSheet.create({
     },
     statTitle: {
         fontSize: 12,
-        fontWeight: '600',
+        fontWeight: '800',
         marginBottom: 6
     },
     statValue: {
@@ -299,10 +308,11 @@ const styles = StyleSheet.create({
         marginBottom: 14
     },
     dotContainer: {
-        width: HALO_SIZE,
-        height: HALO_SIZE,
+        width: CONTAINER_SIZE,
+        height: CONTAINER_SIZE,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        zIndex: 1
     },
     dot: {
         width: DOT_SIZE,
@@ -310,13 +320,28 @@ const styles = StyleSheet.create({
         borderRadius: DOT_SIZE / 2,
         zIndex: 2
     },
-    halo: {
+
+    crownedDot: {
+        width: 11,
+        height: 11,
+        borderRadius: 5.5,
+        backgroundColor: COLOR_CROWNED,
+        shadowColor: COLOR_CROWNED,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 12,
+        elevation: 10
+    },
+    crownedHalo: {
         position: 'absolute',
-        width: HALO_SIZE,
-        height: HALO_SIZE,
-        borderRadius: HALO_SIZE / 2,
+        width: 20,
+        height: 20,
+        borderRadius: 14,
+        backgroundColor: COLOR_CROWNED,
+        opacity: 0.1,
         zIndex: 1
     },
+
     // Month Progress Bar
     monthProgressRow: {
         flexDirection: 'row',

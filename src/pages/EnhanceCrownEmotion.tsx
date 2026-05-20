@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     primaryButtonText: {
         color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '500',
     },
     secondaryButton: {
         backgroundColor: '#FFFFFF',
