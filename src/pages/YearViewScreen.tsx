@@ -1,50 +1,77 @@
 import React, { useMemo } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, ScrollView, Pressable, Dimensions } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import BottomTabBar from '../components/BottomTabBar';
-
-const { width } = Dimensions.get('window');
-
-// --- Colors ---
-const COLOR_PAST = '#7A818C';
-const COLOR_DOCUMENTED = '#8CB9FF';
-const COLOR_CROWNED = '#E4BA2E';
-const COLOR_FUTURE = '#EBEBEB';
-const COLOR_TEXT_MAIN = '#111111';
-const COLOR_TEXT_MUTED = '#8A8F99';
+import {
+    white,
+    blue,
+    COLOR_CROWNED,
+    COLOR_TEXT_MUTED,
+    COLOR_DOCUMENTED,
+    COLOR_PAST,
+    COLOR_FUTURE,
+    COLOR_TEXT_MAIN
+} from '../utils/colors';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Mock Data Generator for Months
+// Increased dot size and decreased gap to make them sit tighter together
+const DOT_SIZE = 9;
+const HALO_SIZE = 16;
+
 const generateMonthData = (monthIndex: number) => {
-    const daysInMonth = 30; // Simplified for UI mockup
-    const dots = Array.from({ length: daysInMonth }).map((_, i) => {
+    const dots = Array.from({ length: 15 }).map((_, i) => {
         const rand = Math.random();
-        if (monthIndex > 5) return 'future'; // Future months
-        if (rand > 0.9) return 'crowned';
-        if (rand > 0.6) return 'documented';
+        if (monthIndex > 8 && i > 8) return 'future';
+        if (rand > 0.92) return 'crowned';
+        if (rand > 0.5) return 'documented';
         return 'past';
     });
-    return { name: MONTHS[monthIndex], dots, progress: Math.floor(Math.random() * 60) + 20 };
+
+    let crownedCount = 0;
+    const finalizedDots = dots.map(d => {
+        if (d === 'crowned') {
+            crownedCount++;
+            if (crownedCount > 1) return 'documented';
+        }
+        return d;
+    });
+
+    const isGoldProgress = [1, 2, 3, 4, 5, 6, 7, 9, 11].includes(monthIndex);
+
+    return {
+        name: MONTHS[monthIndex],
+        dots: finalizedDots,
+        progress: Math.floor(Math.random() * 40) + 20,
+        progressColor: isGoldProgress ? COLOR_CROWNED : COLOR_DOCUMENTED
+    };
 };
 
-const YearViewScreen = () => {
+const YearViewScreen = ({ navigation, route }: any) => {
+    const { year = 2026, age = 31 } = route.params || {};
     const monthsData = useMemo(() => Array.from({ length: 12 }).map((_, i) => generateMonthData(i)), []);
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Header */}
             <View style={styles.header}>
                 <View style={styles.headerControls}>
-                    <Pressable style={styles.iconButton}><Text style={styles.iconText}>←</Text></Pressable>
-                    <Pressable style={styles.iconButton}><Text style={styles.iconText}>‹</Text></Pressable>
+                    <Pressable style={styles.iconButton} onPress={() => navigation.goBack()}>
+                        <Text style={styles.iconText}>←</Text>
+                    </Pressable>
+                    <Pressable style={styles.iconButton}>
+                        <Text style={styles.iconText}>‹</Text>
+                    </Pressable>
                 </View>
                 <View style={styles.headerTitleContainer}>
-                    <Text style={styles.headerTitle}>2026</Text>
-                    <Text style={styles.headerSubtitle}>Age 31</Text>
+                    <Text style={styles.headerTitle}>{year}</Text>
+                    <Text style={styles.headerSubtitle}>Age {age}</Text>
                 </View>
                 <View style={styles.headerControlsRight}>
-                    <Pressable style={styles.iconButton}><Text style={styles.iconText}>›</Text></Pressable>
-                    <Pressable style={styles.todayButton}><Text style={styles.todayButtonText}>Today ✦</Text></Pressable>
+                    <Pressable style={styles.iconButton}>
+                        <Text style={styles.iconText}>›</Text>
+                    </Pressable>
+                    <Pressable style={styles.todayButton}>
+                        <Text style={styles.todayButtonText}>Today ✦</Text>
+                    </Pressable>
                 </View>
             </View>
 
@@ -65,11 +92,14 @@ const YearViewScreen = () => {
                             <Text style={[styles.statValue, { color: COLOR_PAST }]}>100%</Text>
                         </View>
                     </View>
+
                     <View style={styles.summaryProgressContainer}>
-                        <View style={styles.summaryProgressBar}><View style={[styles.summaryProgressFill, { width: '40%' }]} /></View>
-                        <View style={styles.summaryProgressLabels}>
-                            <Text style={styles.progressLabel}>Jan 2026</Text>
-                            <Text style={styles.progressLabel}>Dec 2026</Text>
+                        <View style={styles.summaryBarTrack}>
+                            <View style={[styles.summaryBarFill, { width: '55%', backgroundColor: COLOR_CROWNED }]} />
+                        </View>
+                        <View style={styles.summaryLabelsContainer}>
+                            <Text style={styles.summaryDateLabel}>Jan {year - 1}</Text>
+                            <Text style={styles.summaryDateLabel}>Dec {year - 1}</Text>
                         </View>
                     </View>
                 </View>
@@ -77,32 +107,48 @@ const YearViewScreen = () => {
                 {/* Month Grid */}
                 <View style={styles.monthGrid}>
                     {monthsData.map((month, index) => (
-                        <View key={index} style={styles.monthCard}>
+                        <Pressable
+                            key={index}
+                            style={styles.monthCard}
+                            onPress={() => navigation.navigate('MonthView', { year, month: month.name })}
+                        >
                             <Text style={styles.monthName}>{month.name}</Text>
+
                             <View style={styles.dotGrid}>
                                 {month.dots.map((state, i) => (
-                                    <View key={i} style={[
-                                        styles.dot,
-                                        state === 'crowned' && { backgroundColor: COLOR_CROWNED },
-                                        state === 'documented' && { backgroundColor: COLOR_DOCUMENTED },
-                                        state === 'past' && { backgroundColor: COLOR_PAST },
-                                        state === 'future' && { backgroundColor: COLOR_FUTURE }
-                                    ]} />
+                                    <View key={i} style={styles.dotContainer}>
+                                        {state === 'crowned' && <View style={[styles.halo, { backgroundColor: COLOR_CROWNED, opacity: 0.25 }]} />}
+                                        <View
+                                            style={[
+                                                styles.dot,
+                                                state === 'crowned' && { backgroundColor: COLOR_CROWNED },
+                                                state === 'documented' && { backgroundColor: COLOR_DOCUMENTED },
+                                                state === 'past' && { backgroundColor: COLOR_PAST },
+                                                state === 'future' && { backgroundColor: COLOR_FUTURE }
+                                            ]}
+                                        />
+                                    </View>
                                 ))}
                             </View>
+
                             <View style={styles.monthProgressRow}>
                                 <View style={styles.monthProgressBar}>
-                                    <View style={[styles.monthProgressFill, { width: `${month.progress}%`, backgroundColor: index % 2 === 0 ? COLOR_DOCUMENTED : COLOR_CROWNED }]} />
+                                    <View
+                                        style={[
+                                            styles.monthProgressFill,
+                                            { width: `${month.progress}%`, backgroundColor: month.progressColor }
+                                        ]}
+                                    />
                                 </View>
                                 <Text style={styles.monthProgressText}>{month.progress}%</Text>
                             </View>
-                        </View>
+                        </Pressable>
                     ))}
                 </View>
             </ScrollView>
 
             <View style={styles.bottomTabContainer}>
-                <BottomTabBar activeTab="today" />
+                <BottomTabBar activeTab="map" />
             </View>
         </SafeAreaView>
     );
@@ -110,38 +156,193 @@ const YearViewScreen = () => {
 
 export default YearViewScreen;
 
-// --- Styles for Year View ---
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFFFFF' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 12 },
-    headerControls: { flexDirection: 'row', gap: 8 },
-    headerControlsRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    iconButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F4F4F4', alignItems: 'center', justifyContent: 'center' },
-    iconText: { fontSize: 18, color: COLOR_TEXT_MAIN },
-    headerTitleContainer: { alignItems: 'center' },
-    headerTitle: { fontSize: 18, fontWeight: 'bold', color: COLOR_TEXT_MAIN },
-    headerSubtitle: { fontSize: 12, color: COLOR_TEXT_MUTED },
-    todayButton: { backgroundColor: '#191528', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20 },
-    todayButtonText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600' },
-    scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
-    summaryCard: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 12, elevation: 2, borderWidth: 1, borderColor: '#F0F0F0' },
-    summaryStatsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-    summaryStat: { alignItems: 'center' },
-    statTitle: { fontSize: 12, fontWeight: '600', marginBottom: 4 },
-    statValue: { fontSize: 16, fontWeight: 'bold' },
-    summaryProgressContainer: { width: '100%' },
-    summaryProgressBar: { height: 4, backgroundColor: '#F3F3F3', borderRadius: 2, marginBottom: 8 },
-    summaryProgressFill: { height: '100%', backgroundColor: COLOR_CROWNED, borderRadius: 2 },
-    summaryProgressLabels: { flexDirection: 'row', justifyContent: 'space-between' },
-    progressLabel: { fontSize: 10, color: COLOR_TEXT_MUTED },
-    monthGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-    monthCard: { width: '48%', marginBottom: 32 },
-    monthName: { fontSize: 20, fontWeight: 'bold', color: COLOR_TEXT_MAIN, marginBottom: 12 },
-    dotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 12 },
-    dot: { width: 6, height: 6, borderRadius: 3 },
-    monthProgressRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    monthProgressBar: { flex: 1, height: 3, backgroundColor: '#F3F3F3', borderRadius: 1.5 },
-    monthProgressFill: { height: '100%', borderRadius: 1.5 },
-    monthProgressText: { fontSize: 10, color: COLOR_TEXT_MUTED, fontWeight: '500', width: 24 },
-    bottomTabContainer: { justifyContent: 'flex-end', borderTopWidth: 1, borderTopColor: '#F4F4F4' },
+    container: {
+        flex: 1,
+        backgroundColor: white
+    },
+    // Header Styles
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 12
+    },
+    headerControls: {
+        flexDirection: 'row',
+        gap: 8
+    },
+    headerControlsRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8
+    },
+    iconButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: COLOR_FUTURE,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    iconText: {
+        fontSize: 16,
+        color: COLOR_TEXT_MAIN,
+        fontWeight: '500'
+    },
+    headerTitleContainer: {
+        alignItems: 'center'
+    },
+    headerTitle: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: COLOR_TEXT_MAIN
+    },
+    headerSubtitle: {
+        fontSize: 11,
+        color: COLOR_TEXT_MUTED,
+        marginTop: 2
+    },
+    todayButton: {
+        backgroundColor: blue,
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        borderRadius: 20
+    },
+    todayButtonText: {
+        color: white,
+        fontSize: 12,
+        fontWeight: '600'
+    },
+    // Main Content
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 40
+    },
+    // Summary Card Styles
+    summaryCard: {
+        backgroundColor: white,
+        borderRadius: 16,
+        padding: 24,
+        marginBottom: 32,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.04,
+        shadowRadius: 16,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: COLOR_FUTURE
+    },
+    summaryStatsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 16
+    },
+    summaryStat: {
+        alignItems: 'center'
+    },
+    statTitle: {
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 6
+    },
+    statValue: {
+        fontSize: 14,
+        fontWeight: '700'
+    },
+    summaryProgressContainer: {
+        width: '100%',
+        marginTop: 4
+    },
+    summaryBarTrack: {
+        height: 2,
+        backgroundColor: COLOR_FUTURE,
+        width: '100%',
+        marginBottom: 10
+    },
+    summaryBarFill: {
+        height: '100%'
+    },
+    summaryLabelsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    summaryDateLabel: {
+        fontSize: 10,
+        color: COLOR_TEXT_MUTED,
+        fontWeight: '500'
+    },
+    // Month Grid Styles
+    monthGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between'
+    },
+    monthCard: {
+        width: '46%',
+        marginBottom: 36
+    },
+    monthName: {
+        fontSize: 18,
+        fontWeight: '800',
+        color: COLOR_TEXT_MAIN,
+        marginBottom: 14
+    },
+    // Dot Grid System
+    dotGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 1.5, // Reduced gap significantly to pull dots closer
+        marginBottom: 14
+    },
+    dotContainer: {
+        width: HALO_SIZE,
+        height: HALO_SIZE,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    dot: {
+        width: DOT_SIZE,
+        height: DOT_SIZE,
+        borderRadius: DOT_SIZE / 2,
+        zIndex: 2
+    },
+    halo: {
+        position: 'absolute',
+        width: HALO_SIZE,
+        height: HALO_SIZE,
+        borderRadius: HALO_SIZE / 2,
+        zIndex: 1
+    },
+    // Month Progress Bar
+    monthProgressRow: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    monthProgressBar: {
+        flex: 1,
+        height: 2,
+        backgroundColor: COLOR_FUTURE,
+        borderRadius: 1
+    },
+    monthProgressFill: {
+        height: '100%',
+        borderRadius: 1
+    },
+    monthProgressText: {
+        fontSize: 9,
+        color: COLOR_TEXT_MUTED,
+        fontWeight: '600',
+        marginLeft: 8,
+        width: 22
+    },
+    // Footer
+    bottomTabContainer: {
+        justifyContent: 'flex-end',
+        borderTopWidth: 1,
+        borderTopColor: COLOR_FUTURE,
+        backgroundColor: white
+    },
 });

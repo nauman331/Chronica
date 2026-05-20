@@ -7,6 +7,8 @@ import LifeMap from '../pages/LifeMap'
 import Insights from '../pages/Insights'
 import MonthViewScreen from '../pages/MonthViewScreen'
 import YearViewScreen from '../pages/YearViewScreen'
+import DayDetailScreen from '../pages/DayDetailScreen'
+import DocumentDayScreen from '../pages/DocumentDayScreen'
 
 
 type AuthStackParamList = {
@@ -17,6 +19,8 @@ type AuthStackParamList = {
     Insights: undefined
     YearView: undefined
     MonthView: undefined
+    DayDetail: undefined
+    DocumentDay: undefined
 }
 
 const Stack = createStackNavigator<AuthStackParamList>()
@@ -27,6 +31,7 @@ const AuthNav: React.FC = () => {
             initialRouteName="EnhanceCrown"
             screenOptions={{ headerShown: false }}
         >
+            <Stack.Screen name="DayDetail" component={DayDetailScreen} />
             <Stack.Screen name="YearView" component={YearViewScreen} />
             <Stack.Screen name="MonthView" component={MonthViewScreen} />
             <Stack.Screen name="EnhanceCrown" component={EnhanceCrown} />
@@ -34,6 +39,7 @@ const AuthNav: React.FC = () => {
             <Stack.Screen name="Profile" component={Profile} />
             <Stack.Screen name="LifeMap" component={LifeMap} />
             <Stack.Screen name="Insights" component={Insights} />
+            <Stack.Screen name="DocumentDay" component={DocumentDayScreen} />
         </Stack.Navigator>
     )
 }

@@ -8,3 +8,6 @@ export const COLOR_UNDOCUMENTED = '#7B8089';
 export const COLOR_DOCUMENTED = '#88C0FA';
 export const COLOR_CROWNED = '#C8A43C';
 export const COLOR_TEXT_MUTED = '#B4B4B4';
+export const COLOR_PAST = '#7A818C';
+export const COLOR_FUTURE = '#EBEBEB';
+export const COLOR_TEXT_MAIN = '#111111';
