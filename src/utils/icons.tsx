@@ -1,4 +1,5 @@
 import Svg, { Path, Circle, Rect, Polyline, Line } from 'react-native-svg';
+import { lightBlue, lightGreen } from './colors';
 
 export const MapIcon = ({ color }: { color: string }) => (
     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -49,5 +50,33 @@ export const BadgeIcon = ({ color = "#FFFFFF" }: { color?: string }) => (
 
         {/* The straight bottom base line */}
         <Path d="M4 20 H20" />
+    </Svg>
+);
+
+
+// --- SVG Icons ---
+export const BellIcon = () => (
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={lightBlue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <Path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </Svg>
+);
+
+export const SparkIcon = ({ color }: { color: string }) => (
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill={color}>
+        <Path d="M12 2C12 7.5 16.5 12 22 12C16.5 12 12 16.5 12 22C12 16.5 7.5 12 2 12C7.5 12 12 7.5 12 2Z" />
+    </Svg>
+);
+
+export const ReflectionIcon = () => (
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={lightBlue} strokeWidth="2.5">
+        <Circle cx="12" cy="12" r="8" />
+    </Svg>
+);
+
+export const ArrowUpIcon = () => (
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={lightGreen} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <Line x1="12" y1="19" x2="12" y2="5" />
+        <Polyline points="5 12 12 5 19 12" />
     </Svg>
 );
