@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Pressable, ScrollView, Dimensions } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 import BottomTabBar from '../components/BottomTabBar';
 import {
     white,
@@ -12,48 +11,19 @@ import {
     COLOR_FUTURE,
     COLOR_TEXT_MAIN
 } from '../utils/colors';
-
-// --- Custom SVGs for Pixel-Perfect Header Icons ---
-const ArrowLeftIcon = ({ color }: { color: string }) => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-
-const ChevronLeftIcon = ({ color }: { color: string }) => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <Path d="M15 18l-6-6 6-6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-
-const ChevronRightIcon = ({ color }: { color: string }) => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <Path d="M9 18l6-6-6-6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-
-const SolidSparkleIcon = ({ color }: { color: string }) => (
-    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-        <Path d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z" fill={color} />
-    </Svg>
-);
-// -------------------------------------------------
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SolidSparkleIcon } from '../utils/icons';
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const { width } = Dimensions.get('window');
 
 const MonthViewScreen = ({ navigation, route }: any) => {
     const { year = 2026, month = 'April' } = route.params || {};
 
     const calendarDays = useMemo(() => {
         const days = [];
-        // April 2026 starts on Wednesday (3 empty offset slots)
         for (let i = 0; i < 3; i++) days.push(null);
 
         for (let i = 1; i <= 31; i++) {
-            let state = 'past'; // Default to dark gray
-
-            // Replicating the exact pattern from your screenshot
+            let state = 'past';
             const documentedDays = [3, 4, 5, 7, 13, 14, 17, 20, 22, 25, 28];
             if (documentedDays.includes(i)) {
                 state = 'documented';
@@ -133,17 +103,14 @@ const MonthViewScreen = ({ navigation, route }: any) => {
                                     <Pressable
                                         style={[styles.dayCell, { backgroundColor: bgColor }]}
                                         onPress={() => {
-                                            // Determine correct status text
                                             let statusText = 'Not documented';
                                             if (item.state === 'documented') statusText = 'Documented';
                                             if (item.state === 'crowned') statusText = 'Crowned';
-
-                                            // Navigate and pass data to DayDetailScreen
                                             navigation.navigate('DayDetail', {
                                                 day: item.day,
                                                 month: month,
                                                 year: year,
-                                                dayOfWeek: 'Monday', // Note: Can replace with dynamic calculation later
+                                                dayOfWeek: 'Monday',
                                                 status: statusText
                                             });
                                         }}

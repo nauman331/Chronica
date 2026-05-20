@@ -13,29 +13,7 @@ import {
     COLOR_TEXT_MAIN
 } from '../utils/colors';
 
-const ArrowLeftIcon = ({ color }: { color: string }) => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-
-const ChevronLeftIcon = ({ color }: { color: string }) => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <Path d="M15 18l-6-6 6-6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-
-const ChevronRightIcon = ({ color }: { color: string }) => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <Path d="M9 18l6-6-6-6" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
-
-const SolidSparkleIcon = ({ color }: { color: string }) => (
-    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-        <Path d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z" fill={color} />
-    </Svg>
-);
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SolidSparkleIcon } from '../utils/icons';
 
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

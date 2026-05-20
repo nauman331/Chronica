@@ -22,12 +22,7 @@ import {
     COLOR_TEXT_MUTED,
     COLOR_FUTURE
 } from '../utils/colors';
-
-const ArrowLeftIcon = ({ color }: { color: string }) => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
-);
+import { ArrowLeftIcon } from '../utils/icons';
 
 const DocumentDayScreen = ({ navigation, route }: any) => {
     const {
