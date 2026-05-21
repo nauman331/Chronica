@@ -13,6 +13,7 @@ import MonthViewScreen from '../pages/MonthViewScreen';
 import YearViewScreen from '../pages/YearViewScreen';
 import DayDetailScreen from '../pages/DayDetailScreen';
 import DocumentDayScreen from '../pages/DocumentDayScreen';
+import SplashScreen from '../pages/SplashScreen';
 
 type UnAuthStackParamList = {
     Screen1: undefined;
@@ -29,6 +30,7 @@ type UnAuthStackParamList = {
     MonthView: undefined;
     DayDetail: undefined;
     DocumentDay: undefined;
+    SplashScreen: undefined;
 };
 
 const Stack = createStackNavigator<UnAuthStackParamList>();
@@ -37,7 +39,7 @@ const Stack = createStackNavigator<UnAuthStackParamList>();
 const UnAuthNav: React.FC = () => {
     return (
         <Stack.Navigator
-            initialRouteName="GetStarted"
+            initialRouteName="SplashScreen"
             screenOptions={{ headerShown: false }}
         >
             <Stack.Screen name="EnhanceCrown" component={withSafeArea(EnhanceCrown)} />
@@ -52,6 +54,7 @@ const UnAuthNav: React.FC = () => {
 
             <Stack.Screen name="GetStarted" component={withSafeArea(GetStarted)} />
             <Stack.Screen name="Onboarding" component={withSafeArea(Onboarding)} />
+            <Stack.Screen name="SplashScreen" component={withSafeArea(SplashScreen)} />
         </Stack.Navigator>
     );
 };

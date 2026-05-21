@@ -169,21 +169,14 @@ const styles = StyleSheet.create({
     },
 
     card: {
-        backgroundColor: white,
+        backgroundColor: "#fff",
         borderRadius: 24,
         paddingVertical: 40,
         paddingHorizontal: 20,
         alignItems: 'center',
         marginBottom: 16,
-        // iOS Shadow
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.06,
-        shadowRadius: 20,
-        // Android Elevation
-        elevation: 4,
         borderWidth: 1,
-        borderColor: '#F8F8F8'
+        borderColor: "#ddd"
     },
     iconWrapper: {
         marginBottom: 20

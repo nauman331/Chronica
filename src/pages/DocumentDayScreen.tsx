@@ -176,13 +176,14 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     header: {
+        backgroundColor: "#fff",
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#F8F8F8'
+        borderBottomColor: '#ddd'
     },
     headerLeft: {
         flexDirection: 'row',
@@ -190,6 +191,7 @@ const styles = StyleSheet.create({
         gap: 12
     },
     backButton: {
+        backgroundColor: white,
         width: 36,
         height: 36,
         borderRadius: 18,
@@ -227,7 +229,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         paddingHorizontal: 20,
         paddingTop: 24,
-        paddingBottom: 60, // Increased padding to ensure the bottom can scroll up past the keyboard
+        paddingBottom: 60,
     },
     titleSection: {
         marginBottom: 24
@@ -266,19 +268,14 @@ const styles = StyleSheet.create({
     },
     textInput: {
         height: 85,
-        backgroundColor: white,
+        backgroundColor: "#fff",
         borderWidth: 1,
-        borderColor: '#EAEAEA',
+        borderColor: '#ddd',
         borderRadius: 16,
         padding: 16,
         paddingTop: 16,
         fontSize: 15,
         color: COLOR_TEXT_MAIN,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 8,
-        elevation: 1,
     },
 
     buttonRow: {
