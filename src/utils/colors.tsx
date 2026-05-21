@@ -11,3 +11,4 @@ export const COLOR_TEXT_MUTED = '#B4B4B4';
 export const COLOR_PAST = '#7A818C';
 export const COLOR_FUTURE = '#EBEBEB';
 export const COLOR_TEXT_MAIN = '#111111';
+export const lightyellow = '#FEF9EC'

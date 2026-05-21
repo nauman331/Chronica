@@ -99,8 +99,28 @@ export const ChevronRightIcon = ({ color }: { color: string }) => (
     </Svg>
 );
 
-export const SolidSparkleIcon = ({ color }: { color: string }) => (
-    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+export const SolidSparkleIcon = ({ color, size = 24 }: { color: string, size: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Path d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z" fill={color} />
     </Svg>
 );
+
+export const ShareIcon = ({ color = '#C9A227', size = 18 }) => {
+    return (
+        <Svg
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <Circle cx="18" cy="5" r="3" />
+            <Circle cx="6" cy="12" r="3" />
+            <Circle cx="18" cy="19" r="3" />
+            <Path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
+        </Svg>
+    );
+};
