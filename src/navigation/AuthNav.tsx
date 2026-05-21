@@ -35,7 +35,7 @@ const AuthNav: React.FC = () => {
     return (
         <Stack.Navigator
             initialRouteName="EnhanceCrown"
-            screenOptions={{ headerShown: false }}
+            screenOptions={{ headerShown: false, animation: 'fade' }}
         >
             <Stack.Screen name="DayDetail" component={DayDetailScreen} />
             <Stack.Screen name="YearView" component={YearViewScreen} />

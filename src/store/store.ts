@@ -1,16 +1,19 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from "redux-persist";
 import authReducer from "./slices/authSlice";
-import themeReducer from "./slices/ThemeSlice"
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import themeReducer from "./slices/ThemeSlice";
+
+import { secureStorage } from "./secureStorage";
+import { mmkvStorage } from "./mmkvStorage";
 
 const persistedAuthConfig = {
     key: "auth",
-    storage: AsyncStorage,
+    storage: secureStorage,
 };
+
 const persistedThemeConfig = {
     key: "theme",
-    storage: AsyncStorage,
+    storage: mmkvStorage,
 };
 
 const persistedAuthReducer = persistReducer(persistedAuthConfig, authReducer);

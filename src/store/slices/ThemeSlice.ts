@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface AuthState {
+interface ThemeState {
     theme: "dark" | "light";
 }
 
-const initialState: AuthState = {
+const initialState: ThemeState = {
     theme: "light",
 };
 
@@ -16,7 +16,7 @@ const themeSlice = createSlice({
             state.theme = action.payload;
         }
     }
-})
+});
 
 export const { setTheme } = themeSlice.actions;
 export default themeSlice.reducer;
