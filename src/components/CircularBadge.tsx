@@ -1,7 +1,8 @@
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, StyleSheet as RNStyleSheet } from 'react-native';
 import DropShadow from 'react-native-drop-shadow';
+import React from 'react';
+import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
 
-import React from 'react'
 import { white, yellow } from '../utils/colors';
 
 type BadgeIconProps = {
@@ -47,15 +48,30 @@ const CircularBadge = ({
     return (
         <DropShadow style={[styles.outerGlow, { shadowColor, shadowOpacity, shadowRadius, width: outerSize, height: outerSize, borderRadius: outerRadius, marginBottom }]}>
             <DropShadow style={[styles.innerGlow, { shadowColor, shadowOpacity: innerShadowOpacity, shadowRadius: innerShadowRadius, width: innerSize, height: innerSize, borderRadius: innerRadius }]}>
+
                 <View style={[styles.iconCircle, { backgroundColor: badgeColor, width: iconCircleSize, height: iconCircleSize, borderRadius: iconCircleRadius }]}>
+
+                    {/* The 3D Top-Left White Shine Overlay (Now much more subtle) */}
+                    <Svg height="100%" width="100%" style={RNStyleSheet.absoluteFill}>
+                        <Defs>
+                            <RadialGradient id="shine" cx="25%" cy="25%" r="55%">
+                                {/* Changed opacity from 0.45 to 0.15 for a very faint glow */}
+                                <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.30" />
+                                <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+                            </RadialGradient>
+                        </Defs>
+                        <Circle cx="50%" cy="50%" r="50%" fill="url(#shine)" />
+                    </Svg>
+
                     <Icon color={iconColor} size={iconSize} />
                 </View>
+
             </DropShadow>
         </DropShadow>
-    )
-}
+    );
+};
 
-export default CircularBadge
+export default CircularBadge;
 
 const styles = StyleSheet.create({
     outerGlow: {
@@ -83,6 +99,6 @@ const styles = StyleSheet.create({
         backgroundColor: yellow,
         alignItems: 'center',
         justifyContent: 'center',
-        overflow: 'visible',
+        overflow: 'hidden',
     },
-})
+});

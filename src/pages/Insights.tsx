@@ -11,7 +11,7 @@ import { white, yellow, blue, gray, COLOR_TEXT_MAIN, lightyellow } from '../util
 
 import { ShareIcon, SolidSparkleIcon } from '../utils/icons';
 
-const Insights = () => {
+const Insights = ({ navigation }: any) => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
@@ -45,7 +45,11 @@ const Insights = () => {
                             2 rituals this week.{'\n'}That's progress worth celebrating.
                         </Text>
 
-                        <TouchableOpacity style={styles.writeButton} activeOpacity={0.7}>
+                        <TouchableOpacity
+                            style={styles.writeButton}
+                            activeOpacity={0.7}
+                            onPress={() => navigation.navigate('WriteReflection')}
+                        >
                             <Text style={styles.writeButtonText}>Write Reflection</Text>
                         </TouchableOpacity>
 

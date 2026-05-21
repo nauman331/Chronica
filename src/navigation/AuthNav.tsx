@@ -9,6 +9,9 @@ import MonthViewScreen from '../pages/MonthViewScreen'
 import YearViewScreen from '../pages/YearViewScreen'
 import DayDetailScreen from '../pages/DayDetailScreen'
 import DocumentDayScreen from '../pages/DocumentDayScreen'
+import WriteReflection from '../pages/WriteReflection'
+import WhatDidYouLearn from '../pages/WhatDidYouLearn';
+import ReflectionSaved from '../pages/ReflectionSaved'
 
 
 type AuthStackParamList = {
@@ -21,6 +24,9 @@ type AuthStackParamList = {
     MonthView: undefined
     DayDetail: undefined
     DocumentDay: undefined
+    WriteReflection: undefined
+    WhatDidYouLearn: undefined
+    ReflectionSaved: undefined
 }
 
 const Stack = createStackNavigator<AuthStackParamList>()
@@ -39,6 +45,9 @@ const AuthNav: React.FC = () => {
             <Stack.Screen name="Profile" component={Profile} />
             <Stack.Screen name="LifeMap" component={LifeMap} />
             <Stack.Screen name="Insights" component={Insights} />
+            <Stack.Screen name="WriteReflection" component={WriteReflection} />
+            <Stack.Screen name="WhatDidYouLearn" component={WhatDidYouLearn} />
+            <Stack.Screen name="ReflectionSaved" component={ReflectionSaved} />
             <Stack.Screen name="DocumentDay" component={DocumentDayScreen} />
         </Stack.Navigator>
     )
