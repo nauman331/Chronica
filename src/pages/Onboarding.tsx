@@ -55,7 +55,7 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
                     <Screen2 birthDate={birthDate} onNext={goToNext} onSkip={skipOnboarding} />
                 </View>
                 <View style={{ width }}>
-                    <Screen3 />
+                    <Screen3 onNext={goToNext} onSkip={skipOnboarding} />
                 </View>
             </ScrollView>
         </View>

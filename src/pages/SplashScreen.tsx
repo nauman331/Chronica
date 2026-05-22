@@ -1,12 +1,18 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { yellow, white } from '../utils/colors';
+import { useSelector } from "react-redux";
 
 const SplashScreen: React.FC<any> = ({ navigation }) => {
+    const token = useSelector((state: any) => state.auth.token)
     useEffect(() => {
         const timer = setTimeout(() => {
-            navigation.replace('GetStarted');
-        }, 2500);
+            if (token) {
+                navigation.replace('EnhanceCrown');
+            } else {
+                navigation.replace('GetStarted');
+            }
+        }, 1000);
 
         return () => clearTimeout(timer);
     }, [navigation]);

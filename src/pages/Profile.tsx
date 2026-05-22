@@ -6,10 +6,12 @@ import {
     View,
     ScrollView,
     TouchableOpacity,
+    Pressable,
 } from 'react-native';
 import BottomTabBar from '../components/BottomTabBar';
 import LinearGradient from 'react-native-linear-gradient';
-
+import { useDispatch } from 'react-redux';
+import { logout } from '../store/slices/authSlice';
 import {
     UserIcon,
     CalendarIcon,
@@ -33,6 +35,12 @@ import {
 } from '../utils/colors';
 
 const Profile = ({ navigation }: any) => {
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        dispatch(logout());
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView
@@ -176,9 +184,9 @@ const Profile = ({ navigation }: any) => {
                         <View style={[styles.listIconCircle, { backgroundColor: '#FFF1F1' }]}>
                             <SignOutIcon />
                         </View>
-                        <View style={styles.listContent}>
+                        <Pressable style={styles.listContent} onPress={handleLogout}>
                             <Text style={[styles.listTitle, { color: '#E53935' }]}>Sign out</Text>
-                        </View>
+                        </Pressable>
                     </TouchableOpacity>
                 </View>
 

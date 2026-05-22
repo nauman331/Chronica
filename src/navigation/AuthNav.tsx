@@ -12,6 +12,8 @@ import DocumentDayScreen from '../pages/DocumentDayScreen'
 import WriteReflection from '../pages/WriteReflection'
 import WhatDidYouLearn from '../pages/WhatDidYouLearn';
 import ReflectionSaved from '../pages/ReflectionSaved'
+import SplashScreen from '../pages/SplashScreen'
+import { withSafeArea } from '../components/SafeArea'
 
 
 type AuthStackParamList = {
@@ -27,6 +29,7 @@ type AuthStackParamList = {
     WriteReflection: undefined
     WhatDidYouLearn: undefined
     ReflectionSaved: undefined
+    SplashScreen: undefined
 }
 
 const Stack = createStackNavigator<AuthStackParamList>()
@@ -34,21 +37,22 @@ const Stack = createStackNavigator<AuthStackParamList>()
 const AuthNav: React.FC = () => {
     return (
         <Stack.Navigator
-            initialRouteName="EnhanceCrown"
-            screenOptions={{ headerShown: false, animation: 'fade' }}
+            initialRouteName="SplashScreen"
+            screenOptions={{ headerShown: false, animation: 'slide_from_bottom' }}
         >
-            <Stack.Screen name="DayDetail" component={DayDetailScreen} />
-            <Stack.Screen name="YearView" component={YearViewScreen} />
-            <Stack.Screen name="MonthView" component={MonthViewScreen} />
-            <Stack.Screen name="EnhanceCrown" component={EnhanceCrown} />
-            <Stack.Screen name="EnhanceCrownEmotion" component={EnhanceCrownEmotion} />
-            <Stack.Screen name="Profile" component={Profile} />
-            <Stack.Screen name="LifeMap" component={LifeMap} />
-            <Stack.Screen name="Insights" component={Insights} />
-            <Stack.Screen name="WriteReflection" component={WriteReflection} />
-            <Stack.Screen name="WhatDidYouLearn" component={WhatDidYouLearn} />
-            <Stack.Screen name="ReflectionSaved" component={ReflectionSaved} />
-            <Stack.Screen name="DocumentDay" component={DocumentDayScreen} />
+            <Stack.Screen name="SplashScreen" component={withSafeArea(SplashScreen)} />
+            <Stack.Screen name="EnhanceCrown" component={withSafeArea(EnhanceCrown)} />
+            <Stack.Screen name="EnhanceCrownEmotion" component={withSafeArea(EnhanceCrownEmotion)} />
+            <Stack.Screen name="Profile" component={withSafeArea(Profile)} />
+            <Stack.Screen name="LifeMap" component={withSafeArea(LifeMap)} />
+            <Stack.Screen name="Insights" component={withSafeArea(Insights)} />
+            <Stack.Screen name="YearView" component={withSafeArea(YearViewScreen)} />
+            <Stack.Screen name="MonthView" component={withSafeArea(MonthViewScreen)} />
+            <Stack.Screen name="DayDetail" component={withSafeArea(DayDetailScreen)} />
+            <Stack.Screen name="DocumentDay" component={withSafeArea(DocumentDayScreen)} />
+            <Stack.Screen name="WriteReflection" component={withSafeArea(WriteReflection)} />
+            <Stack.Screen name="WhatDidYouLearn" component={withSafeArea(WhatDidYouLearn)} />
+            <Stack.Screen name="ReflectionSaved" component={withSafeArea(ReflectionSaved)} />
         </Stack.Navigator>
     )
 }
