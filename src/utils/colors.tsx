@@ -12,3 +12,5 @@ export const COLOR_PAST = '#7A818C';
 export const COLOR_FUTURE = '#EBEBEB';
 export const COLOR_TEXT_MAIN = '#111111';
 export const lightyellow = '#FEF9EC'
+export const lightPurple = '#2D1B4E';
+export const darkPurple = '#1A1523';

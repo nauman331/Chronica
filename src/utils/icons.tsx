@@ -1,4 +1,4 @@
-import Svg, { Path, Circle, Rect, Polyline, Line } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, Polyline, Line, Defs, G, ClipPath } from 'react-native-svg';
 import { lightBlue, lightGreen } from './colors';
 
 export const MapIcon = ({ color }: { color: string }) => (
@@ -159,5 +159,76 @@ export const BookHeartIcon = ({ size = 32, color = '#FFFFFF' }) => (
             strokeLinecap="round"
             strokeLinejoin="round"
         />
+    </Svg>
+);
+
+
+export const HourglassIcon = ({ color = "#10B981", size = 20 }) => (
+    <Svg width={size} height={size} viewBox="10.5 10.5 15 15" fill="none">
+        <Path
+            d="M13.6108 24.2386H22.3563"
+            stroke={color}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+        <Path
+            d="M13.6108 11.7464H22.3563"
+            stroke={color}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+        <Path
+            d="M21.1069 24.2392V21.6331C21.1068 21.3018 20.9751 20.9841 20.7408 20.7498L17.9835 17.9925L15.2262 20.7498C14.9919 20.9841 14.8602 21.3018 14.8601 21.6331V24.2392"
+            stroke={color}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+        <Path
+            d="M14.8599 11.7464V14.3525C14.8599 14.6839 14.9916 15.0016 15.2259 15.2358L17.9832 17.9931L20.7406 15.2358C20.9749 15.0016 21.1065 14.6839 21.1066 14.3525V11.7464"
+            stroke={color}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    </Svg>
+);
+
+export const SubscriptionIcon = ({ color = "#8E8E93" }) => (
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+        <Line x1="2" y1="10" x2="22" y2="10" />
+    </Svg>
+);
+
+export const WidgetsIcon = ({ color = "#8E8E93" }) => (
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Rect x="3" y="3" width="7" height="7" rx="1" />
+        <Rect x="14" y="3" width="7" height="7" rx="1" />
+        <Rect x="14" y="14" width="7" height="7" rx="1" />
+        <Rect x="3" y="14" width="7" height="7" rx="1" />
+    </Svg>
+);
+
+export const SettingsIcon = ({ color = "#8E8E93" }) => (
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Circle cx="12" cy="12" r="3" />
+        <Path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </Svg>
+);
+
+export const SignOutIcon = ({ color = "#E53935" }) => (
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <Polyline points="16 17 21 12 16 7" />
+        <Line x1="21" y1="12" x2="9" y2="12" />
+    </Svg>
+);
+
+export const SparkleSmallIcon = ({ color = "#FFFFFF" }) => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z" />
     </Svg>
 );
