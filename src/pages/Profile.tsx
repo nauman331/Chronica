@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -6,12 +6,13 @@ import {
     View,
     ScrollView,
     TouchableOpacity,
-    Pressable,
 } from 'react-native';
 import BottomTabBar from '../components/BottomTabBar';
 import LinearGradient from 'react-native-linear-gradient';
 import { useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
+import LogoutModal from '../components/LogoutModal'; // <-- Import the new modal
+
 import {
     UserIcon,
     CalendarIcon,
@@ -36,10 +37,12 @@ import {
 
 const Profile = ({ navigation }: any) => {
     const dispatch = useDispatch();
+    const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
 
-    const handleLogout = () => {
+    const handleConfirmLogout = () => {
+        setIsLogoutModalVisible(false);
         dispatch(logout());
-    }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -47,7 +50,7 @@ const Profile = ({ navigation }: any) => {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
-
+                {/* --- Header --- */}
                 <View style={styles.headerContainer}>
                     <View style={styles.avatarWrapper}>
                         <LinearGradient
@@ -68,7 +71,6 @@ const Profile = ({ navigation }: any) => {
 
                 {/* --- Life Progress Card --- */}
                 <View style={styles.progressCardContainer}>
-                    {/* The Gradient acts ONLY as an absolute background layer */}
                     <LinearGradient
                         colors={[darkPurple, lightPurple]}
                         start={{ x: 0, y: 0 }}
@@ -76,7 +78,6 @@ const Profile = ({ navigation }: any) => {
                         style={StyleSheet.absoluteFill}
                     />
 
-                    {/* The content sits normally inside with perfect padding */}
                     <View style={styles.progressCardContent}>
                         <View style={styles.progressHeader}>
                             <Text style={styles.progressLabelText}>Life Progress</Text>
@@ -87,7 +88,6 @@ const Profile = ({ navigation }: any) => {
                             <Text style={styles.progressTotal}>of 80 years</Text>
                         </View>
 
-                        {/* Progress Bar Track */}
                         <View style={styles.progressBarTrack}>
                             <View style={[styles.progressBarFill, { width: '40.4%' }]} />
                         </View>
@@ -169,7 +169,11 @@ const Profile = ({ navigation }: any) => {
                         <ChevronRightIcon color="#C7C7CC" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.listItem, styles.borderBottom]} activeOpacity={0.7}>
+                    <TouchableOpacity
+                        style={[styles.listItem, styles.borderBottom]}
+                        activeOpacity={0.7}
+                        onPress={() => navigation.navigate("Settings")}
+                    >
                         <View style={[styles.listIconCircle, { backgroundColor: '#F3F0EC' }]}>
                             <SettingsIcon />
                         </View>
@@ -180,21 +184,31 @@ const Profile = ({ navigation }: any) => {
                         <ChevronRightIcon color="#C7C7CC" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.listItem} activeOpacity={0.7}>
+                    <TouchableOpacity
+                        style={styles.listItem}
+                        activeOpacity={0.7}
+                        onPress={() => setIsLogoutModalVisible(true)}
+                    >
                         <View style={[styles.listIconCircle, { backgroundColor: '#FFF1F1' }]}>
                             <SignOutIcon />
                         </View>
-                        <Pressable style={styles.listContent} onPress={handleLogout}>
+                        <View style={styles.listContent}>
                             <Text style={[styles.listTitle, { color: '#E53935' }]}>Sign out</Text>
-                        </Pressable>
+                        </View>
                     </TouchableOpacity>
                 </View>
-
             </ScrollView>
 
             <View style={styles.bottomTabContainer}>
                 <BottomTabBar activeTab="profile" />
             </View>
+
+            {/* --- Reusable Modal --- */}
+            <LogoutModal
+                visible={isLogoutModalVisible}
+                onClose={() => setIsLogoutModalVisible(false)}
+                onConfirm={handleConfirmLogout}
+            />
         </SafeAreaView>
     );
 };
@@ -211,7 +225,6 @@ const styles = StyleSheet.create({
         paddingTop: 24,
         paddingBottom: 40,
     },
-
     headerContainer: {
         alignItems: 'center',
         marginBottom: 24,
@@ -254,7 +267,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: gray,
     },
-
     progressCardContainer: {
         borderRadius: 24,
         marginBottom: 16,
@@ -305,7 +317,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
-
     statsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -381,8 +392,6 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: gray,
     },
-
-    // --- Nav ---
     bottomTabContainer: {
         justifyContent: 'flex-end',
         borderTopWidth: 1,

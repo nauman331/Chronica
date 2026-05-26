@@ -1,5 +1,7 @@
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
+import SplashScreen from '../pages/SplashScreen'
+import { withSafeArea } from '../components/SafeArea'
 import EnhanceCrown from '../pages/EnhanceCrown'
 import EnhanceCrownEmotion from '../pages/EnhanceCrownEmotion'
 import Profile from '../pages/Profile'
@@ -12,8 +14,8 @@ import DocumentDayScreen from '../pages/DocumentDayScreen'
 import WriteReflection from '../pages/WriteReflection'
 import WhatDidYouLearn from '../pages/WhatDidYouLearn';
 import ReflectionSaved from '../pages/ReflectionSaved'
-import SplashScreen from '../pages/SplashScreen'
-import { withSafeArea } from '../components/SafeArea'
+import Settings from '../pages/Settings'
+
 
 
 type AuthStackParamList = {
@@ -30,6 +32,7 @@ type AuthStackParamList = {
     WhatDidYouLearn: undefined
     ReflectionSaved: undefined
     SplashScreen: undefined
+    Settings: undefined
 }
 
 const Stack = createStackNavigator<AuthStackParamList>()
@@ -53,6 +56,7 @@ const AuthNav: React.FC = () => {
             <Stack.Screen name="WriteReflection" component={withSafeArea(WriteReflection)} />
             <Stack.Screen name="WhatDidYouLearn" component={withSafeArea(WhatDidYouLearn)} />
             <Stack.Screen name="ReflectionSaved" component={withSafeArea(ReflectionSaved)} />
+            <Stack.Screen name="Settings" component={withSafeArea(Settings)} />
         </Stack.Navigator>
     )
 }
