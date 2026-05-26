@@ -65,7 +65,11 @@ const Insights = ({ navigation }: any) => {
                         <Text style={[styles.headerSubtitle, dynamicStyles.headerSubtitle]}>Your Progress</Text>
                         <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>Insights</Text>
                     </View>
-                    <TouchableOpacity style={[styles.shareButton, dynamicStyles.shareButton]} activeOpacity={0.7}>
+                    <TouchableOpacity
+                        style={[styles.shareButton, dynamicStyles.shareButton]}
+                        activeOpacity={0.7}
+                        onPress={() => navigation.navigate('ShareProgress')}
+                    >
                         <View style={styles.iconWrapper}>
                             <ShareIcon color={yellow} size={14} />
                         </View>

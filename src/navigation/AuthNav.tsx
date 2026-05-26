@@ -18,6 +18,7 @@ import Settings from '../pages/Settings'
 import SubscriptionScreen from '../pages/SubscriptionScreen'
 import WidgetsScreen from '../pages/WidgetsScreen'
 import Notifications from '../pages/Notifications'
+import ShareProgress from '../pages/ShareProgress'
 
 
 type AuthStackParamList = {
@@ -38,6 +39,7 @@ type AuthStackParamList = {
     SubscriptionScreen: undefined
     WidgetsScreen: undefined
     Notifications: undefined
+    ShareProgress: undefined
 }
 
 const Stack = createStackNavigator<AuthStackParamList>()
@@ -65,6 +67,7 @@ const AuthNav: React.FC = () => {
             <Stack.Screen name="SubscriptionScreen" component={withSafeArea(SubscriptionScreen)} />
             <Stack.Screen name="WidgetsScreen" component={withSafeArea(WidgetsScreen)} />
             <Stack.Screen name="Notifications" component={withSafeArea(Notifications)} />
+            <Stack.Screen name="ShareProgress" component={withSafeArea(ShareProgress)} />
         </Stack.Navigator>
     )
 }

@@ -3,16 +3,16 @@ import { StyleSheet } from 'react-native';
 import Svg, { Path, Circle, Rect, Polyline, Line, Defs, G, ClipPath, Pattern } from 'react-native-svg';
 import { lightBlue, lightGreen, yellow } from './colors';
 
-export const MapIcon = ({ color }: { color: string }) => (
-    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+export const MapIcon = ({ color, size = 24 }: { color: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Polyline points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6" />
         <Line x1="9" y1="3" x2="9" y2="18" />
         <Line x1="15" y1="6" x2="15" y2="21" />
     </Svg>
 );
 
-export const CalendarIcon = ({ color }: { color: string }) => (
-    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+export const CalendarIcon = ({ color, size = 24 }: { color: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
         <Line x1="16" y1="2" x2="16" y2="6" />
         <Line x1="8" y1="2" x2="8" y2="6" />
@@ -20,12 +20,19 @@ export const CalendarIcon = ({ color }: { color: string }) => (
     </Svg>
 );
 
+export const WeeklyCircleIcon = ({ color = '#8E8E93', size = 16 }: { color?: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Circle cx="12" cy="12" r="8.5" />
+        <Circle cx="12" cy="12" r="4.25" />
+    </Svg>
+);
+
 export const ChartIcon = ({ color }: { color: string }) => (
-    <Svg width="24" height="24" viewBox="2 2 21 21" fill="none">
-        <Path
-            d="M15.5 7.75C15.0858 7.75 14.75 8.08579 14.75 8.5C14.75 8.91421 15.0858 9.25 15.5 9.25V7.75ZM19.5 9.25C19.9142 9.25 20.25 8.91421 20.25 8.5C20.25 8.08579 19.9142 7.75 19.5 7.75V9.25ZM20.25 8.5C20.25 8.08579 19.9142 7.75 19.5 7.75C19.0858 7.75 18.75 8.08579 18.75 8.5H20.25ZM18.75 12.5C18.75 12.9142 19.0858 13.25 19.5 13.25C19.9142 13.25 20.25 12.9142 20.25 12.5H18.75ZM20.0303 9.03033C20.3232 8.73744 20.3232 8.26256 20.0303 7.96967C19.7374 7.67678 19.2626 7.67678 18.9697 7.96967L20.0303 9.03033ZM12.5 15.5L11.9697 16.0303C12.2626 16.3232 12.7374 16.3232 13.0303 16.0303L12.5 15.5ZM9.5 12.5L10.0303 11.9697C9.73744 11.6768 9.26256 11.6768 8.96967 11.9697L9.5 12.5ZM4.96967 15.9697C4.67678 16.2626 4.67678 16.7374 4.96967 17.0303C5.26256 17.3232 5.73744 17.3232 6.03033 17.0303L4.96967 15.9697ZM15.5 9.25H19.5V7.75H15.5V9.25ZM18.75 8.5V12.5H20.25V8.5H18.75ZM18.9697 7.96967L11.9697 14.9697L13.0303 16.0303L20.0303 9.03033L18.9697 7.96967ZM13.0303 14.9697L10.0303 11.9697L8.96967 13.0303L11.9697 16.0303L13.0303 14.9697ZM8.96967 11.9697L4.96967 15.9697L6.03033 17.0303L10.0303 13.0303L8.96967 11.9697Z"
-            fill={color}
-        />
+    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <Path d="M4 18.5V6" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <Path d="M4 18.5H20" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <Path d="M7 14l3.2-3.2 3 2.4L19 8" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        <Path d="M17.8 8H19v1.2" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
 );
 
@@ -53,8 +60,8 @@ export const BadgeIcon = ({ color = "#FFFFFF", size = 54 }: { color?: string, si
     </Svg>
 );
 
-export const MiniCrown = ({ color = yellow }: { color?: string }) => (
-    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+export const MiniCrown = ({ color = yellow, size = 12 }: { color?: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M3 16 L7 6 L12 11.5 L16 3 L21 11 Z" />
         <Path d="M4 20 H20" />
     </Svg>
@@ -67,9 +74,9 @@ export const BellIcon = ({ color = lightBlue }: { color?: string }) => (
     </Svg>
 );
 
-export const SparkIcon = ({ color }: { color: string }) => (
-    <Svg width="20" height="20" viewBox="0 0 24 24" fill={color}>
-        <Path d="M12 2C12 7.5 16.5 12 22 12C16.5 12 12 16.5 12 22C12 16.5 7.5 12 2 12C7.5 12 12 7.5 12 2Z" />
+export const SparkIcon = ({ color = '#8E8E93', size = 16 }: { color?: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z" />
     </Svg>
 );
 
@@ -118,14 +125,15 @@ export const ShareIcon = ({ color = '#C9A227', size = 18 }: { color?: string, si
             viewBox="0 0 24 24"
             fill="none"
             stroke={color}
-            strokeWidth="2.5"
+            strokeWidth="2.2"
             strokeLinecap="round"
             strokeLinejoin="round"
         >
-            <Circle cx="18" cy="5" r="3" />
-            <Circle cx="6" cy="12" r="3" />
-            <Circle cx="18" cy="19" r="3" />
-            <Path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
+            <Circle cx="18" cy="5" r="3" fill={color} />
+            <Circle cx="6" cy="12" r="3" fill={color} />
+            <Circle cx="18" cy="19" r="3" fill={color} />
+            <Path d="M8.59 13.51l6.83 3.98" stroke={color} />
+            <Path d="M15.41 6.51l-6.82 3.98" stroke={color} />
         </Svg>
     );
 };
@@ -205,8 +213,8 @@ export const SubscriptionIcon = ({ color = "#8E8E93" }: { color?: string }) => (
     </Svg>
 );
 
-export const WidgetsIcon = ({ color = "#8E8E93" }: { color?: string }) => (
-    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+export const WidgetsIcon = ({ color = "#8E8E93", size = 20 }: { color?: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Rect x="3" y="3" width="7" height="7" rx="1" />
         <Rect x="14" y="3" width="7" height="7" rx="1" />
         <Rect x="14" y="14" width="7" height="7" rx="1" />
@@ -229,9 +237,26 @@ export const SignOutIcon = ({ color = "#E53935" }: { color?: string }) => (
     </Svg>
 );
 
-export const SparkleSmallIcon = ({ color = "#FFFFFF" }: { color?: string }) => (
-    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+export const SparkleSmallIcon = ({ color = "#FFFFFF", size = 12 }: { color?: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z" />
+    </Svg>
+);
+
+export const CopyIcon = ({ color = '#8E8E93', size = 20 }: { color?: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+        <Rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.2" />
+        <Rect x="3.5" y="3.5" width="11.5" height="11.5" rx="2.2" />
+    </Svg>
+);
+
+export const DownloadIcon = ({ color = '#8E8E93', size = 20 }: { color?: string, size?: number }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M12 4v10" />
+        <Path d="M8.5 10.5L12 14l3.5-3.5" />
+        <Path d="M6 18h12" />
+        <Path d="M6 18v-1.8" />
+        <Path d="M18 18v-1.8" />
     </Svg>
 );
 

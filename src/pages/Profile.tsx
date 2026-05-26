@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     progressLabelText: {
-        color: 'rgba(255, 255, 255, 0.5)', // Keeps contrast against dark gradient
+        color: 'rgba(255, 255, 255, 0.5)',
         fontSize: 12,
         fontWeight: '500',
     },
