@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, SafeAreaView } from 'react-native';
 
 // Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -12,9 +12,7 @@ import Screen3 from './IntroScreens/Screen3';
 const { width } = Dimensions.get('window');
 
 const Onboarding: React.FC<any> = ({ navigation, route }) => {
-    // --- 1. Get dynamic colors ---
     const { colors } = useAppTheme();
-
     const scrollViewRef = useRef<ScrollView>(null);
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -30,7 +28,6 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
         if (activeIndex < 2) {
             scrollViewRef.current?.scrollTo({ x: (activeIndex + 1) * width, animated: true });
         } else {
-            // Reached the end, navigate to main app dashboard
             navigation.navigate('EnhanceCrown');
         }
     };
@@ -39,49 +36,52 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
         navigation.navigate('EnhanceCrown');
     };
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background }
     });
 
     return (
-        <View style={[styles.container, dynamicStyles.container]}>
-            <View style={styles.topSection}>
-                <PaginationDots activeIndex={activeIndex} total={3} />
-            </View>
+        <SafeAreaView style={[styles.safeArea, dynamicStyles.container]}>
+            <View style={styles.container}>
+                <View style={styles.topSection}>
+                    <PaginationDots activeIndex={activeIndex} total={3} />
+                </View>
 
-            <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={handleScroll}
-                bounces={false}
-                style={styles.scrollView}
-            >
-                <View style={{ width }}>
-                    <Screen1 birthDate={birthDate} onNext={goToNext} onSkip={skipOnboarding} />
-                </View>
-                <View style={{ width }}>
-                    <Screen2 birthDate={birthDate} onNext={goToNext} onSkip={skipOnboarding} />
-                </View>
-                <View style={{ width }}>
-                    <Screen3 onNext={goToNext} onSkip={skipOnboarding} />
-                </View>
-            </ScrollView>
-        </View>
+                <ScrollView
+                    ref={scrollViewRef}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onMomentumScrollEnd={handleScroll}
+                    bounces={false}
+                    style={styles.scrollView}
+                >
+                    <View style={{ width }}>
+                        <Screen1 birthDate={birthDate} onNext={goToNext} onSkip={skipOnboarding} />
+                    </View>
+                    <View style={{ width }}>
+                        <Screen2 birthDate={birthDate} onNext={goToNext} onSkip={skipOnboarding} />
+                    </View>
+                    <View style={{ width }}>
+                        <Screen3 onNext={goToNext} onSkip={skipOnboarding} />
+                    </View>
+                </ScrollView>
+            </View>
+        </SafeAreaView>
     );
 };
 
 export default Onboarding;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+    },
     container: {
         flex: 1,
     },
     topSection: {
-        paddingTop: 60,
+        paddingTop: 20,
         alignItems: 'center',
         position: 'absolute',
         top: 0,

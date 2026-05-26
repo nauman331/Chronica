@@ -1,10 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
-
-// Keep brand yellow for the active dot indicator
 import { yellow } from '../utils/colors';
 
 interface PaginationDotsProps {
@@ -13,52 +9,47 @@ interface PaginationDotsProps {
 }
 
 const PaginationDots: React.FC<PaginationDotsProps> = ({ activeIndex = 0, total = 3 }) => {
-    // --- 1. Get dynamic colors ---
-    const { colors } = useAppTheme();
-
-    // --- 2. Dynamic Styles based on active theme ---
-    const dynamicStyles = StyleSheet.create({
-        dot: {
-            backgroundColor: colors.surfaceMuted,
-        },
-        activeDot: {
-            backgroundColor: yellow, // Stays yellow as brand accent
-        }
-    });
+    const { isDark } = useAppTheme();
 
     return (
         <View style={styles.paginationContainer}>
-            {Array.from({ length: total }).map((_, index) => (
-                <View
-                    key={index}
-                    style={[
-                        styles.dot,
-                        dynamicStyles.dot,
-                        activeIndex === index && [styles.activeDot, dynamicStyles.activeDot]
-                    ]}
-                />
-            ))}
+            {Array.from({ length: total }).map((_, index) => {
+                const isActive = activeIndex === index;
+                return (
+                    <View
+                        key={index}
+                        style={[
+                            styles.dot,
+                            isActive ? styles.activeDot : [styles.inactiveDot, {
+                                // High-contrast gray for light mode, muted surface for dark mode
+                                backgroundColor: isDark ? '#3D2D5E' : '#E5E5EA'
+                            }]
+                        ]}
+                    />
+                );
+            })}
         </View>
     );
 };
 
 export default PaginationDots;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     paginationContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        justifyContent: 'center',
+        gap: 8, // Slightly increased gap for better readability
     },
     dot: {
-        width: 6,
         height: 6,
         borderRadius: 3,
     },
+    inactiveDot: {
+        width: 6,
+    },
     activeDot: {
-        width: 24,
-        height: 6,
-        borderRadius: 3,
+        width: 24, // Pill shape for active
+        backgroundColor: yellow,
     },
 });

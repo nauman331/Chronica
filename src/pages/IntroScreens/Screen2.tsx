@@ -2,15 +2,8 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, Dimensions, Platform } from 'react-native';
 import { Canvas, Group, Skia, Path, Blur, Shadow } from '@shopify/react-native-skia';
 
-// Import custom theme hook
 import { useAppTheme } from '../../hooks/useAppTheme';
-
-// Fixed Colors for mapping states
-import {
-    COLOR_CROWNED,
-    COLOR_DOCUMENTED,
-    COLOR_UNDOCUMENTED
-} from '../../utils/colors';
+import { COLOR_CROWNED, COLOR_DOCUMENTED, COLOR_UNDOCUMENTED } from '../../utils/colors';
 
 const { height } = Dimensions.get('window');
 const NODES_PER_ROW = 26;
@@ -23,9 +16,6 @@ const HALO_RADIUS = RADIUS * 2.5;
 const GLOW_PADDING = 8;
 
 const YearRow = ({ year, age, dotsCount }: any) => {
-    // Get colors inside YearRow for text labels
-    const { colors } = useAppTheme();
-
     const paths = useMemo(() => {
         const pUndocumented = Skia.Path.Make();
         const pDocumented = Skia.Path.Make();
@@ -59,20 +49,18 @@ const YearRow = ({ year, age, dotsCount }: any) => {
 
     return (
         <View style={styles.yearRowContainer}>
-            <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING - 1, color: colors.textSecondary }]}>{year}</Text>
+            <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING - 1, color: '#B4B4B4' }]}>{year}</Text>
 
             <Canvas style={[styles.yearCanvas, { height: canvasHeight, marginLeft: 12 - GLOW_PADDING }]}>
                 <Group>
                     <Group color={COLOR_UNDOCUMENTED}><Path path={paths.pUndocumented} /></Group>
                     <Group color={COLOR_DOCUMENTED}><Path path={paths.pDocumented} /></Group>
 
-                    {/* Scattered Background Halo */}
                     <Group color={COLOR_CROWNED} opacity={0.15}>
                         <Blur blur={4} />
                         <Path path={paths.pCrownedHalo} />
                     </Group>
 
-                    {/* Core Crowned Dot with glow */}
                     <Group color={COLOR_CROWNED}>
                         <Shadow dx={0} dy={0} blur={6} color={COLOR_CROWNED} />
                         <Path path={paths.pCrowned} />
@@ -80,15 +68,13 @@ const YearRow = ({ year, age, dotsCount }: any) => {
                 </Group>
             </Canvas>
 
-            <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING - 1, color: colors.textSecondary }]}>{age}y</Text>
+            <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING - 1, color: '#B4B4B4' }]}>{age}y</Text>
         </View>
     );
 };
 
 const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
-    // --- 1. Get dynamic colors ---
-    const { colors } = useAppTheme();
-
+    const { colors, isDark } = useAppTheme();
     const bDate = useMemo(() => new Date(birthDate), [birthDate]);
     const today = new Date();
 
@@ -116,35 +102,35 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
         return years;
     }, [bDate]);
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         title: { color: colors.text },
-        subtitle: { color: colors.textSecondary },
+        subtitle: { color: '#8C8B9C' },
         card: {
-            backgroundColor: colors.surface,
-            borderColor: colors.border
+            backgroundColor: isDark ? colors.surface : '#FFFFFF',
+            borderColor: isDark ? colors.border : '#F3EFE6',
+            shadowOpacity: isDark ? 0 : 0.04,
+            elevation: isDark ? 0 : 2,
         },
-        legendText: { color: colors.textSecondary },
+        legendText: { color: '#8C8B9C' },
         bottomSection: {
             backgroundColor: colors.background,
-            borderTopColor: colors.border
+            borderTopColor: isDark ? colors.border : '#F3EFE6'
         },
         button: {
-            backgroundColor: colors.primary,
-            ...Platform.select({
-                ios: { shadowColor: colors.primary }
-            })
+            backgroundColor: isDark ? colors.primary : '#1A1523',
         },
-        buttonText: { color: colors.background }, // Inverts against primary button
-        skipText: { color: colors.textSecondary },
+        buttonText: { color: '#FFFFFF' },
+        skipText: { color: '#B4B4B4' },
     });
 
     return (
         <View style={[styles.container, dynamicStyles.container]}>
             <View style={styles.header}>
                 <Text style={[styles.title, dynamicStyles.title]}>Your Life in Days</Text>
-                <Text style={[styles.subtitle, dynamicStyles.subtitle]}>Each dot represents one day. You've lived thousands already — and each one deserves to be remembered.</Text>
+                <Text style={[styles.subtitle, dynamicStyles.subtitle]}>
+                    Each dot represents one day. You've lived{'\n'}thousands already — and each one deserves{'\n'}to be remembered.
+                </Text>
             </View>
 
             <View style={[styles.card, dynamicStyles.card]}>
@@ -154,7 +140,7 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
                     renderItem={({ item }) => <YearRow year={item.year} age={item.age} dotsCount={item.dotsCount} />}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
-                    style={{ maxHeight: height * 0.38 }}
+                    style={{ maxHeight: height * 0.4 }}
                 />
                 <View style={styles.legendContainer}>
                     <View style={styles.legendItem}>
@@ -176,56 +162,52 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
                 <Pressable style={[styles.button, dynamicStyles.button]} onPress={onNext}>
                     <Text style={[styles.buttonText, dynamicStyles.buttonText]}>Continue</Text>
                 </Pressable>
-                <Pressable style={styles.skipButton} onPress={onSkip}>
+
+                <Pressable style={styles.skipButton} hitSlop={10} onPress={onSkip}>
                     <Text style={[styles.skipText, dynamicStyles.skipText]}>Skip intro</Text>
                 </Pressable>
             </View>
         </View>
     );
 };
+
 export default Screen2;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: { flex: 1, justifyContent: 'space-between', paddingTop: 80 },
-    header: { paddingHorizontal: 36, alignItems: 'center', marginTop: 24 },
-    title: { fontSize: 32, fontWeight: '800', textAlign: 'center', marginBottom: 16 },
-    subtitle: { fontSize: 15, textAlign: 'center', lineHeight: 22 },
+    header: { paddingHorizontal: 32, alignItems: 'center', marginTop: 12, marginBottom: 32 },
+    title: { fontSize: 32, fontWeight: '800', textAlign: 'center', letterSpacing: -0.5, marginBottom: 16 },
+    subtitle: { fontSize: 15, fontWeight: '400', textAlign: 'center', lineHeight: 24, letterSpacing: 0.1 },
     card: {
-        marginHorizontal: 24, borderRadius: 24, paddingTop: 24, paddingHorizontal: 20,
-        shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.04, shadowRadius: 20,
-        elevation: 1, borderWidth: 1
+        marginHorizontal: 24, borderRadius: 20, paddingTop: 24, paddingHorizontal: 20,
+        shadowColor: '#000000', shadowOffset: { width: 0, height: 8 }, shadowRadius: 20,
+        borderWidth: 1
     },
     listContent: { paddingBottom: 10 },
     yearRowContainer: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 },
-    yearLabel: { width: 35, fontSize: 11, fontFamily: 'Courier', marginTop: -1 },
+    yearLabel: { width: 35, fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', marginTop: -1 },
     yearCanvas: { flex: 1, marginLeft: 12, marginRight: 6 },
-    ageLabel: { width: 25, fontSize: 11, textAlign: 'right', fontFamily: 'Courier', marginTop: -1 },
+    ageLabel: { width: 25, fontSize: 11, textAlign: 'right', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', marginTop: -1 },
     legendContainer: { flexDirection: 'row', justifyContent: 'center', gap: 16, paddingTop: 16, paddingBottom: 24 },
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    legendDot: { width: 10, height: 10, borderRadius: 5 },
-    legendText: { fontSize: 12, fontWeight: '500' },
+    legendDot: { width: 8, height: 8, borderRadius: 4 },
+    legendText: { fontSize: 11.5, fontWeight: '500' },
     bottomSection: {
-        marginTop: 24, paddingHorizontal: 24, paddingBottom: height > 800 ? 50 : 30,
-        borderTopWidth: 1, paddingTop: 24
+        marginTop: 24, paddingHorizontal: 24, paddingTop: 24, paddingBottom: height > 800 ? 50 : 34,
+        borderTopWidth: 1
     },
     button: {
-        paddingVertical: 16,
+        height: 56,
         borderRadius: 16,
         alignItems: 'center',
-        marginBottom: 16,
-        ...Platform.select({
-            ios: {
-                shadowOpacity: 0.4,
-                shadowRadius: 16,
-                shadowOffset: { width: 0, height: 12 },
-            },
-            android: {
-                elevation: 10,
-            }
-        })
+        justifyContent: 'center',
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 4,
     },
-    buttonText: { fontSize: 16, fontWeight: '500' },
-    skipButton: { alignSelf: 'flex-end', marginTop: 24 },
+    buttonText: { fontSize: 16, fontWeight: '500', letterSpacing: 0.2 },
+    skipButton: { alignSelf: 'flex-end', marginTop: 20 },
     skipText: { fontSize: 14, fontWeight: '500' },
 });
