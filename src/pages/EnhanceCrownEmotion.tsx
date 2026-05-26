@@ -1,47 +1,80 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { BadgeIcon } from '../utils/icons';
-import { yellow, blue, white } from '../utils/colors';
 import CircularBadge from '../components/CircularBadge';
 
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
+
+// Keep yellow for the brand accent (the "crown" effect)
+import { yellow } from '../utils/colors';
+
 const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any }) => {
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        container: { backgroundColor: colors.background },
+        title: { color: colors.text },
+        datePill: { backgroundColor: colors.surfaceMuted },
+        bodyText: { color: colors.text },
+        quoteText: { color: colors.textSecondary },
+        primaryButton: {
+            backgroundColor: colors.primary,
+            shadowColor: colors.primary
+        },
+        primaryButtonText: {
+            color: colors.background // Inverts automatically against the primary color
+        },
+        secondaryButton: {
+            backgroundColor: colors.surface,
+            borderColor: colors.border
+        },
+        secondaryButtonText: { color: colors.textSecondary },
+    });
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <View style={styles.content}>
 
                 <CircularBadge Icon={BadgeIcon} />
 
                 {/* Title */}
-                <Text style={styles.title}>Day Crowned</Text>
+                <Text style={[styles.title, dynamicStyles.title]}>Day Crowned</Text>
 
                 {/* Date Pill */}
-                <View style={styles.datePill}>
+                <View style={[styles.datePill, dynamicStyles.datePill]}>
                     <View style={styles.dot} />
                     <Text style={styles.dateText}>April 15, 2026</Text>
                 </View>
 
                 {/* Body Text */}
-                <Text style={styles.bodyText}>
+                <Text style={[styles.bodyText, dynamicStyles.bodyText]}>
                     This day is now preserved in your life story forever.
                 </Text>
 
                 {/* Quote */}
-                <Text style={styles.quoteText}>
+                <Text style={[styles.quoteText, dynamicStyles.quoteText]}>
                     "Every documented day is a{"\n"}gift to your future self."
                 </Text>
 
                 {/* Action Buttons */}
                 <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.primaryButton} activeOpacity={0.8}
+                    <TouchableOpacity
+                        style={[styles.primaryButton, dynamicStyles.primaryButton]}
+                        activeOpacity={0.8}
                         onPress={() => navigation.navigate("EnhanceCrown")}
                     >
-                        <Text style={styles.primaryButtonText}>Return to Today</Text>
+                        <Text style={[styles.primaryButtonText, dynamicStyles.primaryButtonText]}>Return to Today</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.secondaryButton} activeOpacity={0.8}
+                    <TouchableOpacity
+                        style={[styles.secondaryButton, dynamicStyles.secondaryButton]}
+                        activeOpacity={0.8}
                         onPress={() => navigation.navigate("LifeMap")}
                     >
-                        <Text style={styles.secondaryButtonText}>View Life Map →</Text>
+                        <Text style={[styles.secondaryButtonText, dynamicStyles.secondaryButtonText]}>View Life Map →</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -52,10 +85,10 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
 
 export default EnhanceCrownEmotion;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: white,
     },
     content: {
         flex: 1,
@@ -63,6 +96,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: 24,
     },
+    // Leaving glow styles intact in case they are referenced by CircularBadge internally or elsewhere
     outerGlow: {
         shadowColor: yellow,
         shadowOffset: { width: 0, height: 14 },
@@ -103,13 +137,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: '800',
-        color: blue,
         marginBottom: 16,
     },
     datePill: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f7f3e4',
         paddingVertical: 8,
         paddingHorizontal: 16,
         borderRadius: 20,
@@ -131,7 +163,6 @@ const styles = StyleSheet.create({
     },
     bodyText: {
         fontSize: 18,
-        color: '#333333',
         textAlign: 'center',
         paddingHorizontal: 20,
         lineHeight: 26,
@@ -139,7 +170,6 @@ const styles = StyleSheet.create({
     },
     quoteText: {
         fontSize: 14,
-        color: '#999999',
         fontStyle: 'italic',
         textAlign: 'center',
         lineHeight: 20,
@@ -151,36 +181,29 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     primaryButton: {
-        backgroundColor: blue,
         width: '90%',
         paddingVertical: 18,
         borderRadius: 16,
         alignItems: 'center',
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 8,
         elevation: 3,
     },
     primaryButtonText: {
-        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '500',
     },
     secondaryButton: {
-        backgroundColor: '#FFFFFF',
         width: '90%',
         paddingVertical: 18,
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: '#E5E5E5',
     },
     secondaryButtonText: {
-        color: '#666666',
         fontSize: 16,
         fontWeight: '500',
     },
 });
-;

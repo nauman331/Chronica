@@ -1,7 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 
-export const CustomSwitch = ({ value, onValueChange, activeColor, inactiveColor }: { value: boolean; onValueChange: (value: boolean) => void; activeColor: string; inactiveColor: string }) => {
+export const CustomSwitch = ({
+    value,
+    onValueChange,
+    activeColor,
+    inactiveColor
+}: {
+    value: boolean;
+    onValueChange: (value: boolean) => void;
+    activeColor: string;
+    inactiveColor: string
+}) => {
     const translateX = useRef(new Animated.Value(value ? 22 : 2)).current;
 
     useEffect(() => {
@@ -40,7 +50,7 @@ const switchStyles = StyleSheet.create({
         width: 20,
         height: 20,
         borderRadius: 10,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#FFFFFF', // Thumb stays white in both themes for standard UI contrast
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,

@@ -3,9 +3,8 @@ import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MapIcon, CalendarIcon, ChartIcon, UserIcon } from '../utils/icons';
 
-const darkText = '#1A1824';
-const mutedText = '#8A8F99';
-const borderLight = '#F0F0F0';
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface BottomTabBarProps {
     activeTab: 'map' | 'today' | 'insights' | 'profile';
@@ -13,38 +12,71 @@ interface BottomTabBarProps {
 
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
     const navigation = useNavigation<any>();
+
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
+    // Helper constants for icon colors
+    const activeColor = colors.text;
+    const inactiveColor = colors.textSecondary;
+
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        tabBar: {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+        },
+        activeTab: {
+            backgroundColor: colors.surfaceMuted,
+        },
+        tabText: {
+            color: inactiveColor,
+        },
+        activeTabText: {
+            color: activeColor,
+        }
+    });
+
     return (
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, dynamicStyles.tabBar]}>
             <Pressable
-                style={[styles.tabItem, activeTab === 'map' && styles.activeTab]}
+                style={[styles.tabItem, activeTab === 'map' && [styles.activeTab, dynamicStyles.activeTab]]}
                 onPress={() => navigation.navigate('LifeMap' as never)}
             >
-                <MapIcon color={activeTab === 'map' ? darkText : mutedText} />
-                <Text style={activeTab === 'map' ? styles.activeTabText : styles.tabText}>Life Map</Text>
+                <MapIcon color={activeTab === 'map' ? activeColor : inactiveColor} />
+                <Text style={activeTab === 'map' ? [styles.activeTabText, dynamicStyles.activeTabText] : [styles.tabText, dynamicStyles.tabText]}>
+                    Life Map
+                </Text>
             </Pressable>
 
             <Pressable
-                style={[styles.tabItem, activeTab === 'today' && styles.activeTab]}
+                style={[styles.tabItem, activeTab === 'today' && [styles.activeTab, dynamicStyles.activeTab]]}
                 onPress={() => navigation.navigate('EnhanceCrown' as never)}
             >
-                <CalendarIcon color={activeTab === 'today' ? darkText : mutedText} />
-                <Text style={activeTab === 'today' ? styles.activeTabText : styles.tabText}>Today</Text>
+                <CalendarIcon color={activeTab === 'today' ? activeColor : inactiveColor} />
+                <Text style={activeTab === 'today' ? [styles.activeTabText, dynamicStyles.activeTabText] : [styles.tabText, dynamicStyles.tabText]}>
+                    Today
+                </Text>
             </Pressable>
 
             <Pressable
-                style={[styles.tabItem, activeTab === 'insights' && styles.activeTab]}
+                style={[styles.tabItem, activeTab === 'insights' && [styles.activeTab, dynamicStyles.activeTab]]}
                 onPress={() => navigation.navigate('Insights' as never)}
             >
-                <ChartIcon color={activeTab === 'insights' ? darkText : mutedText} />
-                <Text style={activeTab === 'insights' ? styles.activeTabText : styles.tabText}>Insights</Text>
+                <ChartIcon color={activeTab === 'insights' ? activeColor : inactiveColor} />
+                <Text style={activeTab === 'insights' ? [styles.activeTabText, dynamicStyles.activeTabText] : [styles.tabText, dynamicStyles.tabText]}>
+                    Insights
+                </Text>
             </Pressable>
 
             <Pressable
-                style={[styles.tabItem, activeTab === 'profile' && styles.activeTab]}
+                style={[styles.tabItem, activeTab === 'profile' && [styles.activeTab, dynamicStyles.activeTab]]}
                 onPress={() => navigation.navigate('Profile' as never)}
             >
-                <UserIcon color={activeTab === 'profile' ? darkText : mutedText} />
-                <Text style={activeTab === 'profile' ? styles.activeTabText : styles.tabText}>Profile</Text>
+                <UserIcon color={activeTab === 'profile' ? activeColor : inactiveColor} />
+                <Text style={activeTab === 'profile' ? [styles.activeTabText, dynamicStyles.activeTabText] : [styles.tabText, dynamicStyles.tabText]}>
+                    Profile
+                </Text>
             </Pressable>
         </View>
     );
@@ -52,6 +84,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
 
 export default BottomTabBar;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     tabBar: {
         flexDirection: 'row',
@@ -61,8 +94,6 @@ const styles = StyleSheet.create({
         paddingTop: 12,
         paddingBottom: Platform.OS === 'ios' ? 10 : 20,
         borderTopWidth: 1,
-        borderTopColor: borderLight,
-        backgroundColor: '#FFFFFF',
     },
     tabItem: {
         flex: 1,
@@ -72,18 +103,15 @@ const styles = StyleSheet.create({
         gap: 4,
     },
     activeTab: {
-        backgroundColor: '#F5F5F5',
         borderRadius: 16,
         paddingVertical: 8,
     },
     tabText: {
         fontSize: 11,
-        color: mutedText,
         fontWeight: '500',
     },
     activeTabText: {
         fontSize: 11,
-        color: darkText,
         fontWeight: '700',
     },
 });

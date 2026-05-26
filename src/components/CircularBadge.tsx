@@ -3,6 +3,7 @@ import DropShadow from 'react-native-drop-shadow';
 import React from 'react';
 import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
 
+// Keep brand defaults
 import { white, yellow } from '../utils/colors';
 
 type BadgeIconProps = {
@@ -46,16 +47,29 @@ const CircularBadge = ({
     const iconCircleRadius = iconCircleSize / 2;
 
     return (
-        <DropShadow style={[styles.outerGlow, { shadowColor, shadowOpacity, shadowRadius, width: outerSize, height: outerSize, borderRadius: outerRadius, marginBottom }]}>
-            <DropShadow style={[styles.innerGlow, { shadowColor, shadowOpacity: innerShadowOpacity, shadowRadius: innerShadowRadius, width: innerSize, height: innerSize, borderRadius: innerRadius }]}>
-
-                <View style={[styles.iconCircle, { backgroundColor: badgeColor, width: iconCircleSize, height: iconCircleSize, borderRadius: iconCircleRadius }]}>
-
+        <DropShadow
+            style={[
+                styles.outerGlow,
+                { shadowColor, shadowOpacity, shadowRadius, width: outerSize, height: outerSize, borderRadius: outerRadius, marginBottom }
+            ]}
+        >
+            <DropShadow
+                style={[
+                    styles.innerGlow,
+                    { shadowColor, shadowOpacity: innerShadowOpacity, shadowRadius: innerShadowRadius, width: innerSize, height: innerSize, borderRadius: innerRadius }
+                ]}
+            >
+                <View
+                    style={[
+                        styles.iconCircle,
+                        { backgroundColor: badgeColor, width: iconCircleSize, height: iconCircleSize, borderRadius: iconCircleRadius }
+                    ]}
+                >
                     {/* The 3D Top-Left White Shine Overlay (Now much more subtle) */}
                     <Svg height="100%" width="100%" style={RNStyleSheet.absoluteFill}>
                         <Defs>
                             <RadialGradient id="shine" cx="25%" cy="25%" r="55%">
-                                {/* Changed opacity from 0.45 to 0.15 for a very faint glow */}
+                                {/* Faint white glow */}
                                 <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.30" />
                                 <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
                             </RadialGradient>
@@ -65,7 +79,6 @@ const CircularBadge = ({
 
                     <Icon color={iconColor} size={iconSize} />
                 </View>
-
             </DropShadow>
         </DropShadow>
     );
@@ -73,22 +86,17 @@ const CircularBadge = ({
 
 export default CircularBadge;
 
+// --- Static Layout Styles (Colors handled via props) ---
 const styles = StyleSheet.create({
     outerGlow: {
-        shadowColor: yellow,
         shadowOffset: { width: 0, height: 14 },
-        shadowOpacity: 0.26,
-        shadowRadius: 56,
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 14,
         backgroundColor: 'transparent',
     },
     innerGlow: {
-        shadowColor: yellow,
         shadowOffset: { width: 0, height: 14 },
-        shadowOpacity: 0.7,
-        shadowRadius: 26,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 8,
@@ -96,7 +104,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     iconCircle: {
-        backgroundColor: yellow,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',

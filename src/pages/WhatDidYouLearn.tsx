@@ -13,17 +13,49 @@ import {
     Image
 } from 'react-native';
 
-// Import your bulb image here
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
+
 import bulbimg from "../assets/bulb.png";
 
-import { white, yellow, blue, gray, COLOR_TEXT_MAIN } from '../utils/colors';
+// Keep fixed brand colors for the progress/buttons
+import { white, yellow } from '../utils/colors';
 import { ArrowLeftIcon, GreenCheckIcon } from '../utils/icons';
 
 const WhatDidYouLearn = ({ navigation }: any) => {
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
     const [text, setText] = useState('I learned that...');
 
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        container: { backgroundColor: colors.background },
+        backButton: { backgroundColor: colors.surfaceMuted },
+        inactiveDot: { backgroundColor: colors.surfaceMuted },
+        progressLineContainer: { backgroundColor: colors.surfaceMuted },
+        title: { color: colors.text },
+        subtitle: { color: colors.textSecondary },
+        inputContainer: {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+        },
+        textInput: { color: colors.text },
+        charCount: { color: colors.textSecondary },
+        footerContainer: {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+        },
+        previousButton: {
+            backgroundColor: colors.background,
+            borderColor: colors.border,
+        },
+        previousButtonText: { color: colors.textSecondary },
+        // Continue button stays static brand gold with white text for contrast
+    });
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.container}
@@ -34,32 +66,30 @@ const WhatDidYouLearn = ({ navigation }: any) => {
                         {/* --- Top Navigation Bar --- */}
                         <View style={styles.navBar}>
                             <TouchableOpacity
-                                style={styles.backButton}
+                                style={[styles.backButton, dynamicStyles.backButton]}
                                 onPress={() => navigation.goBack()}
                             >
-                                <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
+                                <ArrowLeftIcon color={colors.text} />
                             </TouchableOpacity>
 
                             {/* Pagination Dots (Middle Dot Active) */}
                             <View style={styles.dotsContainer}>
-                                <View style={styles.dot} />
+                                <View style={[styles.dot, dynamicStyles.inactiveDot]} />
                                 <View style={[styles.dot, styles.activeDot]} />
-                                <View style={styles.dot} />
+                                <View style={[styles.dot, dynamicStyles.inactiveDot]} />
                             </View>
 
                             <View style={{ width: 40 }} />
                         </View>
 
                         {/* --- Progress Line --- */}
-                        <View style={styles.progressLineContainer}>
-                            {/* Fill updated to ~66% for the second step */}
+                        <View style={[styles.progressLineContainer, dynamicStyles.progressLineContainer]}>
                             <View style={styles.progressLineFill} />
                         </View>
 
                         {/* --- Main Content --- */}
                         <View style={styles.content}>
                             <View style={styles.iconContainer}>
-                                {/* Lightbulb Image */}
                                 <Image
                                     source={bulbimg}
                                     style={{ width: 56, height: 56 }}
@@ -67,36 +97,36 @@ const WhatDidYouLearn = ({ navigation }: any) => {
                                 />
                             </View>
 
-                            <Text style={styles.title}>What did you{'\n'}learn from it?</Text>
-                            <Text style={styles.subtitle}>The insight or realization you gained</Text>
+                            <Text style={[styles.title, dynamicStyles.title]}>What did you{'\n'}learn from it?</Text>
+                            <Text style={[styles.subtitle, dynamicStyles.subtitle]}>The insight or realization you gained</Text>
 
                             {/* Text Input Area */}
-                            <View style={styles.inputContainer}>
+                            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
                                 <TextInput
-                                    style={styles.textInput}
+                                    style={[styles.textInput, dynamicStyles.textInput]}
                                     multiline
                                     value={text}
                                     onChangeText={setText}
                                     placeholder="Start typing..."
-                                    placeholderTextColor={gray}
+                                    placeholderTextColor={colors.textSecondary}
                                     textAlignVertical="top"
                                 />
                                 <View style={styles.checkIconWrapper}>
                                     <GreenCheckIcon />
                                 </View>
                             </View>
-                            <Text style={styles.charCount}>{text.length} characters</Text>
+                            <Text style={[styles.charCount, dynamicStyles.charCount]}>{text.length} characters</Text>
                         </View>
 
                         {/* --- Bottom Buttons (Split Layout) --- */}
-                        <View style={styles.footerContainer}>
+                        <View style={[styles.footerContainer, dynamicStyles.footerContainer]}>
                             <View style={styles.footer}>
                                 <TouchableOpacity
-                                    style={styles.previousButton}
+                                    style={[styles.previousButton, dynamicStyles.previousButton]}
                                     activeOpacity={0.7}
                                     onPress={() => navigation.goBack()}
                                 >
-                                    <Text style={styles.previousButtonText}>Previous</Text>
+                                    <Text style={[styles.previousButtonText, dynamicStyles.previousButtonText]}>Previous</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -118,10 +148,10 @@ const WhatDidYouLearn = ({ navigation }: any) => {
 
 export default WhatDidYouLearn;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: white,
     },
     inner: {
         flex: 1,
@@ -141,7 +171,6 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#F7F7F9',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -154,7 +183,6 @@ const styles = StyleSheet.create({
         width: 6,
         height: 6,
         borderRadius: 3,
-        backgroundColor: '#E5E5E5',
     },
     activeDot: {
         width: 16,
@@ -162,14 +190,13 @@ const styles = StyleSheet.create({
     },
     progressLineContainer: {
         height: 4,
-        backgroundColor: '#F3F3F3',
         width: '90%',
         alignSelf: 'center',
         borderRadius: 2,
         marginBottom: 30,
     },
     progressLineFill: {
-        width: '66%', // Step 2 out of 3
+        width: '66%',
         height: '100%',
         backgroundColor: yellow,
         borderRadius: 2,
@@ -187,7 +214,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: '800',
-        color: blue,
         textAlign: 'center',
         lineHeight: 38,
         letterSpacing: -0.5,
@@ -195,7 +221,6 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 15,
-        color: gray,
         textAlign: 'center',
         marginBottom: 32,
     },
@@ -205,15 +230,12 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 220,
         borderWidth: 1,
-        borderColor: '#FDECA6',
         borderRadius: 20,
         padding: 20,
-        backgroundColor: "#fff",
     },
     textInput: {
         flex: 1,
         fontSize: 16,
-        color: COLOR_TEXT_MAIN,
         lineHeight: 24,
     },
     checkIconWrapper: {
@@ -224,40 +246,34 @@ const styles = StyleSheet.create({
     charCount: {
         alignSelf: 'flex-end',
         fontSize: 12,
-        color: gray,
         marginTop: 8,
     },
 
     // Split Footer Buttons
     footerContainer: {
         borderTopWidth: 1,
-        borderTopColor: '#F0F0F0', // Slight line to match the visual separation in the design
-        backgroundColor: white,
     },
     footer: {
         flexDirection: 'row',
         paddingHorizontal: 20,
         paddingVertical: 20,
-        gap: 12, // Space between buttons
+        gap: 12,
     },
     previousButton: {
         flex: 1,
         paddingVertical: 18,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#EAEAEA',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: white,
     },
     previousButtonText: {
         fontSize: 16,
         fontWeight: '600',
-        color: gray,
     },
     continueButton: {
         flex: 1,
-        backgroundColor: '#C8A43C',
+        backgroundColor: '#C8A43C', // Fixed yellow/gold
         paddingVertical: 18,
         borderRadius: 16,
         alignItems: 'center',

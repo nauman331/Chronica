@@ -2,16 +2,10 @@ import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Pressable } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import BottomTabBar from '../components/BottomTabBar';
-import {
-    white,
-    blue,
-    yellow,
-    COLOR_FUTURE,
-    COLOR_TEXT_MAIN,
-    gray
-} from '../utils/colors';
 import { ArrowLeftIcon } from '../utils/icons';
 
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
 
 const SparkleIcon = ({ color }: { color: string }) => (
     <Svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -34,6 +28,9 @@ const SparkleIcon = ({ color }: { color: string }) => (
 );
 
 const DayDetailScreen = ({ navigation, route }: any) => {
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
     const {
         day = 15,
         month = 'April',
@@ -42,23 +39,52 @@ const DayDetailScreen = ({ navigation, route }: any) => {
         status = 'Not documented'
     } = route?.params || {};
 
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        container: { backgroundColor: colors.background },
+        header: { borderBottomColor: colors.border },
+        backButton: { borderColor: colors.border },
+        headerTitle: { color: colors.text },
+        headerSubtitle: { color: colors.textSecondary },
+        statusBadge: { backgroundColor: colors.surfaceMuted },
+        statusBadgeText: { color: colors.textSecondary },
+        card: {
+            backgroundColor: colors.surface,
+            borderColor: colors.border
+        },
+        iconBackground: { backgroundColor: colors.surfaceMuted },
+        cardTitle: { color: colors.text },
+        cardDescription: { color: colors.textSecondary },
+        documentButton: {
+            backgroundColor: colors.primary,
+            shadowColor: colors.primary,
+        },
+        documentButtonText: {
+            color: colors.background // Inverts automatically: white on dark btn, dark on white btn
+        },
+        bottomTabContainer: {
+            borderTopColor: colors.border,
+            backgroundColor: colors.background
+        }
+    });
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
 
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, dynamicStyles.header]}>
                 <View style={styles.headerLeft}>
-                    <Pressable style={styles.backButton} onPress={() => navigation?.goBack()}>
-                        <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
+                    <Pressable style={[styles.backButton, dynamicStyles.backButton]} onPress={() => navigation?.goBack()}>
+                        <ArrowLeftIcon color={colors.text} />
                     </Pressable>
                     <View style={styles.headerTitles}>
-                        <Text style={styles.headerTitle}>{month} {day}, {year}</Text>
-                        <Text style={styles.headerSubtitle}>{dayOfWeek}</Text>
+                        <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>{month} {day}, {year}</Text>
+                        <Text style={[styles.headerSubtitle, dynamicStyles.headerSubtitle]}>{dayOfWeek}</Text>
                     </View>
                 </View>
 
-                <View style={styles.statusBadge}>
-                    <Text style={styles.statusBadgeText}>{status}</Text>
+                <View style={[styles.statusBadge, dynamicStyles.statusBadge]}>
+                    <Text style={[styles.statusBadgeText, dynamicStyles.statusBadgeText]}>{status}</Text>
                 </View>
             </View>
 
@@ -66,16 +92,15 @@ const DayDetailScreen = ({ navigation, route }: any) => {
             <View style={styles.content}>
 
                 {/* Undocumented Card */}
-                <View style={styles.card}>
+                <View style={[styles.card, dynamicStyles.card]}>
                     <View style={styles.iconWrapper}>
-                        {/* Pale yellow background for the icon */}
-                        <View style={styles.iconBackground}>
-                            <SparkleIcon color={yellow} />
+                        <View style={[styles.iconBackground, dynamicStyles.iconBackground]}>
+                            <SparkleIcon color={colors.accent} />
                         </View>
                     </View>
 
-                    <Text style={styles.cardTitle}>Undocumented</Text>
-                    <Text style={styles.cardDescription}>
+                    <Text style={[styles.cardTitle, dynamicStyles.cardTitle]}>Undocumented</Text>
+                    <Text style={[styles.cardDescription, dynamicStyles.cardDescription]}>
                         This day has not been recorded yet.{'\n'}
                         Document it so it's never forgotten.
                     </Text>
@@ -83,7 +108,7 @@ const DayDetailScreen = ({ navigation, route }: any) => {
 
                 {/* Call to Action Button */}
                 <Pressable
-                    style={styles.documentButton}
+                    style={[styles.documentButton, dynamicStyles.documentButton]}
                     onPress={() => navigation.navigate('DocumentDay', {
                         day: day,
                         month: month,
@@ -92,13 +117,13 @@ const DayDetailScreen = ({ navigation, route }: any) => {
                         status: status
                     })}
                 >
-                    <Text style={styles.documentButtonText}>Document this day</Text>
+                    <Text style={[styles.documentButtonText, dynamicStyles.documentButtonText]}>Document this day</Text>
                 </Pressable>
 
             </View>
 
             {/* Bottom Tab Bar */}
-            <View style={styles.bottomTabContainer}>
+            <View style={[styles.bottomTabContainer, dynamicStyles.bottomTabContainer]}>
                 <BottomTabBar activeTab="map" />
             </View>
 
@@ -108,12 +133,11 @@ const DayDetailScreen = ({ navigation, route }: any) => {
 
 export default DayDetailScreen;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: white
     },
-
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -121,7 +145,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#F8F8F8'
     },
     headerLeft: {
         flexDirection: 'row',
@@ -133,7 +156,6 @@ const styles = StyleSheet.create({
         height: 36,
         borderRadius: 18,
         borderWidth: 1,
-        borderColor: COLOR_FUTURE,
         alignItems: 'center',
         justifyContent: 'center'
     },
@@ -143,40 +165,32 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: COLOR_TEXT_MAIN
     },
     headerSubtitle: {
         fontSize: 13,
-        color: gray,
         marginTop: 2
     },
     statusBadge: {
-        backgroundColor: '#F4F4F6',
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 16
     },
     statusBadgeText: {
         fontSize: 12,
-        color: gray,
         fontWeight: '500'
     },
-
     content: {
         flex: 1,
         paddingHorizontal: 20,
         paddingTop: 24,
     },
-
     card: {
-        backgroundColor: "#fff",
         borderRadius: 24,
         paddingVertical: 40,
         paddingHorizontal: 20,
         alignItems: 'center',
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: "#ddd"
     },
     iconWrapper: {
         marginBottom: 20
@@ -185,45 +199,35 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 32,
-        backgroundColor: '#FFF8E6',
         alignItems: 'center',
         justifyContent: 'center'
     },
     cardTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: COLOR_TEXT_MAIN,
         marginBottom: 12
     },
     cardDescription: {
         fontSize: 14,
-        color: gray,
         textAlign: 'center',
         lineHeight: 22,
         fontWeight: '400'
     },
-
     documentButton: {
-        backgroundColor: blue,
         borderRadius: 16,
         paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: blue,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.25,
         shadowRadius: 12,
         elevation: 6,
     },
     documentButtonText: {
-        color: white,
         fontSize: 16,
         fontWeight: '600'
     },
-
     bottomTabContainer: {
         borderTopWidth: 1,
-        borderTopColor: '#F5F5F5',
-        backgroundColor: white
     },
 });

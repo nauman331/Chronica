@@ -13,16 +13,39 @@ import {
     Image
 } from 'react-native';
 
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
+
 import sparkleimg from "../assets/sparkle.png";
 
-import { white, yellow, blue, gray, COLOR_TEXT_MAIN } from '../utils/colors';
+// Keep fixed brand colors for the progress/buttons
+import { white, yellow } from '../utils/colors';
 import { ArrowLeftIcon, GreenCheckIcon, SolidSparkleIcon } from '../utils/icons';
 
 const WriteReflection = ({ navigation }: any) => {
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
     const [text, setText] = useState('Today I experienced...');
 
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        container: { backgroundColor: colors.background },
+        backButton: { backgroundColor: colors.surfaceMuted },
+        inactiveDot: { backgroundColor: colors.surfaceMuted },
+        progressLineContainer: { backgroundColor: colors.surfaceMuted },
+        title: { color: colors.text },
+        subtitle: { color: colors.textSecondary },
+        inputContainer: {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+        },
+        textInput: { color: colors.text },
+        charCount: { color: colors.textSecondary },
+    });
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.container}
@@ -33,32 +56,30 @@ const WriteReflection = ({ navigation }: any) => {
                         {/* --- Top Navigation Bar --- */}
                         <View style={styles.navBar}>
                             <TouchableOpacity
-                                style={styles.backButton}
+                                style={[styles.backButton, dynamicStyles.backButton]}
                                 onPress={() => navigation.goBack()}
                             >
-                                {/* Restored SVG Arrow */}
-                                <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
+                                <ArrowLeftIcon color={colors.text} />
                             </TouchableOpacity>
 
                             {/* Pagination Dots */}
                             <View style={styles.dotsContainer}>
                                 <View style={[styles.dot, styles.activeDot]} />
-                                <View style={styles.dot} />
-                                <View style={styles.dot} />
+                                <View style={[styles.dot, dynamicStyles.inactiveDot]} />
+                                <View style={[styles.dot, dynamicStyles.inactiveDot]} />
                             </View>
 
                             <View style={{ width: 40 }} />
                         </View>
 
                         {/* --- Progress Line --- */}
-                        <View style={styles.progressLineContainer}>
+                        <View style={[styles.progressLineContainer, dynamicStyles.progressLineContainer]}>
                             <View style={styles.progressLineFill} />
                         </View>
 
                         {/* --- Main Content --- */}
                         <View style={styles.content}>
                             <View style={styles.iconContainer}>
-                                {/* Using your imported sparkle image */}
                                 <Image
                                     source={sparkleimg}
                                     style={{ width: 56, height: 56 }}
@@ -66,26 +87,25 @@ const WriteReflection = ({ navigation }: any) => {
                                 />
                             </View>
 
-                            <Text style={styles.title}>What did you{'\n'}experience?</Text>
-                            <Text style={styles.subtitle}>Describe the moment, event, or situation</Text>
+                            <Text style={[styles.title, dynamicStyles.title]}>What did you{'\n'}experience?</Text>
+                            <Text style={[styles.subtitle, dynamicStyles.subtitle]}>Describe the moment, event, or situation</Text>
 
                             {/* Text Input Area */}
-                            <View style={styles.inputContainer}>
+                            <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
                                 <TextInput
-                                    style={styles.textInput}
+                                    style={[styles.textInput, dynamicStyles.textInput]}
                                     multiline
                                     value={text}
                                     onChangeText={setText}
                                     placeholder="Start typing..."
-                                    placeholderTextColor={gray}
+                                    placeholderTextColor={colors.textSecondary}
                                     textAlignVertical="top"
                                 />
                                 <View style={styles.checkIconWrapper}>
-                                    {/* Restored SVG Check */}
                                     <GreenCheckIcon />
                                 </View>
                             </View>
-                            <Text style={styles.charCount}>{text.length} characters</Text>
+                            <Text style={[styles.charCount, dynamicStyles.charCount]}>{text.length} characters</Text>
                         </View>
 
                         {/* --- Bottom Button --- */}
@@ -94,7 +114,6 @@ const WriteReflection = ({ navigation }: any) => {
                                 onPress={() => navigation.navigate('WhatDidYouLearn')}
                             >
                                 <Text style={styles.continueButtonText}>Continue </Text>
-                                {/* Restored SVG Button Sparkle */}
                                 <SolidSparkleIcon color={white} size={14} />
                             </TouchableOpacity>
                         </View>
@@ -108,10 +127,10 @@ const WriteReflection = ({ navigation }: any) => {
 
 export default WriteReflection;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: white,
     },
     inner: {
         flex: 1,
@@ -130,7 +149,6 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#F7F7F9',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -143,7 +161,6 @@ const styles = StyleSheet.create({
         width: 6,
         height: 6,
         borderRadius: 3,
-        backgroundColor: '#E5E5E5',
     },
     activeDot: {
         width: 16,
@@ -151,7 +168,6 @@ const styles = StyleSheet.create({
     },
     progressLineContainer: {
         height: 4,
-        backgroundColor: '#F3F3F3',
         width: '90%',
         alignSelf: 'center',
         borderRadius: 2,
@@ -160,7 +176,7 @@ const styles = StyleSheet.create({
     progressLineFill: {
         width: '33%',
         height: '100%',
-        backgroundColor: yellow,
+        backgroundColor: yellow, // Stays yellow
         borderRadius: 2,
     },
 
@@ -176,7 +192,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: '800',
-        color: blue,
         textAlign: 'center',
         lineHeight: 38,
         letterSpacing: -0.5,
@@ -184,7 +199,6 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 15,
-        color: gray,
         textAlign: 'center',
         marginBottom: 32,
     },
@@ -194,15 +208,12 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 220,
         borderWidth: 1,
-        borderColor: '#FDECA6',
         borderRadius: 20,
         padding: 20,
-        backgroundColor: "#fff",
     },
     textInput: {
         flex: 1,
         fontSize: 16,
-        color: COLOR_TEXT_MAIN,
         lineHeight: 24,
     },
     checkIconWrapper: {
@@ -213,7 +224,6 @@ const styles = StyleSheet.create({
     charCount: {
         alignSelf: 'flex-end',
         fontSize: 12,
-        color: gray,
         marginTop: 8,
     },
 
@@ -225,7 +235,7 @@ const styles = StyleSheet.create({
     continueButton: {
         flexDirection: 'row',
         width: '100%',
-        backgroundColor: '#C8A43C',
+        backgroundColor: '#C8A43C', // Fixed yellow/gold
         paddingVertical: 18,
         borderRadius: 16,
         alignItems: 'center',

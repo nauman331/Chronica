@@ -1,6 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { white } from '../utils/colors';
+
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
+
 import PaginationDots from '../components/PaginationDots';
 import Screen1 from './IntroScreens/Screen1';
 import Screen2 from './IntroScreens/Screen2';
@@ -9,6 +12,9 @@ import Screen3 from './IntroScreens/Screen3';
 const { width } = Dimensions.get('window');
 
 const Onboarding: React.FC<any> = ({ navigation, route }) => {
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
     const scrollViewRef = useRef<ScrollView>(null);
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -33,8 +39,13 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
         navigation.navigate('EnhanceCrown');
     };
 
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        container: { backgroundColor: colors.background }
+    });
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, dynamicStyles.container]}>
             <View style={styles.topSection}>
                 <PaginationDots activeIndex={activeIndex} total={3} />
             </View>
@@ -64,10 +75,10 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
 
 export default Onboarding;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: white,
     },
     topSection: {
         paddingTop: 60,

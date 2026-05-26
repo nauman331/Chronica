@@ -1,15 +1,17 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, FlatList, Pressable } from 'react-native';
-// ADDED: Blur and Shadow imports from Skia
 import { Canvas, Group, Skia, Path, Blur, Shadow } from '@shopify/react-native-skia';
 import BottomTabBar from '../components/BottomTabBar';
+
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
+
+// Keep strict functional state colors constant
 import {
     COLOR_CROWNED,
-    COLOR_TEXT_MUTED,
     COLOR_DOCUMENTED,
     COLOR_PAST,
     COLOR_FUTURE,
-    COLOR_TEXT_MAIN
 } from '../utils/colors';
 
 const NODES_PER_ROW = 26;
@@ -30,18 +32,20 @@ interface YearRowProps {
 }
 
 const YearRow = React.memo(({ year, age, weeks, onPress }: YearRowProps) => {
+    // Get dynamic colors inside the memoized component
+    const { colors } = useAppTheme();
+
     const paths = useMemo(() => {
         const pPast = Skia.Path.Make();
         const pDocumented = Skia.Path.Make();
         const pCrowned = Skia.Path.Make();
-        const pCrownedHalo = Skia.Path.Make(); // New path for the halo
+        const pCrownedHalo = Skia.Path.Make();
         const pFuture = Skia.Path.Make();
 
         weeks.forEach((state, d) => {
             const col = d % NODES_PER_ROW;
             const row = Math.floor(d / NODES_PER_ROW);
 
-            // Shift x and y by GLOW_PADDING to prevent canvas edge clipping
             const cx = col * CELL_SIZE + RADIUS + GLOW_PADDING;
             const cy = row * CELL_SIZE + RADIUS + GLOW_PADDING;
 
@@ -59,41 +63,47 @@ const YearRow = React.memo(({ year, age, weeks, onPress }: YearRowProps) => {
         return { pPast, pDocumented, pCrowned, pCrownedHalo, pFuture };
     }, [weeks]);
 
-    // Expand canvas size to accommodate the glowing bleed
     const canvasHeight = (2 * CELL_SIZE) + (GLOW_PADDING * 2);
     const canvasWidth = (NODES_PER_ROW * CELL_SIZE) + (GLOW_PADDING * 2);
 
     return (
         <Pressable style={styles.yearRowContainer} onPress={() => onPress(year)}>
-            <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING }]}>{year}</Text>
+            <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING, color: colors.textSecondary }]}>{year}</Text>
             <View style={styles.canvasContainer}>
                 <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
                     <Group>
                         <Group color={COLOR_PAST}><Path path={paths.pPast} /></Group>
                         <Group color={COLOR_DOCUMENTED}><Path path={paths.pDocumented} /></Group>
 
-                        {/* 1. Scattered Background Halo */}
+                        {/* Scattered Background Halo */}
                         <Group color={COLOR_CROWNED} opacity={0.15}>
                             <Blur blur={4} />
                             <Path path={paths.pCrownedHalo} />
                         </Group>
 
-                        {/* 2. Core Crowned Dot with drop shadow */}
+                        {/* Core Crowned Dot */}
                         <Group color={COLOR_CROWNED}>
                             <Shadow dx={0} dy={0} blur={6} color={COLOR_CROWNED} />
                             <Path path={paths.pCrowned} />
                         </Group>
 
-                        <Group color={COLOR_FUTURE}><Path path={paths.pFuture} /></Group>
+                        {/* Instead of keeping COLOR_FUTURE exactly the same, 
+                          we can use the dynamic border color so future dots look 
+                          integrated into dark mode correctly (faint background dots).
+                        */}
+                        <Group color={colors.border}><Path path={paths.pFuture} /></Group>
                     </Group>
                 </Canvas>
             </View>
-            <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING }]}>{age}y</Text>
+            <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING, color: colors.textSecondary }]}>{age}y</Text>
         </Pressable>
     );
 });
 
 const LifeMap = ({ navigation }: any) => {
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
     const yearsData = useMemo(() => {
         const data: Omit<YearRowProps, 'onPress'>[] = [];
         const currentYear = 2026;
@@ -119,36 +129,68 @@ const LifeMap = ({ navigation }: any) => {
         return data;
     }, []);
 
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        container: { backgroundColor: colors.background },
+        headerSubtitle: { color: colors.textSecondary },
+        statsLargeNumber: { color: colors.text },
+        statsDays: { color: colors.textSecondary },
+        todayButton: {
+            backgroundColor: colors.primary,
+            shadowColor: colors.primary, // Keeps shadow tied to the button color
+        },
+        todayButtonText: {
+            color: colors.background // Inverts correctly against primary button color
+        },
+        progressBarContainer: { backgroundColor: colors.surfaceMuted },
+        // progressBarFill stays COLOR_CROWNED to represent the golden ratio/crown metric
+        legendText: { color: colors.textSecondary },
+        divider: { backgroundColor: colors.border },
+        bottomTabContainer: {
+            borderTopColor: colors.border,
+            backgroundColor: colors.background
+        },
+    });
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <View style={styles.header}>
-                <Text style={styles.headerSubtitle}>Your Life Map</Text>
+                <Text style={[styles.headerSubtitle, dynamicStyles.headerSubtitle]}>Your Life Map</Text>
                 <View style={styles.statsRow}>
-                    <Text style={styles.statsLargeNumber}>11,791 <Text style={styles.statsDays}>days</Text></Text>
-                    <Pressable style={styles.todayButton} onPress={() => navigation.navigate("EnhanceCrown")}>
-                        <Text style={styles.todayButtonText}>Today ✦</Text>
+                    <Text style={[styles.statsLargeNumber, dynamicStyles.statsLargeNumber]}>
+                        11,791 <Text style={[styles.statsDays, dynamicStyles.statsDays]}>days</Text>
+                    </Text>
+                    <Pressable style={[styles.todayButton, dynamicStyles.todayButton]} onPress={() => navigation.navigate("EnhanceCrown")}>
+                        <Text style={[styles.todayButtonText, dynamicStyles.todayButtonText]}>Today ✦</Text>
                     </Pressable>
                 </View>
-                <Text style={styles.headerSubtitleBottom}>1,684 weeks - 40% of life lived</Text>
-                <View style={styles.progressBarContainer}>
+                <Text style={[styles.headerSubtitleBottom, dynamicStyles.headerSubtitle]}>1,684 weeks - 40% of life lived</Text>
+
+                <View style={[styles.progressBarContainer, dynamicStyles.progressBarContainer]}>
                     <View style={styles.progressBarFill} />
                 </View>
             </View>
 
             <View style={styles.legendContainer}>
-                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: COLOR_PAST }]} /><Text style={styles.legendText}>Past</Text></View>
-                <View style={styles.legendItem}><View style={[styles.legendDot, { backgroundColor: COLOR_DOCUMENTED }]} /><Text style={styles.legendText}>Documented</Text></View>
-
-                {/* Updated Legend to match the new visual */}
+                <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: COLOR_PAST }]} />
+                    <Text style={[styles.legendText, dynamicStyles.legendText]}>Past</Text>
+                </View>
+                <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: COLOR_DOCUMENTED }]} />
+                    <Text style={[styles.legendText, dynamicStyles.legendText]}>Documented</Text>
+                </View>
                 <View style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: COLOR_CROWNED }]} />
-                    <Text style={styles.legendText}>Crowned</Text>
+                    <Text style={[styles.legendText, dynamicStyles.legendText]}>Crowned</Text>
                 </View>
-
-                <View style={styles.legendItem}><Text style={styles.legendText}>Future</Text></View>
+                <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: colors.border }]} />
+                    <Text style={[styles.legendText, dynamicStyles.legendText]}>Future</Text>
+                </View>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, dynamicStyles.divider]} />
 
             <View style={styles.listWrapper}>
                 <FlatList
@@ -164,13 +206,12 @@ const LifeMap = ({ navigation }: any) => {
                     )}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.listContent}
-                    // Added initialNumToRender to improve performance given heavy Skia canvas lists
                     initialNumToRender={10}
                     windowSize={5}
                 />
             </View>
 
-            <View style={styles.bottomTabContainer}>
+            <View style={[styles.bottomTabContainer, dynamicStyles.bottomTabContainer]}>
                 <BottomTabBar activeTab="map" />
             </View>
         </SafeAreaView>
@@ -179,39 +220,38 @@ const LifeMap = ({ navigation }: any) => {
 
 export default LifeMap;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFFFFF' },
+    container: { flex: 1 },
     header: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 16 },
-    headerSubtitle: { fontSize: 14, color: COLOR_TEXT_MUTED, fontWeight: '400', marginBottom: 2 },
+    headerSubtitle: { fontSize: 14, fontWeight: '400', marginBottom: 2 },
     statsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-    statsLargeNumber: { fontSize: 34, fontWeight: 'bold', color: COLOR_TEXT_MAIN, letterSpacing: -0.5 },
-    statsDays: { fontSize: 16, fontWeight: '400', color: COLOR_TEXT_MUTED, letterSpacing: 0 },
+    statsLargeNumber: { fontSize: 34, fontWeight: 'bold', letterSpacing: -0.5 },
+    statsDays: { fontSize: 16, fontWeight: '400', letterSpacing: 0 },
     todayButton: {
-        backgroundColor: '#191528',
         paddingVertical: 10,
         paddingHorizontal: 16,
         borderRadius: 24,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.22,
         shadowRadius: 12,
         elevation: 8,
         zIndex: 2,
     },
-    todayButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '500' },
-    headerSubtitleBottom: { fontSize: 13, color: COLOR_TEXT_MUTED, fontWeight: '400' },
-    progressBarContainer: { height: 5, backgroundColor: '#F3F3F3', borderRadius: 3, marginTop: 12, width: '100%', overflow: 'hidden' },
-    progressBarFill: { height: '100%', backgroundColor: COLOR_CROWNED, borderRadius: 3, width: '40%' },
+    todayButtonText: { fontSize: 14, fontWeight: '500' },
+    headerSubtitleBottom: { fontSize: 13, fontWeight: '400' },
+    progressBarContainer: { height: 5, borderRadius: 3, marginTop: 12, width: '100%', overflow: 'hidden' },
+    progressBarFill: { height: '100%', backgroundColor: COLOR_CROWNED, borderRadius: 3, width: '40%' }, // Keep Crowned yellow
     legendContainer: { flexDirection: 'row', gap: 16, paddingHorizontal: 24, paddingBottom: 16 },
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     legendDot: { width: 8, height: 8, borderRadius: 4 },
-    legendText: { fontSize: 12, color: COLOR_TEXT_MUTED, fontWeight: '400' },
-    divider: { height: 1, backgroundColor: '#F4F4F4', marginBottom: 24 },
+    legendText: { fontSize: 12, fontWeight: '400' },
+    divider: { height: 1, marginBottom: 24 },
     listWrapper: { flex: 1 },
     listContent: { paddingHorizontal: 24, paddingBottom: 40 },
     yearRowContainer: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 },
-    yearLabel: { width: 36, fontSize: 11, color: COLOR_TEXT_MUTED, fontWeight: '400', textAlign: 'left' },
+    yearLabel: { width: 36, fontSize: 11, fontWeight: '400', textAlign: 'left' },
     canvasContainer: { flex: 1, alignItems: 'center' },
-    ageLabel: { width: 28, fontSize: 11, color: COLOR_TEXT_MUTED, fontWeight: '400', textAlign: 'right' },
-    bottomTabContainer: { justifyContent: 'flex-end', borderTopWidth: 1, borderTopColor: '#F4F4F4' },
+    ageLabel: { width: 28, fontSize: 11, fontWeight: '400', textAlign: 'right' },
+    bottomTabContainer: { justifyContent: 'flex-end', borderTopWidth: 1 },
 });

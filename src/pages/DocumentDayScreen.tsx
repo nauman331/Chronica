@@ -11,19 +11,18 @@ import {
     ScrollView
 } from 'react-native';
 import BottomTabBar from '../components/BottomTabBar';
-import {
-    white,
-    yellow,
-    lightBlue,
-    lightGreen,
-    gray,
-    COLOR_TEXT_MAIN,
-    COLOR_TEXT_MUTED,
-    COLOR_FUTURE
-} from '../utils/colors';
 import { ArrowLeftIcon } from '../utils/icons';
 
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
+
+// Keep fixed brand colors for the specific input categories
+import { yellow, lightBlue, lightGreen } from '../utils/colors';
+
 const DocumentDayScreen = ({ navigation, route }: any) => {
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
     const {
         day = 6,
         month = 'January',
@@ -43,25 +42,63 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
         }, 120);
     };
 
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        container: { backgroundColor: colors.background },
+        header: {
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border
+        },
+        backButton: {
+            backgroundColor: colors.background,
+            borderColor: colors.border
+        },
+        headerTitle: { color: colors.text },
+        headerSubtitle: { color: colors.textSecondary },
+        statusBadge: { backgroundColor: colors.surfaceMuted },
+        statusBadgeText: { color: colors.textSecondary },
+        mainTitle: { color: colors.text },
+        mainSubtitle: { color: colors.textSecondary },
+        textInput: {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+        },
+        cancelButton: {
+            borderColor: colors.border,
+            backgroundColor: colors.background,
+        },
+        cancelButtonText: { color: colors.textSecondary },
+        crownButton: {
+            // Ensuring the text inside the yellow crown button is always readable
+            backgroundColor: yellow,
+            shadowColor: yellow,
+        },
+        bottomTabContainer: {
+            borderTopColor: colors.border,
+            backgroundColor: colors.background
+        }
+    });
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <KeyboardAvoidingView
                 style={styles.keyboardAvoid}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                {/* Header (Stays completely fixed at the top) */}
-                <View style={styles.header}>
+                {/* Header */}
+                <View style={[styles.header, dynamicStyles.header]}>
                     <View style={styles.headerLeft}>
-                        <Pressable style={styles.backButton} onPress={() => navigation?.goBack()}>
-                            <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
+                        <Pressable style={[styles.backButton, dynamicStyles.backButton]} onPress={() => navigation?.goBack()}>
+                            <ArrowLeftIcon color={colors.text} />
                         </Pressable>
                         <View style={styles.headerTitles}>
-                            <Text style={styles.headerTitle}>{month} {day}, {year}</Text>
-                            <Text style={styles.headerSubtitle}>{dayOfWeek}</Text>
+                            <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>{month} {day}, {year}</Text>
+                            <Text style={[styles.headerSubtitle, dynamicStyles.headerSubtitle]}>{dayOfWeek}</Text>
                         </View>
                     </View>
-                    <View style={styles.statusBadge}>
-                        <Text style={styles.statusBadgeText}>{status}</Text>
+                    <View style={[styles.statusBadge, dynamicStyles.statusBadge]}>
+                        <Text style={[styles.statusBadgeText, dynamicStyles.statusBadgeText]}>{status}</Text>
                     </View>
                 </View>
 
@@ -74,8 +111,8 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                 >
                     {/* Page Title */}
                     <View style={styles.titleSection}>
-                        <Text style={styles.mainTitle}>Document {month} {day}</Text>
-                        <Text style={styles.mainSubtitle}>Preserve this day in your life story</Text>
+                        <Text style={[styles.mainTitle, dynamicStyles.mainTitle]}>Document {month} {day}</Text>
+                        <Text style={[styles.mainSubtitle, dynamicStyles.mainSubtitle]}>Preserve this day in your life story</Text>
                     </View>
 
                     {/* Intention Input */}
@@ -85,9 +122,9 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             <Text style={[styles.labelText, { color: yellow }]}>INTENTION</Text>
                         </View>
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, dynamicStyles.textInput]}
                             placeholder="What was your intention for this day?"
-                            placeholderTextColor={COLOR_TEXT_MUTED}
+                            placeholderTextColor={colors.textSecondary}
                             multiline
                             textAlignVertical="top"
                             value={intention}
@@ -103,9 +140,9 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             <Text style={[styles.labelText, { color: lightBlue }]}>REFLECTION</Text>
                         </View>
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, dynamicStyles.textInput]}
                             placeholder="What did this day teach you?"
-                            placeholderTextColor={COLOR_TEXT_MUTED}
+                            placeholderTextColor={colors.textSecondary}
                             multiline
                             textAlignVertical="top"
                             value={reflection}
@@ -121,9 +158,9 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             <Text style={[styles.labelText, { color: lightGreen }]}>ACHIEVEMENT</Text>
                         </View>
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, dynamicStyles.textInput]}
                             placeholder="What moved your life forward?"
-                            placeholderTextColor={COLOR_TEXT_MUTED}
+                            placeholderTextColor={colors.textSecondary}
                             multiline
                             textAlignVertical="top"
                             value={achievement}
@@ -132,17 +169,17 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                         />
                     </View>
 
-                    {/* Action Buttons - Now sit right below the last input */}
+                    {/* Action Buttons */}
                     <View style={styles.buttonRow}>
                         <Pressable
-                            style={styles.cancelButton}
+                            style={[styles.cancelButton, dynamicStyles.cancelButton]}
                             onPress={() => navigation?.goBack()}
                         >
-                            <Text style={styles.cancelButtonText}>Cancel</Text>
+                            <Text style={[styles.cancelButtonText, dynamicStyles.cancelButtonText]}>Cancel</Text>
                         </Pressable>
 
                         <Pressable
-                            style={styles.crownButton}
+                            style={[styles.crownButton, dynamicStyles.crownButton]}
                             onPress={() => {
                                 navigation.navigate('EnhanceCrownEmotion', {
                                     day, month, year, dayOfWeek, intention, reflection, achievement
@@ -156,7 +193,7 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                 </ScrollView>
 
                 {/* Bottom Tab Bar */}
-                <View style={styles.bottomTabContainer}>
+                <View style={[styles.bottomTabContainer, dynamicStyles.bottomTabContainer]}>
                     <BottomTabBar activeTab="map" />
                 </View>
 
@@ -167,23 +204,21 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
 
 export default DocumentDayScreen;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: white
     },
     keyboardAvoid: {
         flex: 1,
     },
     header: {
-        backgroundColor: "#fff",
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd'
     },
     headerLeft: {
         flexDirection: 'row',
@@ -191,12 +226,10 @@ const styles = StyleSheet.create({
         gap: 12
     },
     backButton: {
-        backgroundColor: white,
         width: 36,
         height: 36,
         borderRadius: 18,
         borderWidth: 1,
-        borderColor: COLOR_FUTURE,
         alignItems: 'center',
         justifyContent: 'center'
     },
@@ -206,25 +239,20 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 16,
         fontWeight: '700',
-        color: COLOR_TEXT_MAIN
     },
     headerSubtitle: {
         fontSize: 13,
-        color: gray,
         marginTop: 2
     },
     statusBadge: {
-        backgroundColor: '#F4F4F6',
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 16
     },
     statusBadgeText: {
         fontSize: 12,
-        color: gray,
         fontWeight: '500'
     },
-
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: 20,
@@ -237,15 +265,12 @@ const styles = StyleSheet.create({
     mainTitle: {
         fontSize: 22,
         fontWeight: '800',
-        color: COLOR_TEXT_MAIN,
         marginBottom: 6
     },
     mainSubtitle: {
         fontSize: 15,
-        color: gray,
         fontWeight: '400'
     },
-
     inputSection: {
         marginBottom: 16
     },
@@ -268,60 +293,48 @@ const styles = StyleSheet.create({
     },
     textInput: {
         height: 85,
-        backgroundColor: "#fff",
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 16,
         padding: 16,
         paddingTop: 16,
         fontSize: 15,
-        color: COLOR_TEXT_MAIN,
     },
-
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 12,
-        marginTop: 16, // Changed from 'auto' to sit directly beneath the last input
-        marginBottom: 20 // Extra breathing room at the bottom
+        marginTop: 16,
+        marginBottom: 20
     },
     cancelButton: {
         flex: 1,
         borderWidth: 1,
-        borderColor: '#EAEAEA',
         borderRadius: 16,
         paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: white
     },
     cancelButtonText: {
-        color: gray,
         fontSize: 16,
         fontWeight: '600'
     },
     crownButton: {
         flex: 1,
-        backgroundColor: yellow,
         borderRadius: 16,
         paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: yellow,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.3,
         shadowRadius: 12,
         elevation: 6,
     },
     crownButtonText: {
-        color: white,
+        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '700'
     },
-
     bottomTabContainer: {
         borderTopWidth: 1,
-        borderTopColor: '#F5F5F5',
-        backgroundColor: white
     },
 });

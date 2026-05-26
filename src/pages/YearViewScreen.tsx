@@ -1,17 +1,17 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
-// Assuming Svg and Path are used in your actual file, keeping imports
-import Svg, { Path } from 'react-native-svg';
 import BottomTabBar from '../components/BottomTabBar';
+
+// Import custom theme hook
+import { useAppTheme } from '../hooks/useAppTheme';
+
+// Fixed Colors for map states
 import {
-    white,
-    blue,
+    white, // Keeping white for text inside specific buttons
     COLOR_CROWNED,
-    COLOR_TEXT_MUTED,
     COLOR_DOCUMENTED,
     COLOR_PAST,
-    COLOR_FUTURE,
-    COLOR_TEXT_MAIN
+    COLOR_FUTURE
 } from '../utils/colors';
 
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SolidSparkleIcon } from '../utils/icons';
@@ -50,40 +50,73 @@ const generateMonthData = (monthIndex: number) => {
 };
 
 const YearViewScreen = ({ navigation, route }: any) => {
+    // --- 1. Get dynamic colors ---
+    const { colors } = useAppTheme();
+
     const { year = 2026, age = 31 } = route.params || {};
     const monthsData = useMemo(() => Array.from({ length: 12 }).map((_, i) => generateMonthData(i)), []);
 
+    // --- 2. Dynamic Styles based on active theme ---
+    const dynamicStyles = StyleSheet.create({
+        container: { backgroundColor: colors.background },
+        iconButton: { backgroundColor: colors.surfaceMuted },
+        headerTitle: { color: colors.text },
+        headerSubtitle: { color: colors.textSecondary },
+        todayButton: {
+            backgroundColor: colors.primary,
+            shadowColor: colors.primary
+        },
+        todayButtonText: { color: colors.background }, // Inverts automatically
+
+        summaryCard: {
+            backgroundColor: colors.surface,
+            borderColor: colors.border
+        },
+        summaryBarTrack: { backgroundColor: colors.border },
+        summaryDateLabel: { color: colors.textSecondary },
+
+        monthName: { color: colors.text },
+        futureDot: { backgroundColor: colors.border }, // Replaces strict COLOR_FUTURE to blend in dark mode
+        monthProgressBar: { backgroundColor: colors.border },
+        monthProgressText: { color: colors.textSecondary },
+
+        bottomTabContainer: {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border
+        },
+    });
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <View style={styles.header}>
                 <View style={styles.headerControls}>
-                    <Pressable style={styles.iconButton} onPress={() => navigation.goBack()}>
-                        <ArrowLeftIcon color={COLOR_TEXT_MAIN} />
+                    <Pressable style={[styles.iconButton, dynamicStyles.iconButton]} onPress={() => navigation.goBack()}>
+                        <ArrowLeftIcon color={colors.text} />
                     </Pressable>
-                    <Pressable style={styles.iconButton}>
-                        <ChevronLeftIcon color={COLOR_TEXT_MAIN} />
+                    <Pressable style={[styles.iconButton, dynamicStyles.iconButton]}>
+                        <ChevronLeftIcon color={colors.text} />
                     </Pressable>
                 </View>
 
                 <View style={styles.headerTitleContainer}>
-                    <Text style={styles.headerTitle}>{year}</Text>
-                    <Text style={styles.headerSubtitle}>Age {age}</Text>
+                    <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>{year}</Text>
+                    <Text style={[styles.headerSubtitle, dynamicStyles.headerSubtitle]}>Age {age}</Text>
                 </View>
 
                 <View style={styles.headerControlsRight}>
-                    <Pressable style={styles.iconButton}>
-                        <ChevronRightIcon color={COLOR_TEXT_MAIN} />
+                    <Pressable style={[styles.iconButton, dynamicStyles.iconButton]}>
+                        <ChevronRightIcon color={colors.text} />
                     </Pressable>
-                    <Pressable style={styles.todayButton} onPress={() => navigation.navigate("EnhanceCrown")}>
-                        <Text style={styles.todayButtonText}>Today</Text>
-                        <SolidSparkleIcon color={white} />
+                    <Pressable style={[styles.todayButton, dynamicStyles.todayButton]} onPress={() => navigation.navigate("EnhanceCrown")}>
+                        <Text style={[styles.todayButtonText, dynamicStyles.todayButtonText]}>Today</Text>
+                        <SolidSparkleIcon color={colors.background} />
                     </Pressable>
                 </View>
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {/* Summary Card */}
-                <View style={styles.summaryCard}>
+                <View style={[styles.summaryCard, dynamicStyles.summaryCard]}>
                     <View style={styles.summaryStatsRow}>
                         <View style={styles.summaryStat}>
                             <Text style={[styles.statTitle, { color: COLOR_DOCUMENTED }]}>Documented</Text>
@@ -100,12 +133,12 @@ const YearViewScreen = ({ navigation, route }: any) => {
                     </View>
 
                     <View style={styles.summaryProgressContainer}>
-                        <View style={styles.summaryBarTrack}>
+                        <View style={[styles.summaryBarTrack, dynamicStyles.summaryBarTrack]}>
                             <View style={[styles.summaryBarFill, { width: '55%', backgroundColor: COLOR_CROWNED }]} />
                         </View>
                         <View style={styles.summaryLabelsContainer}>
-                            <Text style={styles.summaryDateLabel}>Jan {year - 1}</Text>
-                            <Text style={styles.summaryDateLabel}>Dec {year - 1}</Text>
+                            <Text style={[styles.summaryDateLabel, dynamicStyles.summaryDateLabel]}>Jan {year - 1}</Text>
+                            <Text style={[styles.summaryDateLabel, dynamicStyles.summaryDateLabel]}>Dec {year - 1}</Text>
                         </View>
                     </View>
                 </View>
@@ -118,7 +151,7 @@ const YearViewScreen = ({ navigation, route }: any) => {
                             style={styles.monthCard}
                             onPress={() => navigation.navigate('MonthView', { year, month: month.name })}
                         >
-                            <Text style={styles.monthName}>{month.name}</Text>
+                            <Text style={[styles.monthName, dynamicStyles.monthName]}>{month.name}</Text>
 
                             <View style={styles.dotGrid}>
                                 {month.dots.map((state, i) => (
@@ -133,7 +166,7 @@ const YearViewScreen = ({ navigation, route }: any) => {
                                                 state === 'crowned' && styles.crownedDot,
                                                 state === 'documented' && { backgroundColor: COLOR_DOCUMENTED },
                                                 state === 'past' && { backgroundColor: COLOR_PAST },
-                                                state === 'future' && { backgroundColor: COLOR_FUTURE }
+                                                state === 'future' && dynamicStyles.futureDot
                                             ]}
                                         />
                                     </View>
@@ -141,7 +174,7 @@ const YearViewScreen = ({ navigation, route }: any) => {
                             </View>
 
                             <View style={styles.monthProgressRow}>
-                                <View style={styles.monthProgressBar}>
+                                <View style={[styles.monthProgressBar, dynamicStyles.monthProgressBar]}>
                                     <View
                                         style={[
                                             styles.monthProgressFill,
@@ -149,14 +182,14 @@ const YearViewScreen = ({ navigation, route }: any) => {
                                         ]}
                                     />
                                 </View>
-                                <Text style={styles.monthProgressText}>{month.progress}%</Text>
+                                <Text style={[styles.monthProgressText, dynamicStyles.monthProgressText]}>{month.progress}%</Text>
                             </View>
                         </Pressable>
                     ))}
                 </View>
             </ScrollView>
 
-            <View style={styles.bottomTabContainer}>
+            <View style={[styles.bottomTabContainer, dynamicStyles.bottomTabContainer]}>
                 <BottomTabBar activeTab="map" />
             </View>
         </SafeAreaView>
@@ -165,10 +198,10 @@ const YearViewScreen = ({ navigation, route }: any) => {
 
 export default YearViewScreen;
 
+// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: white
     },
     header: {
         flexDirection: 'row',
@@ -190,7 +223,6 @@ const styles = StyleSheet.create({
         width: 34,
         height: 34,
         borderRadius: 17,
-        backgroundColor: COLOR_FUTURE,
         alignItems: 'center',
         justifyContent: 'center'
     },
@@ -200,22 +232,18 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 16,
         fontWeight: '800',
-        color: COLOR_TEXT_MAIN
     },
     headerSubtitle: {
         fontSize: 11,
-        color: COLOR_TEXT_MUTED,
         marginTop: 2
     },
     todayButton: {
-        backgroundColor: blue,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
         paddingVertical: 9,
         paddingHorizontal: 14,
         borderRadius: 20,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.22,
         shadowRadius: 12,
@@ -223,7 +251,6 @@ const styles = StyleSheet.create({
         zIndex: 2
     },
     todayButtonText: {
-        color: white,
         fontSize: 13,
         fontWeight: '600'
     },
@@ -233,17 +260,14 @@ const styles = StyleSheet.create({
         paddingBottom: 40
     },
     summaryCard: {
-        backgroundColor: white,
         borderRadius: 16,
         padding: 24,
         marginBottom: 32,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.04,
         shadowRadius: 16,
         elevation: 3,
         borderWidth: 1,
-        borderColor: '#F6F6F6'
     },
     summaryStatsRow: {
         flexDirection: 'row',
@@ -268,7 +292,6 @@ const styles = StyleSheet.create({
     },
     summaryBarTrack: {
         height: 2,
-        backgroundColor: COLOR_FUTURE,
         width: '100%',
         marginBottom: 10
     },
@@ -281,7 +304,6 @@ const styles = StyleSheet.create({
     },
     summaryDateLabel: {
         fontSize: 10,
-        color: COLOR_TEXT_MUTED,
         fontWeight: '500'
     },
     // Month Grid Styles
@@ -297,7 +319,6 @@ const styles = StyleSheet.create({
     monthName: {
         fontSize: 18,
         fontWeight: '800',
-        color: COLOR_TEXT_MAIN,
         marginBottom: 14
     },
     // Dot Grid System
@@ -350,7 +371,6 @@ const styles = StyleSheet.create({
     monthProgressBar: {
         flex: 1,
         height: 2,
-        backgroundColor: COLOR_FUTURE,
         borderRadius: 1
     },
     monthProgressFill: {
@@ -359,7 +379,6 @@ const styles = StyleSheet.create({
     },
     monthProgressText: {
         fontSize: 9,
-        color: COLOR_TEXT_MUTED,
         fontWeight: '600',
         marginLeft: 8,
         width: 22
@@ -368,7 +387,5 @@ const styles = StyleSheet.create({
     bottomTabContainer: {
         justifyContent: 'flex-end',
         borderTopWidth: 1,
-        borderTopColor: COLOR_FUTURE,
-        backgroundColor: white
     },
 });
