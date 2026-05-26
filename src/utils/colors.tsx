@@ -14,3 +14,27 @@ export const COLOR_TEXT_MAIN = '#111111';
 export const lightyellow = '#FEF9EC'
 export const lightPurple = '#2D1B4E';
 export const darkPurple = '#1A1523';
+
+export const lightTheme = {
+    background: white,
+    surface: white,
+    surfaceMuted: lightyellow,
+    text: COLOR_TEXT_MAIN,
+    textSecondary: gray,
+    border: '#F3EFE6',
+    primary: darkPurple,
+    accent: yellow,
+    danger: '#E53935',
+};
+
+export const darkTheme = {
+    background: darkPurple,
+    surface: lightPurple,
+    surfaceMuted: blue,
+    text: white,
+    textSecondary: '#A0A0B0',
+    border: '#3D2D5E',
+    primary: white,
+    accent: yellow,
+    danger: '#FF6B6B',
+};
