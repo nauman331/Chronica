@@ -10,22 +10,17 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
-// Icons
 import { ChevronLeftIcon } from '../utils/icons';
 
-// Brand colors for static accents and gradients
 import { yellow, white, lightPurple, darkPurple } from '../utils/colors';
 
 const SubscriptionScreen = ({ navigation }: any) => {
-    // --- 1. Get dynamic colors & theme ---
     const { colors, isDark } = useAppTheme();
 
     const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         headerTitle: { color: colors.text },
@@ -210,7 +205,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 16,
-        fontWeight: '700',
+        fontWeight: '500',
     },
     headerSpacer: {
         width: 40, // Balances the back button for absolute centering of title
@@ -228,7 +223,7 @@ const styles = StyleSheet.create({
     },
     mainTitle: {
         fontSize: 34,
-        fontWeight: '800', // Made bolder to match Figma
+        fontWeight: '500',
         textAlign: 'center',
         lineHeight: 40,
         letterSpacing: -0.5,
@@ -276,7 +271,7 @@ const styles = StyleSheet.create({
     },
     valuePropTitle: {
         fontSize: 18,
-        fontWeight: '800',
+        fontWeight: '500',
         textAlign: 'center',
         marginBottom: 10,
         letterSpacing: -0.3,
@@ -311,11 +306,11 @@ const styles = StyleSheet.create({
     },
     planTitle: {
         fontSize: 15,
-        fontWeight: '600',
+        fontWeight: '500',
         marginBottom: 6,
     },
     badge: {
-        backgroundColor: '#C8A43C', // Figma's specific brand yellow hex
+        backgroundColor: '#C8A43C',
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,
@@ -323,19 +318,17 @@ const styles = StyleSheet.create({
     badgeText: {
         color: white,
         fontSize: 11,
-        fontWeight: '700',
+        fontWeight: '500',
     },
     planPrice: {
         fontSize: 26,
-        fontWeight: '800',
+        fontWeight: '500',
         letterSpacing: -0.5,
     },
     planDuration: {
         fontSize: 14,
         fontWeight: '500',
     },
-
-    // Radio Buttons (Modified to match Figma rings)
     radioOuter: {
         width: 24,
         height: 24,
@@ -345,16 +338,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     radioThick: {
-        borderWidth: 6, // Creates the thick yellow ring effect
+        borderWidth: 6,
     },
 
-    // CTA
     ctaSection: {
         alignItems: 'center',
     },
     ctaButton: {
         width: '100%',
-        backgroundColor: darkPurple, // Matches quote card darkness
+        backgroundColor: darkPurple,
         paddingVertical: 18,
         borderRadius: 16,
         alignItems: 'center',
