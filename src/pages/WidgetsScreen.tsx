@@ -6,12 +6,12 @@ import {
     View,
     ScrollView,
     TouchableOpacity,
-    Platform
+    Platform,
+    Pressable
 } from 'react-native';
 
 import { useAppTheme } from '../hooks/useAppTheme';
-
-import { yellow, white, blue, lightyellow, COLOR_CROWNED } from '../utils/colors';
+import { yellow, white, lightyellow, COLOR_CROWNED } from '../utils/colors';
 
 import {
     ArrowLeftIcon,
@@ -20,11 +20,10 @@ import {
     ProgressRingIcon,
     DotPatternIcon,
     BadgeIcon,
-    MiniCheckIcon
 } from '../utils/icons';
 
 import BottomTabBar from '../components/BottomTabBar';
-
+import Svg, { Path } from 'react-native-svg';
 
 const weekData = [
     { day: 'M', crowned: true },
@@ -36,49 +35,66 @@ const weekData = [
     { day: 'S', crowned: false },
 ];
 
+const MiniCheckIcon = ({ color = yellow }: { color?: string }) => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+        <Path d="M20 6L9 17l-5-5" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
 const WidgetsScreen = ({ navigation }: any) => {
-    // --- 1. Get dynamic colors & theme ---
     const { colors, isDark } = useAppTheme();
     const [todayState, setTodayState] = useState<'empty' | 'progress' | 'crowned'>('empty');
 
-    // Helper functions are moved to dynamicStyles if needed, but since they are
-    // static layout (Figma-exact dimensions), they stay in the static StyleSheet.
-    // However, the colors inside them must be dynamic or match the provided colors file.
-
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         textMain: { color: colors.text },
-        textSecondary: { color: colors.textSecondary },
+        textSecondary: { color: '#8C8B9C' },
         card: {
-            backgroundColor: colors.surface,
-            borderColor: colors.border
+            // Force pure white in light mode to contrast against the #FEFDFA background
+            backgroundColor: isDark ? colors.surface : '#FFFFFF',
+            borderColor: isDark ? colors.border : '#F3EFE6',
+            // Finely tuned soft elevation shadow
+            shadowColor: '#000000',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: isDark ? 0 : 0.05,
+            shadowRadius: 24,
+            elevation: isDark ? 0 : 4,
         },
-        toggleContainer: { backgroundColor: colors.surfaceMuted },
-        toggleActive: { backgroundColor: colors.surface },
+        toggleContainer: { backgroundColor: isDark ? colors.surfaceMuted : '#FAFAFA', borderColor: isDark ? colors.border : '#F3EFE6', borderWidth: 1 },
+        toggleActive: { backgroundColor: isDark ? colors.surface : '#FFFFFF' },
         toggleTextActive: { color: colors.text },
-        toggleTextInactive: { color: colors.textSecondary },
-        pillBg: { backgroundColor: isDark ? 'rgba(200, 164, 60, 0.15)' : lightyellow }, // lightyellow from file
-        pillBorder: { borderColor: isDark ? 'rgba(200, 164, 60, 0.3)' : '#FDECA6' }, // Slight brand tint on border
-        progressBarTrack: { backgroundColor: colors.border },
-        footerText: { color: colors.textSecondary },
-        bottomTabContainer: { borderTopColor: colors.border, backgroundColor: colors.background }
+        toggleTextInactive: { color: '#8C8B9C' },
+        pillBg: { backgroundColor: isDark ? 'rgba(200, 164, 60, 0.15)' : lightyellow },
+        pillBorder: { borderColor: isDark ? 'rgba(200, 164, 60, 0.3)' : '#FDECA6' },
+        progressBarTrack: { backgroundColor: isDark ? colors.border : '#F3EFE6' },
+        footerText: { color: '#8C8B9C' },
+        bottomTabContainer: { borderTopColor: isDark ? colors.border : '#F3EFE6', backgroundColor: colors.background },
+        dayInactive: { backgroundColor: isDark ? colors.surfaceMuted : '#F6ECD7' },
+        dotInactive: { backgroundColor: isDark ? colors.surfaceMuted : '#F6ECD7' },
+        headerDivider: { backgroundColor: isDark ? colors.border : '#F3EFE6' },
+        backBtn: { backgroundColor: isDark ? colors.surfaceMuted : '#FAFAFA' },
     });
 
     return (
         <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             {/* --- Header --- */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation?.goBack()} style={styles.backButton}>
-                    {/* Using imported ArrowLeftIcon as requested */}
+            <View style={styles.headerRow}>
+                <TouchableOpacity
+                    style={[styles.backButton, dynamicStyles.backBtn]}
+                    activeOpacity={0.8}
+                    onPress={() => navigation?.goBack()}
+                >
                     <ArrowLeftIcon color={colors.text} />
                 </TouchableOpacity>
-                <View style={styles.headerTextContainer}>
+                <View style={styles.headerTextWrap}>
                     <Text style={[styles.headerTitle, dynamicStyles.textMain]}>Widgets</Text>
-                    <Text style={[styles.headerSubtitle, dynamicStyles.textSecondary]}>Toggle above to preview each state</Text>
+                    <Text style={styles.headerSubtitle}>
+                        Toggle above to preview each state
+                    </Text>
                 </View>
-                <View style={{ width: 40 }} />
             </View>
+
+            <View style={[styles.headerDivider, dynamicStyles.headerDivider]} />
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
@@ -117,18 +133,18 @@ const WidgetsScreen = ({ navigation }: any) => {
                         <View style={styles.widgetInner}>
                             <Text style={[styles.widgetDateText, dynamicStyles.textSecondary]}>April 15</Text>
                             <View style={styles.todayRow}>
-                                {/* Using imported DashedCircleIcon - dot is visible in icons file */}
                                 <DashedCircleIcon color={colors.border} />
                                 <View style={styles.todayTextContent}>
                                     <Text style={[styles.todayMainText, dynamicStyles.textMain]}>Today is empty</Text>
                                     <Text style={[styles.todaySubText, dynamicStyles.textSecondary]}>This day is waiting to be lived</Text>
                                 </View>
                             </View>
-                            <View style={[styles.actionPill, dynamicStyles.pillBg, styles.pillBorder, dynamicStyles.pillBorder]}>
+                            <Pressable style={[styles.actionPill, dynamicStyles.pillBg, styles.pillBorder, dynamicStyles.pillBorder]}
+                                onPress={() => navigation.navigate("EnhanceCrown")}
+                            >
                                 <Text style={styles.actionPillText}>Complete Today</Text>
-                                {/* Using imported ArrowRightSmallIcon with fixed yellow color */}
                                 <ArrowRightSmallIcon color={yellow} />
-                            </View>
+                            </Pressable>
                         </View>
                     )}
 
@@ -138,8 +154,7 @@ const WidgetsScreen = ({ navigation }: any) => {
                             <Text style={[styles.widgetDateText, dynamicStyles.textSecondary]}>April 15</Text>
                             <View style={styles.todayRow}>
                                 <View style={styles.progressRingWrapper}>
-                                    {/* Using imported ProgressRingIcon */}
-                                    <ProgressRingIcon progress={66} trackColor={colors.border} />
+                                    <ProgressRingIcon progress={66} trackColor={isDark ? colors.border : '#F3EFE6'} />
                                     <Text style={[styles.progressRingText, dynamicStyles.textMain]}>2/3</Text>
                                 </View>
                                 <View style={styles.todayTextContent}>
@@ -147,17 +162,18 @@ const WidgetsScreen = ({ navigation }: any) => {
                                     <Text style={[styles.todaySubText, dynamicStyles.textSecondary]}>One more reflection to crown today</Text>
                                 </View>
                             </View>
-                            <View style={[styles.actionPill, dynamicStyles.pillBg, styles.pillBorder, dynamicStyles.pillBorder]}>
+                            <Pressable style={[styles.actionPill, dynamicStyles.pillBg, styles.pillBorder, dynamicStyles.pillBorder]}
+                                onPress={() => navigation.navigate("EnhanceCrown")}
+                            >
                                 <Text style={styles.actionPillText}>Finish Today</Text>
                                 <ArrowRightSmallIcon color={yellow} />
-                            </View>
+                            </Pressable>
                         </View>
                     )}
 
                     {/* Crowned State */}
                     {todayState === 'crowned' && (
                         <View style={[styles.widgetInner, styles.crownedInner]}>
-                            {/* Using imported DotPatternIcon */}
                             <View style={styles.patternContainer}>
                                 <DotPatternIcon />
                             </View>
@@ -165,15 +181,13 @@ const WidgetsScreen = ({ navigation }: any) => {
                             <View style={styles.crownedHeader}>
                                 <Text style={[styles.widgetDateTextUpper, dynamicStyles.textSecondary]}>APRIL 15</Text>
                                 <View style={[styles.statusPill, dynamicStyles.pillBg, styles.pillBorder, dynamicStyles.pillBorder]}>
-                                    {/* Replaced crown with mini check icon as requested for Figma matching */}
                                     <MiniCheckIcon color={yellow} />
                                     <Text style={styles.statusPillText}>Crowned</Text>
                                 </View>
                             </View>
 
                             <View style={[styles.crownIconBg, dynamicStyles.pillBg, styles.pillBorder, dynamicStyles.pillBorder]}>
-                                {/* Large badge icon is smaller to match Figma */}
-                                <BadgeIcon color={yellow} size={40} />
+                                <BadgeIcon color={yellow} size={30} />
                             </View>
 
                             <Text style={[styles.crownedMainText, dynamicStyles.textMain]}>Day Crowned ✦</Text>
@@ -199,7 +213,7 @@ const WidgetsScreen = ({ navigation }: any) => {
                             <Text style={[styles.progressSubText, dynamicStyles.textSecondary]}>days of life lived</Text>
                         </View>
                         <View style={styles.progressRingWrapperBig}>
-                            <ProgressRingIcon progress={40.4} size={56} strokeWidth={4} trackColor={colors.border} />
+                            <ProgressRingIcon progress={40.4} size={54} strokeWidth={4} trackColor={isDark ? colors.border : '#F3EFE6'} />
                             <View style={styles.progressRingTextContainer}>
                                 <Text style={[styles.progressRingPercent, dynamicStyles.textMain]}>40.4%</Text>
                                 <Text style={[styles.progressRingOfLife, dynamicStyles.textSecondary]}>of life</Text>
@@ -218,7 +232,7 @@ const WidgetsScreen = ({ navigation }: any) => {
                     </View>
                 </View>
 
-                {/* ================= SECTION 3: STREAK WIDGET (CHART ACCORDING TO VALUES) ================= */}
+                {/* ================= SECTION 3: STREAK WIDGET ================= */}
                 <View style={[styles.sectionHeader, { marginTop: 40 }]}>
                     <View style={styles.sectionTitleBlock}>
                         <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Streak & Consistency</Text>
@@ -230,13 +244,11 @@ const WidgetsScreen = ({ navigation }: any) => {
                     <View style={styles.streakHeader}>
                         <View>
                             <Text style={[styles.progressLabel, dynamicStyles.textSecondary]}>Consistency</Text>
-                            {/* FIX: Combined into a single text block to fix rogue string error */}
                             <Text style={[styles.streakBigValue, dynamicStyles.textMain]}>
                                 18<Text style={[styles.streakSubText, dynamicStyles.textSecondary]}> day run</Text>
                             </Text>
                         </View>
                         <View style={[styles.statusPill, dynamicStyles.pillBg, styles.pillBorder, dynamicStyles.pillBorder]}>
-                            {/* Dot uses the brand golden crowned color from file */}
                             <View style={styles.greenDot} />
                             <Text style={styles.statusPillText}>On track</Text>
                         </View>
@@ -244,7 +256,6 @@ const WidgetsScreen = ({ navigation }: any) => {
 
                     <Text style={[styles.weekLabel, dynamicStyles.textSecondary]}>This week</Text>
 
-                    {/* Dynamic Chart mapped from weekData - bars center relative to each other */}
                     <View style={styles.weekBlocksRow}>
                         {weekData.map((item, index) => (
                             <View key={index} style={styles.dayBlockContainer}>
@@ -252,10 +263,8 @@ const WidgetsScreen = ({ navigation }: any) => {
                                     <View style={[
                                         styles.dayBlock,
                                         {
-                                            // Chart is according to values: 34 for crowned, 14 for not
                                             height: item.crowned ? 34 : 14,
-                                            // Inactive uses surfaceMuted/blue in dark, else Figma light yellow hex
-                                            backgroundColor: item.crowned ? COLOR_CROWNED : (isDark ? colors.surfaceMuted : '#F7EBCB')
+                                            backgroundColor: item.crowned ? COLOR_CROWNED : (isDark ? colors.surfaceMuted : '#F6ECD7')
                                         }
                                     ]} />
                                 </View>
@@ -273,63 +282,69 @@ const WidgetsScreen = ({ navigation }: any) => {
                             <Text style={[styles.legendText, dynamicStyles.textSecondary]}>Crowned day</Text>
                         </View>
                         <View style={styles.legendItem}>
-                            {/* Inactive legend matches the chart in light/dark */}
-                            <View style={[styles.legendDot, { backgroundColor: isDark ? colors.surfaceMuted : '#F7EBCB' }]} />
+                            <View style={[styles.legendDot, dynamicStyles.dotInactive]} />
                             <Text style={[styles.legendText, dynamicStyles.textSecondary]}>Not yet</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* --- Footer Note --- */}
-                <Text style={[styles.footerNote, dynamicStyles.footerText]}>
-                    ✦ Widgets reflect your days as you document them. Add Chronica to your home screen via the system share menu — your life, always in view.
-                </Text>
+                <View style={styles.footerNoteContainer}>
+                    <Text style={[styles.footerNote, dynamicStyles.footerText]}>
+                        ✦ Widgets reflect your days as you document them. Add Chronica to your home screen via the system share menu — your life, always in view.
+                    </Text>
+                </View>
 
             </ScrollView>
 
             <View style={[styles.bottomTabContainer, dynamicStyles.bottomTabContainer]}>
                 <BottomTabBar activeTab="profile" />
             </View>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 };
 
 export default WidgetsScreen;
 
-// --- Static Layout Styles ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: white
     },
-    header: {
+    headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'android' ? 20 : 10,
+        paddingTop: 10,
         paddingBottom: 16,
     },
     backButton: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-    },
-    headerTextContainer: {
-        flex: 1,
+        width: 38,
+        height: 38,
+        borderRadius: 19,
         alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 14,
+    },
+    headerTextWrap: {
+        flex: 1,
     },
     headerTitle: {
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: '700',
+        marginBottom: 2,
+        letterSpacing: -0.3,
     },
     headerSubtitle: {
-        fontSize: 11,
-        marginTop: 2,
+        fontSize: 12.5,
+        color: '#8C8B9C',
+    },
+    headerDivider: {
+        height: 1,
     },
     scrollContent: {
-        paddingHorizontal: 24,
+        paddingHorizontal: 20,
         paddingBottom: 40,
-        paddingTop: 10,
+        paddingTop: 24,
     },
 
     // Sections
@@ -343,36 +358,36 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     sectionTitle: {
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: '700',
         marginBottom: 4,
     },
     sectionSubtitle: {
-        fontSize: 12,
+        fontSize: 12.5,
     },
 
     // Toggle
     toggleContainer: {
         flexDirection: 'row',
-        borderRadius: 20,
+        borderRadius: 18,
         padding: 4,
         marginLeft: 12,
     },
     toggleBtn: {
         paddingVertical: 6,
         paddingHorizontal: 10,
-        borderRadius: 16,
+        borderRadius: 14,
     },
     toggleActive: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.04,
         shadowRadius: 4,
         elevation: 2,
     },
     toggleText: {
-        fontSize: 10,
-        fontWeight: '600',
+        fontSize: 11,
+        fontWeight: '500',
     },
 
     // Base Widget Card
@@ -380,12 +395,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         padding: 24,
         borderWidth: 1,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.04,
-        shadowRadius: 16,
-        elevation: 3,
-        overflow: 'hidden',
+        // Removed overflow: hidden so iOS dropshadows work correctly
     },
 
     // Today Widget Internal
@@ -394,7 +404,7 @@ const styles = StyleSheet.create({
     },
     widgetDateText: {
         fontSize: 13,
-        marginBottom: 16,
+        marginBottom: 20,
     },
     todayRow: {
         flexDirection: 'row',
@@ -406,7 +416,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     todayMainText: {
-        fontSize: 17,
+        fontSize: 18,
         fontWeight: '700',
         marginBottom: 4,
     },
@@ -425,7 +435,7 @@ const styles = StyleSheet.create({
     actionPillText: {
         color: yellow,
         fontSize: 12,
-        fontWeight: '700',
+        fontWeight: '600',
     },
     pillBorder: {
         borderWidth: 1,
@@ -443,8 +453,8 @@ const styles = StyleSheet.create({
 
     // Crowned State
     crownedInner: {
-        alignItems: 'center',
-        paddingTop: 10,
+        alignItems: 'flex-start',
+        overflow: 'hidden', // Added here individually if pattern needs clipping, keeps card shadow intact
     },
     patternContainer: {
         position: 'absolute',
@@ -464,42 +474,43 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '600',
         letterSpacing: 0.5,
+        textTransform: 'uppercase'
     },
     statusPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 4,
-        paddingHorizontal: 10,
-        borderRadius: 12,
-        gap: 4,
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 14,
+        gap: 6,
     },
     statusPillText: {
         color: yellow,
         fontSize: 11,
-        fontWeight: '700',
+        fontWeight: '600',
     },
     crownIconBg: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 16,
     },
     crownedMainText: {
         fontSize: 18,
-        fontWeight: '800',
-        marginBottom: 6,
+        fontWeight: '700',
+        marginBottom: 4,
     },
     crownedSubText: {
-        fontSize: 13,
+        fontSize: 12.5,
     },
 
     // Progress Widget Internal
     progressLabel: {
         fontSize: 11,
         fontWeight: '500',
-        marginBottom: 8,
+        marginBottom: 10,
     },
     progressRow: {
         flexDirection: 'row',
@@ -526,8 +537,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     progressRingPercent: {
-        fontSize: 12,
-        fontWeight: '800',
+        fontSize: 11.5,
+        fontWeight: '700',
     },
     progressRingOfLife: {
         fontSize: 8,
@@ -550,7 +561,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     linearLabelText: {
-        fontSize: 10,
+        fontSize: 11,
     },
 
     // Streak Widget Internal
@@ -563,7 +574,7 @@ const styles = StyleSheet.create({
     streakBigValue: {
         fontSize: 28,
         fontWeight: '800',
-        letterSpacing: -1,
+        letterSpacing: -0.5,
     },
     streakSubText: {
         fontSize: 14,
@@ -590,7 +601,7 @@ const styles = StyleSheet.create({
     },
     barWrapper: {
         height: 34,
-        justifyContent: 'center', // Vertically centers the 14px bars relative to the 34px ones
+        justifyContent: 'center',
     },
     dayBlock: {
         width: 34,
@@ -615,16 +626,20 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     legendText: {
-        fontSize: 11,
+        fontSize: 11.5,
     },
 
     // Footer Note
-    footerNote: {
-        fontSize: 12,
-        lineHeight: 18,
+    footerNoteContainer: {
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#F3EFE6',
+        padding: 16,
         marginTop: 32,
-        paddingHorizontal: 8,
-        textAlign: 'center',
+    },
+    footerNote: {
+        fontSize: 12.5,
+        lineHeight: 18,
     },
     bottomTabContainer: {
         borderTopWidth: 1,
