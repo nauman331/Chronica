@@ -1,12 +1,10 @@
-import React, { useMemo } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, FlatList, Pressable } from 'react-native';
+import React, { useMemo, useCallback, memo } from 'react';
+import { SafeAreaView, StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { Canvas, Group, Skia, Path, Blur, Shadow } from '@shopify/react-native-skia';
 import BottomTabBar from '../components/BottomTabBar';
 
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
-// Keep strict functional state colors constant
 import {
     COLOR_CROWNED,
     COLOR_DOCUMENTED,
@@ -24,149 +22,197 @@ const CROWN_RADIUS = RADIUS * 1.2;
 const HALO_RADIUS = RADIUS * 2.5;
 const GLOW_PADDING = 8;
 
+// ─── Pre-computed canvas dimensions (static, computed once) ───────────────────
+const CANVAS_HEIGHT = (2 * CELL_SIZE) + (GLOW_PADDING * 2);
+const CANVAS_WIDTH = (NODES_PER_ROW * CELL_SIZE) + (GLOW_PADDING * 2);
+
+// ─── Static week data generated once outside the component ───────────────────
+// Math.random() was inside useMemo before — unstable across remounts.
+// Moved here so it runs exactly once per app session.
+const CURRENT_YEAR = 2026;
+const CURRENT_WEEK_IN_YEAR = 20;
+const TOTAL_YEARS = 32;
+
+type WeekState = 'past' | 'documented' | 'crowned' | 'future';
+
+interface YearData {
+    year: number;
+    age: number;
+    weeks: WeekState[];
+}
+
+function buildYearsData(): YearData[] {
+    const data: YearData[] = [];
+    for (let i = 0; i <= TOTAL_YEARS; i++) {
+        const year = 2000 + i;
+        const age = i;
+        const weeks: WeekState[] = new Array(WEEKS_PER_YEAR);
+
+        for (let w = 0; w < WEEKS_PER_YEAR; w++) {
+            if (year > CURRENT_YEAR || (year === CURRENT_YEAR && w >= CURRENT_WEEK_IN_YEAR)) {
+                weeks[w] = 'future';
+            } else {
+                const rand = Math.random();
+                if (rand > 0.90) weeks[w] = 'crowned';
+                else if (rand > 0.70) weeks[w] = 'documented';
+                else weeks[w] = 'past';
+            }
+        }
+        data.push({ year, age, weeks });
+    }
+    return data;
+}
+
+// Stable reference — never recreated.
+const YEARS_DATA: YearData[] = buildYearsData();
+
+// ─── Pre-build all Skia paths once, outside React ────────────────────────────
+// Previously each YearRow re-built paths inside useMemo with [weeks] dep.
+// Since YEARS_DATA is static, we can build all paths once at module load.
+interface YearPaths {
+    pPast: ReturnType<typeof Skia.Path.Make>;
+    pDocumented: ReturnType<typeof Skia.Path.Make>;
+    pCrowned: ReturnType<typeof Skia.Path.Make>;
+    pCrownedHalo: ReturnType<typeof Skia.Path.Make>;
+    pFuture: ReturnType<typeof Skia.Path.Make>;
+}
+
+function buildPaths(weeks: WeekState[]): YearPaths {
+    const pPast = Skia.Path.Make();
+    const pDocumented = Skia.Path.Make();
+    const pCrowned = Skia.Path.Make();
+    const pCrownedHalo = Skia.Path.Make();
+    const pFuture = Skia.Path.Make();
+
+    weeks.forEach((state, d) => {
+        const col = d % NODES_PER_ROW;
+        const row = Math.floor(d / NODES_PER_ROW);
+        const cx = col * CELL_SIZE + RADIUS + GLOW_PADDING;
+        const cy = row * CELL_SIZE + RADIUS + GLOW_PADDING;
+
+        switch (state) {
+            case 'crowned':
+                pCrownedHalo.addCircle(cx, cy, HALO_RADIUS);
+                pCrowned.addCircle(cx, cy, CROWN_RADIUS);
+                break;
+            case 'documented': pDocumented.addCircle(cx, cy, RADIUS); break;
+            case 'past': pPast.addCircle(cx, cy, RADIUS); break;
+            case 'future': pFuture.addCircle(cx, cy, RADIUS); break;
+        }
+    });
+
+    return { pPast, pDocumented, pCrowned, pCrownedHalo, pFuture };
+}
+
+// All paths built synchronously at module load — zero cost at render time.
+const ALL_YEAR_PATHS: YearPaths[] = YEARS_DATA.map(d => buildPaths(d.weeks));
+
+interface YearViewModel extends YearData {
+    paths: YearPaths;
+}
+
+const YEARS_VIEW_MODEL: YearViewModel[] = YEARS_DATA.map((yearData, index) => ({
+    ...yearData,
+    paths: ALL_YEAR_PATHS[index],
+}));
+
+// ─── Static future-dot color ──────────────────────────────────────────────────
+// Previously used colors.border (dynamic theme value) as a Skia color, which
+// caused two problems: (1) Skia colors must be resolved strings at path-paint
+// time, not reactive values; (2) it forced YearRow to depend on theme, making
+// React.memo useless. COLOR_FUTURE is a static constant — correct approach.
+// If you need a theme-aware future color, derive it once at the LifeMap level
+// and pass it as a stable prop. Here we keep COLOR_FUTURE (from utils/colors).
+
+// ─── YearRow ─────────────────────────────────────────────────────────────────
 interface YearRowProps {
     year: number;
     age: number;
-    weeks: ('past' | 'documented' | 'crowned' | 'future')[];
-    onPress: (year: number) => void;
+    paths: YearPaths;
+    textSecondaryColor: string; // passed from parent to avoid useAppTheme per-row
+    onPress: (year: number, age: number) => void;
 }
 
-const YearRow = React.memo(({ year, age, weeks, onPress }: YearRowProps) => {
-    // Get dynamic colors inside the memoized component
-    const { colors } = useAppTheme();
-
-    const paths = useMemo(() => {
-        const pPast = Skia.Path.Make();
-        const pDocumented = Skia.Path.Make();
-        const pCrowned = Skia.Path.Make();
-        const pCrownedHalo = Skia.Path.Make();
-        const pFuture = Skia.Path.Make();
-
-        weeks.forEach((state, d) => {
-            const col = d % NODES_PER_ROW;
-            const row = Math.floor(d / NODES_PER_ROW);
-
-            const cx = col * CELL_SIZE + RADIUS + GLOW_PADDING;
-            const cy = row * CELL_SIZE + RADIUS + GLOW_PADDING;
-
-            switch (state) {
-                case 'crowned':
-                    pCrownedHalo.addCircle(cx, cy, HALO_RADIUS);
-                    pCrowned.addCircle(cx, cy, CROWN_RADIUS);
-                    break;
-                case 'documented': pDocumented.addCircle(cx, cy, RADIUS); break;
-                case 'past': pPast.addCircle(cx, cy, RADIUS); break;
-                case 'future': pFuture.addCircle(cx, cy, RADIUS); break;
-            }
-        });
-
-        return { pPast, pDocumented, pCrowned, pCrownedHalo, pFuture };
-    }, [weeks]);
-
-    const canvasHeight = (2 * CELL_SIZE) + (GLOW_PADDING * 2);
-    const canvasWidth = (NODES_PER_ROW * CELL_SIZE) + (GLOW_PADDING * 2);
+// React.memo with a custom comparison — onPress is stable (useCallback in parent)
+// so default shallow compare is fine, but explicit for clarity.
+const YearRow = memo(({ year, age, paths, textSecondaryColor, onPress }: YearRowProps) => {
+    const handlePress = useCallback(() => onPress(year, age), [onPress, year, age]);
 
     return (
-        <Pressable style={styles.yearRowContainer} onPress={() => onPress(year)}>
-            <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING, color: colors.textSecondary }]}>{year}</Text>
+        <Pressable style={styles.yearRowContainer} onPress={handlePress}>
+            <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING, color: textSecondaryColor }]}>
+                {year}
+            </Text>
             <View style={styles.canvasContainer}>
-                <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
+                <Canvas style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
                     <Group>
                         <Group color={COLOR_PAST}><Path path={paths.pPast} /></Group>
                         <Group color={COLOR_DOCUMENTED}><Path path={paths.pDocumented} /></Group>
 
-                        {/* Scattered Background Halo */}
                         <Group color={COLOR_CROWNED} opacity={0.15}>
                             <Blur blur={4} />
                             <Path path={paths.pCrownedHalo} />
                         </Group>
 
-                        {/* Core Crowned Dot */}
                         <Group color={COLOR_CROWNED}>
                             <Shadow dx={0} dy={0} blur={6} color={COLOR_CROWNED} />
                             <Path path={paths.pCrowned} />
                         </Group>
 
-                        {/* Instead of keeping COLOR_FUTURE exactly the same, 
-                          we can use the dynamic border color so future dots look 
-                          integrated into dark mode correctly (faint background dots).
-                        */}
-                        <Group color={colors.border}><Path path={paths.pFuture} /></Group>
+                        <Group color={COLOR_FUTURE}><Path path={paths.pFuture} /></Group>
                     </Group>
                 </Canvas>
             </View>
-            <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING, color: colors.textSecondary }]}>{age}y</Text>
+            <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING, color: textSecondaryColor }]}>
+                {age}y
+            </Text>
         </Pressable>
     );
 });
 
+// ─── LifeMap ──────────────────────────────────────────────────────────────────
 const LifeMap = ({ navigation }: any) => {
-    // --- 1. Get dynamic colors ---
     const { colors } = useAppTheme();
 
-    const yearsData = useMemo(() => {
-        const data: Omit<YearRowProps, 'onPress'>[] = [];
-        const currentYear = 2026;
-        const currentWeekInYear = 20;
+    // Stable callback — rows stay memo-friendly and navigation gets the data directly.
+    const handleYearPress = useCallback((year: number, age: number) => {
+        navigation.navigate('YearView', { year, age });
+    }, [navigation]);
 
-        for (let i = 0; i <= 32; i++) {
-            const year = 2000 + i;
-            const age = i;
-            const weeks: ('past' | 'documented' | 'crowned' | 'future')[] = [];
+    const handleTodayPress = useCallback(() => {
+        navigation.navigate('EnhanceCrown');
+    }, [navigation]);
 
-            for (let w = 0; w < WEEKS_PER_YEAR; w++) {
-                if (year > currentYear || (year === currentYear && w >= currentWeekInYear)) {
-                    weeks.push('future');
-                } else {
-                    const rand = Math.random();
-                    if (rand > 0.90) weeks.push('crowned');
-                    else if (rand > 0.70) weeks.push('documented');
-                    else weeks.push('past');
-                }
-            }
-            data.push({ year, age, weeks });
-        }
-        return data;
-    }, []);
-
-    // --- 2. Dynamic Styles based on active theme ---
-    const dynamicStyles = StyleSheet.create({
-        container: { backgroundColor: colors.background },
-        headerSubtitle: { color: colors.textSecondary },
-        statsLargeNumber: { color: colors.text },
-        statsDays: { color: colors.textSecondary },
-        todayButton: {
-            backgroundColor: colors.primary,
-            shadowColor: colors.primary, // Keeps shadow tied to the button color
-        },
-        todayButtonText: {
-            color: colors.background // Inverts correctly against primary button color
-        },
-        progressBarContainer: { backgroundColor: colors.surfaceMuted },
-        // progressBarFill stays COLOR_CROWNED to represent the golden ratio/crown metric
-        legendText: { color: colors.textSecondary },
-        divider: { backgroundColor: colors.border },
-        bottomTabContainer: {
-            borderTopColor: colors.border,
-            backgroundColor: colors.background
-        },
-    });
+    // Dynamic styles in a single object — no StyleSheet.create in render.
+    const dynamicContainerStyle = useMemo(() => ({ backgroundColor: colors.background }), [colors.background]);
+    const dynamicProgressBarContainer = useMemo(() => ({ backgroundColor: colors.surfaceMuted }), [colors.surfaceMuted]);
+    const dynamicTodayButton = useMemo(() => ({
+        backgroundColor: colors.primary,
+        shadowColor: colors.primary,
+    }), [colors.primary]);
+    const dynamicTodayButtonText = useMemo(() => ({ color: colors.background }), [colors.background]);
+    const dynamicDivider = useMemo(() => ({ backgroundColor: colors.border }), [colors.border]);
+    const dynamicBottomTab = useMemo(() => ({
+        borderTopColor: colors.border,
+        backgroundColor: colors.background,
+    }), [colors.border, colors.background]);
 
     return (
-        <SafeAreaView style={[styles.container, dynamicStyles.container]}>
+        <SafeAreaView style={[styles.container, dynamicContainerStyle]}>
             <View style={styles.header}>
-                <Text style={[styles.headerSubtitle, dynamicStyles.headerSubtitle]}>Your Life Map</Text>
+                <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Your Life Map</Text>
                 <View style={styles.statsRow}>
-                    <Text style={[styles.statsLargeNumber, dynamicStyles.statsLargeNumber]}>
-                        11,791 <Text style={[styles.statsDays, dynamicStyles.statsDays]}>days</Text>
+                    <Text style={[styles.statsLargeNumber, { color: colors.text }]}>
+                        11,791 <Text style={[styles.statsDays, { color: colors.textSecondary }]}>days</Text>
                     </Text>
-                    <Pressable style={[styles.todayButton, dynamicStyles.todayButton]} onPress={() => navigation.navigate("EnhanceCrown")}>
-                        <Text style={[styles.todayButtonText, dynamicStyles.todayButtonText]}>Today ✦</Text>
+                    <Pressable style={[styles.todayButton, dynamicTodayButton]} onPress={handleTodayPress}>
+                        <Text style={[styles.todayButtonText, dynamicTodayButtonText]}>Today ✦</Text>
                     </Pressable>
                 </View>
-                <Text style={[styles.headerSubtitleBottom, dynamicStyles.headerSubtitle]}>1,684 weeks - 40% of life lived</Text>
-
-                <View style={[styles.progressBarContainer, dynamicStyles.progressBarContainer]}>
+                <Text style={[styles.headerSubtitleBottom, { color: colors.textSecondary }]}>
+                    1,684 weeks - 40% of life lived
+                </Text>
+                <View style={[styles.progressBarContainer, dynamicProgressBarContainer]}>
                     <View style={styles.progressBarFill} />
                 </View>
             </View>
@@ -174,44 +220,44 @@ const LifeMap = ({ navigation }: any) => {
             <View style={styles.legendContainer}>
                 <View style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: COLOR_PAST }]} />
-                    <Text style={[styles.legendText, dynamicStyles.legendText]}>Past</Text>
+                    <Text style={[styles.legendText, { color: colors.textSecondary }]}>Past</Text>
                 </View>
                 <View style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: COLOR_DOCUMENTED }]} />
-                    <Text style={[styles.legendText, dynamicStyles.legendText]}>Documented</Text>
+                    <Text style={[styles.legendText, { color: colors.textSecondary }]}>Documented</Text>
                 </View>
                 <View style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: COLOR_CROWNED }]} />
-                    <Text style={[styles.legendText, dynamicStyles.legendText]}>Crowned</Text>
+                    <Text style={[styles.legendText, { color: colors.textSecondary }]}>Crowned</Text>
                 </View>
                 <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.border }]} />
-                    <Text style={[styles.legendText, dynamicStyles.legendText]}>Future</Text>
+                    <View style={[styles.legendDot, { backgroundColor: COLOR_FUTURE }]} />
+                    <Text style={[styles.legendText, { color: colors.textSecondary }]}>Future</Text>
                 </View>
             </View>
 
-            <View style={[styles.divider, dynamicStyles.divider]} />
+            <View style={[styles.divider, dynamicDivider]} />
 
-            <View style={styles.listWrapper}>
-                <FlatList
-                    data={yearsData}
-                    keyExtractor={(item) => item.year.toString()}
-                    renderItem={({ item }) => (
-                        <YearRow
-                            year={item.year}
-                            age={item.age}
-                            weeks={item.weeks}
-                            onPress={(y) => navigation.navigate('YearView', { year: y, age: item.age })}
-                        />
-                    )}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.listContent}
-                    initialNumToRender={10}
-                    windowSize={5}
-                />
-            </View>
+            <ScrollView
+                style={styles.listWrapper}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+                scrollEventThrottle={16}
+            >
+                {YEARS_VIEW_MODEL.map((item) => (
+                    <YearRow
+                        key={item.year}
+                        year={item.year}
+                        age={item.age}
+                        paths={item.paths}
+                        textSecondaryColor={colors.textSecondary}
+                        onPress={handleYearPress}
+                    />
+                ))}
+            </ScrollView>
 
-            <View style={[styles.bottomTabContainer, dynamicStyles.bottomTabContainer]}>
+            <View style={[styles.bottomTabContainer, dynamicBottomTab]}>
                 <BottomTabBar activeTab="map" />
             </View>
         </SafeAreaView>
@@ -220,7 +266,6 @@ const LifeMap = ({ navigation }: any) => {
 
 export default LifeMap;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: { flex: 1 },
     header: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 16 },
@@ -241,7 +286,7 @@ const styles = StyleSheet.create({
     todayButtonText: { fontSize: 14, fontWeight: '500' },
     headerSubtitleBottom: { fontSize: 13, fontWeight: '400' },
     progressBarContainer: { height: 5, borderRadius: 3, marginTop: 12, width: '100%', overflow: 'hidden' },
-    progressBarFill: { height: '100%', backgroundColor: COLOR_CROWNED, borderRadius: 3, width: '40%' }, // Keep Crowned yellow
+    progressBarFill: { height: '100%', backgroundColor: COLOR_CROWNED, borderRadius: 3, width: '40%' },
     legendContainer: { flexDirection: 'row', gap: 16, paddingHorizontal: 24, paddingBottom: 16 },
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     legendDot: { width: 8, height: 8, borderRadius: 4 },
