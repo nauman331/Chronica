@@ -185,7 +185,9 @@ const Profile = ({ navigation }: any) => {
 
                 {/* --- Actions Menu --- */}
                 <View style={[styles.listContainer, dynamicStyles.listContainer]}>
-                    <TouchableOpacity style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]} activeOpacity={0.7}>
+                    <TouchableOpacity style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]} activeOpacity={0.7}
+                        onPress={() => navigation.navigate("SubscriptionScreen")}
+                    >
                         <View style={[styles.listIconCircle, dynamicStyles.menuIconCircle]}>
                             <SubscriptionIcon />
                         </View>

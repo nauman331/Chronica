@@ -23,7 +23,6 @@ import {
     gray,
     darkPurple,
     lightPurple,
-    yellow,
 } from '../utils/colors';
 
 const Settings = ({ navigation }: any) => {
@@ -60,7 +59,6 @@ const Settings = ({ navigation }: any) => {
     };
 
     // --- Dynamic Styles ---
-    // These styles rely on the active theme colors
     const dynamicStyles = StyleSheet.create({
         container: {
             backgroundColor: colors.background,
@@ -176,12 +174,26 @@ const Settings = ({ navigation }: any) => {
                 {/* --- Section: Account --- */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Account</Text>
-                    {['Profile Settings', 'Email & Password', 'Subscription'].map((title) => (
-                        <TouchableOpacity key={title} style={[styles.cardBase, dynamicStyles.cardBase, styles.cardRow]}>
-                            <Text style={[styles.cardTitle, dynamicStyles.textMain]}>{title}</Text>
-                            <ChevronRightIcon color={colors.accent} />
-                        </TouchableOpacity>
-                    ))}
+
+                    <TouchableOpacity style={[styles.cardBase, dynamicStyles.cardBase, styles.cardRow]}>
+                        <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Profile Settings</Text>
+                        <ChevronRightIcon color={colors.accent} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[styles.cardBase, dynamicStyles.cardBase, styles.cardRow]}>
+                        <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Email & Password</Text>
+                        <ChevronRightIcon color={colors.accent} />
+                    </TouchableOpacity>
+
+                    {/* --- ADDED NAVIGATION HERE --- */}
+                    <TouchableOpacity
+                        style={[styles.cardBase, dynamicStyles.cardBase, styles.cardRow]}
+                        onPress={() => navigation.navigate("SubscriptionScreen")}
+                    >
+                        <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Subscription</Text>
+                        <ChevronRightIcon color={colors.accent} />
+                    </TouchableOpacity>
+
                 </View>
 
                 {/* --- Section: Privacy & Data --- */}
