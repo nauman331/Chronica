@@ -7,14 +7,16 @@ import {
     TouchableOpacity,
     ScrollView,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import BottomTabBar from '../components/BottomTabBar';
 import { useAppTheme } from '../hooks/useAppTheme';
-import { ArrowLeftIcon, DownloadIcon, MiniCrown, SparkIcon, WidgetsIcon } from '../utils/icons';
+import { ArrowLeftIcon, DownloadIcon, MiniCrown, WidgetsIcon } from '../utils/icons';
 import { lightyellow, yellow } from '../utils/colors';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 
 type ShareMode = 'day' | 'weekly' | 'lifemap';
 
+// --- CUSTOM EXACT FIGMA ICONS ---
 const ExactCopyIcon = ({ color = '#8C8B9C', size = 20 }) => (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <Rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -44,6 +46,16 @@ const DotIcon = ({ color = yellow, size = 6 }) => (
         <Circle cx="3" cy="3" r="3" />
     </Svg>
 );
+
+const FilledSparkIcon = ({ color = yellow, size = 14 }) => (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <Path
+            d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z"
+            fill={color}
+        />
+    </Svg>
+);
+// ---------------------------------
 
 const segmentSubtitle = (mode: ShareMode) => {
     if (mode === 'lifemap') {
@@ -97,6 +109,8 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
         card: {
             backgroundColor: colors.surface,
             borderColor: '#F3EFE6',
+            boxShadow: isDark ? '0px 48px 96px rgba(0, 0, 0, 0.08)' : '0px 48px 96px rgba(0, 0, 0, 0.04)',
+
         },
         mutedText: { color: '#8C8B9C' },
         mainText: { color: colors.text },
@@ -145,7 +159,7 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
                             onPress={() => setMode('day')}
                             activeOpacity={0.9}
                         >
-                            <SparkIcon color={mode === 'day' ? yellow : '#8C8B9C'} size={14} />
+                            <FilledSparkIcon color={mode === 'day' ? yellow : '#8C8B9C'} size={14} />
                             <Text style={mode === 'day' ? [styles.segmentTextActive, dynamicStyles.segmentActiveText] : [styles.segmentText, dynamicStyles.segmentText]}>
                                 Day Crowned
                             </Text>
@@ -248,7 +262,7 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
                                         <View style={styles.rowCenter}>
                                             <Text style={[styles.statMain, dynamicStyles.mainText]}>18 days</Text>
                                             <View style={{ marginLeft: 6 }}>
-                                                <SparkIcon color={colors.text} size={14} />
+                                                <FilledSparkIcon color={colors.text} size={14} />
                                             </View>
                                         </View>
                                         <Text style={[styles.smallLabel, dynamicStyles.mutedText, { marginTop: 4 }]}>this rhythm is yours</Text>
@@ -270,7 +284,7 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
                                 <View style={styles.cardTopRow}>
                                     <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>Chronica · Life Map</Text>
                                     <View style={[styles.pillTag, dynamicStyles.paleSurface]}>
-                                        <SparkIcon color={yellow} size={12} />
+                                        <FilledSparkIcon color={yellow} size={12} />
                                         <Text style={styles.pillTagTextGold}>11,791 days</Text>
                                     </View>
                                 </View>
@@ -294,13 +308,20 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
                         )}
                     </View>
 
-                    <Text style={[styles.caption, dynamicStyles.mutedText]}>Chronica — your life, in days</Text>
+                    <Text style={[styles.caption, dynamicStyles.mutedText, { marginLeft: 25 }]}>Chronica — your life, in days</Text>
 
                     {/* Action Row */}
                     <View style={styles.actionRow}>
-                        <TouchableOpacity activeOpacity={0.85} style={styles.shareMainBtn}>
-                            <ExactShareIcon color="#FFFFFF" size={18} />
-                            <Text style={styles.shareMainText}>Share Image</Text>
+                        <TouchableOpacity activeOpacity={0.85} style={styles.shareMainBtnWrapper}>
+                            <LinearGradient
+                                colors={['#1A1523', '#2D1B4E']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.shareMainBtnGradient}
+                            >
+                                <ExactShareIcon color="#FFFFFF" size={18} />
+                                <Text style={styles.shareMainText}>Share Image</Text>
+                            </LinearGradient>
                         </TouchableOpacity>
 
                         <TouchableOpacity activeOpacity={0.85} style={[styles.sideBtn, dynamicStyles.borderTone, dynamicStyles.sideBtnFill]}>
@@ -316,7 +337,7 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
                     <View style={[styles.helperCard, dynamicStyles.helperCard]}>
                         <View style={styles.helperRow}>
                             <Text style={[styles.helperText, dynamicStyles.mutedText]}>
-                                <SparkIcon color="#8C8B9C" size={14} /> All share cards export as high-res images (1080×1080px) -— optimized for Instagram Stories, Twitter, and any social format. No branding clutter.
+                                <FilledSparkIcon color="#8C8B9C" size={14} /> All share cards export as high-res images (1080×1080px) -— optimized for Instagram Stories, Twitter, and any social format. No branding clutter.
                             </Text>
                         </View>
                     </View>
@@ -364,7 +385,7 @@ const styles = StyleSheet.create({
         letterSpacing: -0.3,
     },
     headerSubtitle: {
-        fontSize: 12.5,
+        fontSize: 10,
         lineHeight: 16,
     },
     topDivider: {
@@ -609,11 +630,14 @@ const styles = StyleSheet.create({
         marginBottom: 18,
         justifyContent: 'space-between',
     },
-    shareMainBtn: {
+    shareMainBtnWrapper: {
         flex: 1,
         height: 58,
         borderRadius: 18,
-        backgroundColor: '#1A1523',
+        overflow: 'hidden',
+    },
+    shareMainBtnGradient: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -622,7 +646,7 @@ const styles = StyleSheet.create({
     shareMainText: {
         color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '500',
     },
     sideBtn: {
         width: 58,
