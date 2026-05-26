@@ -16,8 +16,8 @@ import { useAppTheme } from '../hooks/useAppTheme';
 // Icons
 import { ChevronLeftIcon } from '../utils/icons';
 
-// Brand colors for static accents
-import { yellow, white, lightyellow, darkPurple } from '../utils/colors';
+// Brand colors for static accents and gradients
+import { yellow, white, lightPurple, darkPurple } from '../utils/colors';
 
 const SubscriptionScreen = ({ navigation }: any) => {
     // --- 1. Get dynamic colors & theme ---
@@ -37,12 +37,19 @@ const SubscriptionScreen = ({ navigation }: any) => {
         // Unselected card styles
         cardUnselected: {
             backgroundColor: colors.surface,
-            borderColor: colors.border
+            borderColor: colors.border,
+            borderWidth: 1,
         },
-        // Selected card styles (Brand Yellow)
+        // Selected card styles (Brand Yellow with drop shadow)
         cardSelected: {
-            backgroundColor: isDark ? 'rgba(201, 162, 39, 0.1)' : '#FFFCF3', // Dark mode gets a tinted overlay, light mode gets lightyellow
+            backgroundColor: isDark ? 'rgba(201, 162, 39, 0.1)' : '#FFFDF5',
             borderColor: yellow,
+            borderWidth: 1.5,
+            shadowColor: yellow,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 12,
+            elevation: 4,
         },
 
         planTitle: { color: colors.text },
@@ -86,10 +93,10 @@ const SubscriptionScreen = ({ navigation }: any) => {
                     </Text>
                 </View>
 
-                {/* --- Quote Card --- */}
+                {/* --- Quote Card (Now using Settings Gradient) --- */}
                 <View style={styles.quoteCardContainer}>
                     <LinearGradient
-                        colors={['#241C35', '#120E1C']} // Deep dark purple/black from the design
+                        colors={[lightPurple, darkPurple]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 0, y: 1 }}
                         style={StyleSheet.absoluteFill}
@@ -115,7 +122,7 @@ const SubscriptionScreen = ({ navigation }: any) => {
 
                     {/* Monthly Plan */}
                     <TouchableOpacity
-                        activeOpacity={0.8}
+                        activeOpacity={0.9}
                         style={[
                             styles.planCard,
                             selectedPlan === 'monthly' ? dynamicStyles.cardSelected : dynamicStyles.cardUnselected
@@ -130,15 +137,13 @@ const SubscriptionScreen = ({ navigation }: any) => {
                         </View>
                         <View style={[
                             styles.radioOuter,
-                            selectedPlan === 'monthly' ? dynamicStyles.radioOuterSelected : dynamicStyles.radioOuterUnselected
-                        ]}>
-                            {selectedPlan === 'monthly' && <View style={styles.radioInner} />}
-                        </View>
+                            selectedPlan === 'monthly' ? [dynamicStyles.radioOuterSelected, styles.radioThick] : dynamicStyles.radioOuterUnselected
+                        ]} />
                     </TouchableOpacity>
 
                     {/* Yearly Plan */}
                     <TouchableOpacity
-                        activeOpacity={0.8}
+                        activeOpacity={0.9}
                         style={[
                             styles.planCard,
                             selectedPlan === 'yearly' ? dynamicStyles.cardSelected : dynamicStyles.cardUnselected
@@ -158,10 +163,8 @@ const SubscriptionScreen = ({ navigation }: any) => {
                         </View>
                         <View style={[
                             styles.radioOuter,
-                            selectedPlan === 'yearly' ? dynamicStyles.radioOuterSelected : dynamicStyles.radioOuterUnselected
-                        ]}>
-                            {selectedPlan === 'yearly' && <View style={styles.radioInner} />}
-                        </View>
+                            selectedPlan === 'yearly' ? [dynamicStyles.radioOuterSelected, styles.radioThick] : dynamicStyles.radioOuterUnselected
+                        ]} />
                     </TouchableOpacity>
 
                 </View>
@@ -206,8 +209,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     headerTitle: {
-        fontSize: 15,
-        fontWeight: '600',
+        fontSize: 16,
+        fontWeight: '700',
     },
     headerSpacer: {
         width: 40, // Balances the back button for absolute centering of title
@@ -220,19 +223,19 @@ const styles = StyleSheet.create({
     // Hero
     heroSection: {
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 4,
         marginBottom: 32,
     },
     mainTitle: {
         fontSize: 34,
-        fontWeight: '700',
+        fontWeight: '800', // Made bolder to match Figma
         textAlign: 'center',
-        lineHeight: 42,
+        lineHeight: 40,
         letterSpacing: -0.5,
-        marginBottom: 12,
+        marginBottom: 8,
     },
     subtitle: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: '500',
         textAlign: 'center',
     },
@@ -240,11 +243,11 @@ const styles = StyleSheet.create({
     // Quote Card
     quoteCardContainer: {
         borderRadius: 24,
-        paddingVertical: 40,
+        paddingVertical: 36,
         paddingHorizontal: 24,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 32,
+        marginBottom: 36,
         overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 10 },
@@ -254,15 +257,15 @@ const styles = StyleSheet.create({
     },
     quoteText: {
         color: white,
-        fontSize: 16,
+        fontSize: 15,
         fontStyle: 'italic',
         textAlign: 'center',
-        lineHeight: 24,
+        lineHeight: 22,
         marginBottom: 20,
     },
     quoteAuthor: {
-        color: 'rgba(255,255,255,0.6)',
-        fontSize: 14,
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 13,
         fontWeight: '500',
     },
 
@@ -273,15 +276,16 @@ const styles = StyleSheet.create({
     },
     valuePropTitle: {
         fontSize: 18,
-        fontWeight: '700',
+        fontWeight: '800',
         textAlign: 'center',
-        marginBottom: 12,
+        marginBottom: 10,
+        letterSpacing: -0.3,
     },
     valuePropText: {
-        fontSize: 14,
+        fontSize: 13,
         textAlign: 'center',
-        lineHeight: 22,
-        paddingHorizontal: 10,
+        lineHeight: 20,
+        paddingHorizontal: 8,
     },
 
     // Plans
@@ -294,7 +298,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         borderRadius: 20,
-        borderWidth: 1.5,
         padding: 20,
     },
     planInfo: {
@@ -303,19 +306,19 @@ const styles = StyleSheet.create({
     yearlyHeaderRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        gap: 10,
+        marginBottom: 6,
     },
     planTitle: {
         fontSize: 15,
         fontWeight: '600',
-        marginBottom: 8,
+        marginBottom: 6,
     },
     badge: {
-        backgroundColor: '#D1A342', // A specific muted gold that fits well inside the yellow card
+        backgroundColor: '#C8A43C', // Figma's specific brand yellow hex
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,
-        marginBottom: 8, // Align with title
     },
     badgeText: {
         color: white,
@@ -323,8 +326,8 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     planPrice: {
-        fontSize: 24,
-        fontWeight: '700',
+        fontSize: 26,
+        fontWeight: '800',
         letterSpacing: -0.5,
     },
     planDuration: {
@@ -332,20 +335,17 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
 
-    // Radio Buttons
+    // Radio Buttons (Modified to match Figma rings)
     radioOuter: {
         width: 24,
         height: 24,
         borderRadius: 12,
-        borderWidth: 2,
+        borderWidth: 1.5,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    radioInner: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: yellow,
+    radioThick: {
+        borderWidth: 6, // Creates the thick yellow ring effect
     },
 
     // CTA
@@ -354,14 +354,14 @@ const styles = StyleSheet.create({
     },
     ctaButton: {
         width: '100%',
-        backgroundColor: '#181423', // Matches the very dark aesthetic of the button in the design
+        backgroundColor: darkPurple, // Matches quote card darkness
         paddingVertical: 18,
         borderRadius: 16,
         alignItems: 'center',
         marginBottom: 16,
-        shadowColor: '#181423',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.3,
+        shadowColor: darkPurple,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
         shadowRadius: 15,
         elevation: 6,
     },
@@ -372,5 +372,6 @@ const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 12,
+        fontWeight: '400',
     },
 });

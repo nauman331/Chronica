@@ -198,7 +198,9 @@ const Profile = ({ navigation }: any) => {
                         <ChevronRightIcon color={colors.textSecondary} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]} activeOpacity={0.7}>
+                    <TouchableOpacity style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]} activeOpacity={0.7}
+                        onPress={() => navigation.navigate("WidgetsScreen")}
+                    >
                         <View style={[styles.listIconCircle, dynamicStyles.menuIconCircle]}>
                             <WidgetsIcon />
                         </View>

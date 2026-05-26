@@ -1,5 +1,7 @@
-import Svg, { Path, Circle, Rect, Polyline, Line, Defs, G, ClipPath } from 'react-native-svg';
-import { lightBlue, lightGreen } from './colors';
+import React from 'react';
+import { StyleSheet } from 'react-native';
+import Svg, { Path, Circle, Rect, Polyline, Line, Defs, G, ClipPath, Pattern } from 'react-native-svg';
+import { lightBlue, lightGreen, yellow } from './colors';
 
 export const MapIcon = ({ color }: { color: string }) => (
     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -34,10 +36,11 @@ export const UserIcon = ({ color }: { color: string }) => (
     </Svg>
 );
 
-export const BadgeIcon = ({ color = "#FFFFFF" }: { color?: string }) => (
+// Added size prop so it can be scaled down in WidgetsScreen
+export const BadgeIcon = ({ color = "#FFFFFF", size = 54 }: { color?: string, size?: number }) => (
     <Svg
-        width="54"
-        height="54"
+        width={size}
+        height={size}
         viewBox="0 0 24 24"
         fill="none"
         stroke={color}
@@ -45,6 +48,13 @@ export const BadgeIcon = ({ color = "#FFFFFF" }: { color?: string }) => (
         strokeLinecap="round"
         strokeLinejoin="round"
     >
+        <Path d="M3 16 L7 6 L12 11.5 L16 3 L21 11 Z" />
+        <Path d="M4 20 H20" />
+    </Svg>
+);
+
+export const MiniCrown = ({ color = yellow }: { color?: string }) => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M3 16 L7 6 L12 11.5 L16 3 L21 11 Z" />
         <Path d="M4 20 H20" />
     </Svg>
@@ -77,8 +87,8 @@ export const ArrowUpIcon = ({ color = lightGreen }: { color?: string }) => (
 );
 
 export const ArrowLeftIcon = ({ color }: { color: string }) => (
-    <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <Path d="M19 12H5M12 19l-7-7 7-7" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
 );
 
@@ -222,5 +232,55 @@ export const SignOutIcon = ({ color = "#E53935" }: { color?: string }) => (
 export const SparkleSmallIcon = ({ color = "#FFFFFF" }: { color?: string }) => (
     <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <Path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z" />
+    </Svg>
+);
+
+// --- NEW WIDGET ICONS ---
+
+export const ArrowRightSmallIcon = ({ color }: { color: string }) => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+        <Path d="M5 12H19M19 12L12 5M19 12L12 19" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+);
+
+export const DashedCircleIcon = ({ color }: { color: string }) => (
+    <Svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <Circle cx="20" cy="20" r="18" stroke={color} strokeWidth="1.5" strokeDasharray="4 4" />
+        {/* Dot in center */}
+        <Circle cx="20" cy="20" r="3.5" fill={color} opacity={0.25} />
+    </Svg>
+);
+
+export const ProgressRingIcon = ({ progress = 66, size = 40, strokeWidth = 3, color = yellow, trackColor = '#F0F0F0' }: { progress?: number, size?: number, strokeWidth?: number, color?: string, trackColor?: string }) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+    return (
+        <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+            <Circle cx={size / 2} cy={size / 2} r={radius} stroke={trackColor} strokeWidth={strokeWidth} fill="none" />
+            <Circle
+                cx={size / 2} cy={size / 2} r={radius}
+                stroke={color} strokeWidth={strokeWidth} fill="none"
+                strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round"
+                transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            />
+        </Svg>
+    );
+};
+
+export const DotPatternIcon = () => (
+    <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+        <Defs>
+            <Pattern id="dots" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+                <Circle cx="2" cy="2" r="1.5" fill={yellow} opacity={0.15} />
+            </Pattern>
+        </Defs>
+        <Rect x="0" y="0" width="100%" height="100%" fill="url(#dots)" />
+    </Svg>
+);
+
+export const MiniCheckIcon = ({ color = yellow }: { color?: string }) => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M20 6L9 17l-5-5" />
     </Svg>
 );
