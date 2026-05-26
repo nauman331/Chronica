@@ -1,44 +1,52 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { BadgeIcon } from '../utils/icons';
-import CircularBadge from '../components/CircularBadge';
 
 // Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
-// Keep yellow for the brand accent (the "crown" effect)
+// Keep yellow for the brand accent
 import { yellow } from '../utils/colors';
 
 const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any }) => {
-    // --- 1. Get dynamic colors ---
-    const { colors } = useAppTheme();
+    const { colors, isDark } = useAppTheme();
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         title: { color: colors.text },
-        datePill: { backgroundColor: colors.surfaceMuted },
+
+        // Exact light yellow pill from Figma
+        datePill: {
+            backgroundColor: isDark ? 'rgba(201, 162, 39, 0.15)' : '#FEF9EC',
+            borderColor: isDark ? 'rgba(201, 162, 39, 0.3)' : '#FDECA6'
+        },
         bodyText: { color: colors.text },
-        quoteText: { color: colors.textSecondary },
+        quoteText: { color: '#8C8B9C' },
+
+        // Match the deep dark purple/black button from Figma
         primaryButton: {
-            backgroundColor: colors.primary,
-            shadowColor: colors.primary
+            backgroundColor: isDark ? colors.primary : '#1A1523',
         },
         primaryButtonText: {
-            color: colors.background // Inverts automatically against the primary color
+            color: '#FFFFFF'
         },
         secondaryButton: {
             backgroundColor: colors.surface,
-            borderColor: colors.border
+            borderColor: isDark ? colors.border : '#F3EFE6'
         },
-        secondaryButtonText: { color: colors.textSecondary },
+        secondaryButtonText: { color: '#8C8B9C' },
     });
 
     return (
         <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <View style={styles.content}>
 
-                <CircularBadge Icon={BadgeIcon} />
+                {/* Direct Badge implementation to ensure 100% accurate Figma Shadow */}
+                <View style={styles.badgeContainer}>
+                    <View style={styles.iconCircle}>
+                        <BadgeIcon color="#FFFFFF" size={42} />
+                    </View>
+                </View>
 
                 {/* Title */}
                 <Text style={[styles.title, dynamicStyles.title]}>Day Crowned</Text>
@@ -51,7 +59,7 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
 
                 {/* Body Text */}
                 <Text style={[styles.bodyText, dynamicStyles.bodyText]}>
-                    This day is now preserved in your life story forever.
+                    This day is now preserved in{"\n"}your life story forever.
                 </Text>
 
                 {/* Quote */}
@@ -63,7 +71,7 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={[styles.primaryButton, dynamicStyles.primaryButton]}
-                        activeOpacity={0.8}
+                        activeOpacity={0.85}
                         onPress={() => navigation.navigate("EnhanceCrown")}
                     >
                         <Text style={[styles.primaryButtonText, dynamicStyles.primaryButtonText]}>Return to Today</Text>
@@ -71,7 +79,7 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
 
                     <TouchableOpacity
                         style={[styles.secondaryButton, dynamicStyles.secondaryButton]}
-                        activeOpacity={0.8}
+                        activeOpacity={0.7}
                         onPress={() => navigation.navigate("LifeMap")}
                     >
                         <Text style={[styles.secondaryButtonText, dynamicStyles.secondaryButtonText]}>View Life Map →</Text>
@@ -85,7 +93,6 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
 
 export default EnhanceCrownEmotion;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -96,58 +103,36 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: 24,
     },
-    // Leaving glow styles intact in case they are referenced by CircularBadge internally or elsewhere
-    outerGlow: {
-        shadowColor: yellow,
-        shadowOffset: { width: 0, height: 14 },
-        shadowOpacity: 0.26,
-        shadowRadius: 56,
-        width: 200,
-        height: 200,
-        borderRadius: 100,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 12,
-        elevation: 14,
-        backgroundColor: 'transparent',
-    },
-    innerGlow: {
-        shadowColor: yellow,
-        shadowOffset: { width: 0, height: 14 },
-        shadowOpacity: 0.7,
-        shadowRadius: 26,
-        width: 80,
-        height: 80,
-        borderRadius: 77,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 8,
-        elevation: 10,
-        backgroundColor: 'transparent',
+    badgeContainer: {
+        marginBottom: 28,
     },
     iconCircle: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        width: 104,
+        height: 104,
+        borderRadius: 52,
         backgroundColor: yellow,
         alignItems: 'center',
         justifyContent: 'center',
-        overflow: 'visible',
+        shadowColor: yellow,
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.35,
+        shadowRadius: 28,
+        elevation: 10,
     },
     title: {
-        fontSize: 32,
+        fontSize: 34,
         fontWeight: '800',
+        letterSpacing: -0.5,
         marginBottom: 16,
     },
     datePill: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 8,
+        paddingVertical: 7,
         paddingHorizontal: 16,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: yellow,
-        marginBottom: 24,
+        marginBottom: 28,
     },
     dot: {
         width: 6,
@@ -158,52 +143,54 @@ const styles = StyleSheet.create({
     },
     dateText: {
         color: yellow,
-        fontSize: 14,
+        fontSize: 13.5,
         fontWeight: '600',
     },
     bodyText: {
-        fontSize: 18,
+        fontSize: 19,
+        fontWeight: '400',
         textAlign: 'center',
-        paddingHorizontal: 20,
-        lineHeight: 26,
-        marginBottom: 48,
+        lineHeight: 28,
+        marginBottom: 44,
     },
     quoteText: {
-        fontSize: 14,
+        fontSize: 14.5,
         fontStyle: 'italic',
         textAlign: 'center',
-        lineHeight: 20,
-        marginBottom: 48,
+        lineHeight: 22,
+        marginBottom: 52,
     },
     buttonContainer: {
         width: '100%',
         alignItems: 'center',
-        gap: 16,
+        gap: 14,
     },
     primaryButton: {
         width: '90%',
         paddingVertical: 18,
-        borderRadius: 16,
+        borderRadius: 18,
         alignItems: 'center',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 4,
     },
     primaryButtonText: {
         fontSize: 16,
-        fontWeight: '500',
+        fontWeight: '600',
+        letterSpacing: 0.2,
     },
     secondaryButton: {
         width: '90%',
         paddingVertical: 18,
-        borderRadius: 16,
+        borderRadius: 18,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
     },
     secondaryButtonText: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '500',
     },
 });

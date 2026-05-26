@@ -10,30 +10,32 @@ import { yellow, lightBlue, lightGreen } from '../utils/colors';
 import { BellIcon, SparkIcon, ReflectionIcon, ArrowUpIcon } from '../utils/icons';
 
 const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
-    // --- 1. Get dynamic colors ---
-    const { colors } = useAppTheme();
+    const { colors, isDark } = useAppTheme();
 
     const today = new Date();
     const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
     const formattedDate = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         safeArea: { backgroundColor: colors.background },
         container: { backgroundColor: colors.background },
-        headerSubtitle: { color: colors.textSecondary },
+        headerSubtitle: { color: '#8C8B9C' },
         headerTitle: { color: colors.text },
-        headerDate: { color: colors.textSecondary },
-        bellButton: { backgroundColor: colors.surfaceMuted },
-        notificationDot: { borderColor: colors.surfaceMuted }, // Matches bell background
-        divider: { backgroundColor: colors.border },
-        iconBox: { backgroundColor: colors.surfaceMuted }, // Adapts for dark mode
-        itemSubtitle: { color: colors.textSecondary },
+        headerDate: { color: '#8C8B9C' },
+
+        // Exact light blue tint from Figma for the bell button background
+        bellButton: { backgroundColor: isDark ? colors.surfaceMuted : '#F0F5FE' },
+        notificationDot: { borderColor: isDark ? colors.surfaceMuted : '#F0F5FE' },
+        divider: { backgroundColor: isDark ? colors.border : '#F3EFE6' },
+
+        itemTitleMain: { color: colors.text },
+        itemSubtitle: { color: '#8C8B9C' },
         bottomActionContainer: { backgroundColor: colors.background },
-        primaryButton: {
-            backgroundColor: yellow,
-            shadowColor: yellow,
-        }
+
+        // Dynamic tinted backgrounds for the icon boxes
+        iconBoxYellow: { backgroundColor: isDark ? 'rgba(201, 162, 39, 0.15)' : '#FEF9EC' },
+        iconBoxBlue: { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#F0F5FE' },
+        iconBoxGreen: { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#EAF8F3' },
     });
 
     return (
@@ -51,8 +53,7 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                     <Pressable style={[styles.bellButton, dynamicStyles.bellButton]}
                         onPress={() => navigation.navigate('Notifications')}
                     >
-                        {/* REMOVED color prop to fix TypeScript error */}
-                        <BellIcon />
+                        <BellIcon color={lightBlue} />
                         <View style={[styles.notificationDot, dynamicStyles.notificationDot]} />
                     </Pressable>
                 </View>
@@ -62,40 +63,39 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                 {/* Scrollable Content */}
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                    {/* Intention */}
-                    <View style={styles.ritualItem}>
-                        <View style={styles.iconRow}>
-                            <View style={[styles.iconBox, dynamicStyles.iconBox]}>
-                                {/* Assuming SparkIcon is typed correctly to take color */}
-                                <SparkIcon color={yellow} />
+                    <View style={styles.contentWrapper}>
+                        {/* Intention */}
+                        <View style={styles.ritualItem}>
+                            <View style={styles.iconRow}>
+                                <View style={[styles.iconBox, dynamicStyles.iconBoxYellow]}>
+                                    <SparkIcon color={yellow} size={20} />
+                                </View>
+                                <Text style={[styles.itemTitle, { color: yellow }]}>Intention</Text>
                             </View>
-                            <Text style={[styles.itemTitle, { color: yellow }]}>Intention</Text>
+                            <Text style={[styles.itemSubtitle, dynamicStyles.itemSubtitle]}>What matters most today?</Text>
                         </View>
-                        <Text style={[styles.itemSubtitle, dynamicStyles.itemSubtitle]}>What matters most today?</Text>
-                    </View>
 
-                    {/* Reflection */}
-                    <View style={styles.ritualItem}>
-                        <View style={styles.iconRow}>
-                            <View style={[styles.iconBox, dynamicStyles.iconBox]}>
-                                {/* REMOVED color prop to fix TypeScript error */}
-                                <ReflectionIcon />
+                        {/* Reflection */}
+                        <View style={styles.ritualItem}>
+                            <View style={styles.iconRow}>
+                                <View style={[styles.iconBox, dynamicStyles.iconBoxBlue]}>
+                                    <ReflectionIcon color={lightBlue} />
+                                </View>
+                                <Text style={[styles.itemTitle, { color: lightBlue }]}>Reflection</Text>
                             </View>
-                            <Text style={[styles.itemTitle, { color: lightBlue }]}>Reflection</Text>
+                            <Text style={[styles.itemSubtitle, dynamicStyles.itemSubtitle]}>What did today teach you?</Text>
                         </View>
-                        <Text style={[styles.itemSubtitle, dynamicStyles.itemSubtitle]}>What did today teach you?</Text>
-                    </View>
 
-                    {/* Achievement */}
-                    <View style={styles.ritualItem}>
-                        <View style={styles.iconRow}>
-                            <View style={[styles.iconBox, dynamicStyles.iconBox]}>
-                                {/* REMOVED color prop to fix TypeScript error */}
-                                <ArrowUpIcon />
+                        {/* Achievement */}
+                        <View style={styles.ritualItem}>
+                            <View style={styles.iconRow}>
+                                <View style={[styles.iconBox, dynamicStyles.iconBoxGreen]}>
+                                    <ArrowUpIcon color={lightGreen} />
+                                </View>
+                                <Text style={[styles.itemTitle, { color: lightGreen }]}>Achievement</Text>
                             </View>
-                            <Text style={[styles.itemTitle, { color: lightGreen }]}>Achievement</Text>
+                            <Text style={[styles.itemSubtitle, dynamicStyles.itemSubtitle]}>What moved your life forward?</Text>
                         </View>
-                        <Text style={[styles.itemSubtitle, dynamicStyles.itemSubtitle]}>What moved your life forward?</Text>
                     </View>
 
                 </ScrollView>
@@ -104,12 +104,11 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                 <View style={[styles.bottomActionContainer, dynamicStyles.bottomActionContainer]}>
                     <View style={[styles.divider, dynamicStyles.divider]} />
                     <Pressable
-                        style={[styles.primaryButton, dynamicStyles.primaryButton]}
+                        style={styles.primaryButton}
                         onPress={() => navigation.navigate('EnhanceCrownEmotion')}
                     >
                         <Text style={styles.primaryButtonText}>Crown This Day</Text>
-                        {/* Assuming SparkIcon is typed correctly to take color */}
-                        <SparkIcon color="#FFFFFF" />
+                        <SparkIcon color="#FFFFFF" size={14} />
                     </Pressable>
                 </View>
 
@@ -123,7 +122,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
 
 export default EnhanceCrown;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
@@ -136,21 +134,22 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 24,
-        paddingTop: Platform.OS === 'android' ? 40 : 20,
+        paddingTop: Platform.OS === 'android' ? 24 : 12,
         paddingBottom: 20,
     },
     headerSubtitle: {
-        fontSize: 12,
+        fontSize: 12.5,
         fontWeight: '500',
-        marginBottom: 4
+        marginBottom: 2,
     },
     headerTitle: {
-        fontSize: 26,
+        fontSize: 28,
         fontWeight: '800',
-        marginBottom: 4
+        letterSpacing: -0.5,
+        marginBottom: 2,
     },
     headerDate: {
-        fontSize: 13,
+        fontSize: 14,
     },
     bellButton: {
         width: 44,
@@ -158,71 +157,80 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'relative'
+        position: 'relative',
     },
     notificationDot: {
         position: 'absolute',
-        top: 12,
+        top: 10,
         right: 12,
-        width: 6,
-        height: 6,
-        borderRadius: 3,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
         backgroundColor: '#FF4B4B',
         borderWidth: 1.5,
     },
     divider: {
         height: 1,
-        width: '100%'
+        width: '100%',
     },
     scrollContent: {
-        paddingVertical: 40,
-        gap: 50,
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingVertical: 20,
+    },
+    contentWrapper: {
         alignItems: 'center',
     },
     ritualItem: {
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginBottom: 44,
     },
     iconRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 12,
-        marginBottom: 12
+        marginBottom: 12,
     },
     iconBox: {
         width: 44,
         height: 44,
         borderRadius: 14,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     itemTitle: {
-        fontSize: 18,
-        fontWeight: '700'
+        fontSize: 20,
+        fontWeight: '700',
+        letterSpacing: -0.3,
     },
     itemSubtitle: {
-        fontSize: 14,
+        fontSize: 15.5,
     },
     bottomActionContainer: {
-        paddingBottom: 24,
+        paddingBottom: 0,
     },
     primaryButton: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 18,
-        borderRadius: 16,
+        borderRadius: 18,
         marginHorizontal: 24,
         marginTop: 24,
+        marginBottom: 24,
         gap: 8,
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
+        backgroundColor: yellow,
+        shadowColor: yellow,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.35,
+        shadowRadius: 16,
         elevation: 6,
     },
     primaryButtonText: {
         color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '500'
+        fontSize: 16.5,
+        fontWeight: '600',
+        letterSpacing: 0.2,
     },
 });
