@@ -48,7 +48,9 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                         <Text style={[styles.headerDate, dynamicStyles.headerDate]}>{formattedDate}</Text>
                     </View>
 
-                    <Pressable style={[styles.bellButton, dynamicStyles.bellButton]}>
+                    <Pressable style={[styles.bellButton, dynamicStyles.bellButton]}
+                        onPress={() => navigation.navigate('Notifications')}
+                    >
                         {/* REMOVED color prop to fix TypeScript error */}
                         <BellIcon />
                         <View style={[styles.notificationDot, dynamicStyles.notificationDot]} />

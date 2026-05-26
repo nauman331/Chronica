@@ -17,6 +17,7 @@ import ReflectionSaved from '../pages/ReflectionSaved'
 import Settings from '../pages/Settings'
 import SubscriptionScreen from '../pages/SubscriptionScreen'
 import WidgetsScreen from '../pages/WidgetsScreen'
+import Notifications from '../pages/Notifications'
 
 
 type AuthStackParamList = {
@@ -36,6 +37,7 @@ type AuthStackParamList = {
     Settings: undefined
     SubscriptionScreen: undefined
     WidgetsScreen: undefined
+    Notifications: undefined
 }
 
 const Stack = createStackNavigator<AuthStackParamList>()
@@ -62,6 +64,7 @@ const AuthNav: React.FC = () => {
             <Stack.Screen name="Settings" component={withSafeArea(Settings)} />
             <Stack.Screen name="SubscriptionScreen" component={withSafeArea(SubscriptionScreen)} />
             <Stack.Screen name="WidgetsScreen" component={withSafeArea(WidgetsScreen)} />
+            <Stack.Screen name="Notifications" component={withSafeArea(Notifications)} />
         </Stack.Navigator>
     )
 }
