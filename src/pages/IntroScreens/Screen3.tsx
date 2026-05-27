@@ -33,7 +33,10 @@ const Screen3 = ({ onSkip }: any) => {
             borderTopColor: isDark ? colors.border : '#F3EFE6'
         },
         skipText: { color: '#B4B4B4' },
-        iconCircle: { backgroundColor: isDark ? colors.primary : '#1A1523' }
+        iconCircle: { backgroundColor: isDark ? '#FFFFFF' : colors.primary },
+        button: { backgroundColor: isDark ? '#FFFFFF' : yellow },
+        buttonText: { color: isDark ? '#1A1523' : white },
+        buttonIcon: { color: isDark ? '#1A1523' : white },
     });
 
     return (
@@ -42,7 +45,7 @@ const Screen3 = ({ onSkip }: any) => {
 
                 {/* Replaced glowing badge with the solid dark circle from Figma */}
                 <View style={[styles.iconCircle, dynamicStyles.iconCircle]}>
-                    <SparkleIcon size={32} color="#FFFFFF" />
+                    <SparkleIcon size={32} color={isDark ? '#1A1523' : '#FFFFFF'} />
                 </View>
 
                 <Text style={[styles.title, dynamicStyles.title]}>The Daily{'\n'}Ritual</Text>
@@ -61,9 +64,9 @@ const Screen3 = ({ onSkip }: any) => {
             </View>
 
             <View style={[styles.bottomSection, dynamicStyles.bottomSection]}>
-                <Pressable style={styles.button} onPress={handleBeginRitual}>
-                    <Text style={styles.buttonText}>Begin Today's Ritual</Text>
-                    <SparkleIcon size={14} color={white} />
+                <Pressable style={[styles.button, dynamicStyles.button]} onPress={handleBeginRitual}>
+                    <Text style={[styles.buttonText, dynamicStyles.buttonText]}>Begin Today's Ritual</Text>
+                    <SparkleIcon size={14} color={isDark ? '#1A1523' : white} />
                 </Pressable>
 
                 <Pressable style={styles.skipButton} hitSlop={10} onPress={onSkip}>

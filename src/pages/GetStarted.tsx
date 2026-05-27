@@ -8,6 +8,7 @@ import { useAppTheme } from '../hooks/useAppTheme';
 import googleIcon from '../assets/logo.png';
 import facebookIcon from '../assets/facebook.png';
 import gmailIcon from '../assets/gmail.png';
+import { white } from '../utils/colors';
 
 const GetStarted: React.FC<any> = ({ navigation }) => {
     const { colors } = useAppTheme(); // <-- 1. Get dynamic colors
@@ -54,7 +55,7 @@ const GetStarted: React.FC<any> = ({ navigation }) => {
             borderColor: colors.accent
         },
         inputText: {
-            color: isDateSelected ? colors.text : colors.textSecondary
+            color: isDateSelected ? (colors.background === white ? colors.text : white) : colors.textSecondary
         },
         primaryButton: {
             backgroundColor: colors.primary,
@@ -71,7 +72,7 @@ const GetStarted: React.FC<any> = ({ navigation }) => {
             })
         },
         primaryButtonText: {
-            color: colors.background // Inverts color: white in light mode, dark in dark mode
+            color: colors.background
         },
         secondaryButton: {
             backgroundColor: colors.surface,
@@ -83,7 +84,7 @@ const GetStarted: React.FC<any> = ({ navigation }) => {
         socialButton: {
             backgroundColor: colors.surface,
             borderColor: colors.border,
-            borderWidth: 1 // Helpful for dark mode contrast
+            borderWidth: 1
         },
         footerText: { color: colors.textSecondary },
     });
@@ -172,7 +173,6 @@ const GetStarted: React.FC<any> = ({ navigation }) => {
 
 export default GetStarted;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,

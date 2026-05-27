@@ -2,10 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { BadgeIcon } from '../utils/icons';
 
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
-// Keep yellow for the brand accent
 import { yellow } from '../utils/colors';
 
 const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any }) => {
@@ -15,7 +13,6 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
         container: { backgroundColor: colors.background },
         title: { color: colors.text },
 
-        // Exact light yellow pill from Figma
         datePill: {
             backgroundColor: isDark ? 'rgba(201, 162, 39, 0.15)' : '#FEF9EC',
             borderColor: isDark ? 'rgba(201, 162, 39, 0.3)' : '#FDECA6'
@@ -23,12 +20,11 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
         bodyText: { color: colors.text },
         quoteText: { color: '#8C8B9C' },
 
-        // Match the deep dark purple/black button from Figma
         primaryButton: {
-            backgroundColor: isDark ? colors.primary : '#1A1523',
+            backgroundColor: isDark ? '#FFFFFF' : '#1A1523',
         },
         primaryButtonText: {
-            color: '#FFFFFF'
+            color: isDark ? '#1A1523' : '#FFFFFF'
         },
         secondaryButton: {
             backgroundColor: colors.surface,

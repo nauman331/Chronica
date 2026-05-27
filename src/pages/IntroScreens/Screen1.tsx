@@ -33,9 +33,9 @@ const Screen1 = ({ birthDate, onNext, onSkip }: any) => {
             backgroundColor: colors.background
         },
         button: {
-            backgroundColor: isDark ? colors.primary : '#1A1523',
+            backgroundColor: isDark ? '#FFFFFF' : colors.primary,
         },
-        buttonText: { color: '#FFFFFF' },
+        buttonText: { color: isDark ? '#1A1523' : colors.background },
         skipText: { color: '#B4B4B4' },
     });
 

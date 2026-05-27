@@ -55,6 +55,14 @@ const SubscriptionScreen = ({ navigation }: any) => {
         radioOuterUnselected: { borderColor: colors.border },
         radioOuterSelected: { borderColor: yellow },
 
+        ctaButton: {
+            backgroundColor: isDark ? '#FFFFFF' : darkPurple,
+            shadowColor: isDark ? '#000000' : darkPurple,
+        },
+        ctaButtonText: {
+            color: isDark ? darkPurple : white,
+        },
+
         footerText: { color: colors.textSecondary }
     });
 
@@ -167,11 +175,11 @@ const SubscriptionScreen = ({ navigation }: any) => {
                 {/* --- Call To Action --- */}
                 <View style={styles.ctaSection}>
                     <TouchableOpacity
-                        style={styles.ctaButton}
+                        style={[styles.ctaButton, dynamicStyles.ctaButton]}
                         activeOpacity={0.8}
                         onPress={() => {/* Handle Subscription Logic */ }}
                     >
-                        <Text style={styles.ctaButtonText}>Start 7-Day Free Trial</Text>
+                        <Text style={[styles.ctaButtonText, dynamicStyles.ctaButtonText]}>Start 7-Day Free Trial</Text>
                     </TouchableOpacity>
                     <Text style={[styles.footerText, dynamicStyles.footerText]}>
                         Then $89/year. Cancel anytime.
@@ -346,12 +354,10 @@ const styles = StyleSheet.create({
     },
     ctaButton: {
         width: '100%',
-        backgroundColor: darkPurple,
         paddingVertical: 18,
         borderRadius: 16,
         alignItems: 'center',
         marginBottom: 16,
-        shadowColor: darkPurple,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.25,
         shadowRadius: 15,

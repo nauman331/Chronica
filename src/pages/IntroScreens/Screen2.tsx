@@ -140,9 +140,9 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
             borderTopColor: isDark ? colors.border : '#F3EFE6'
         },
         button: {
-            backgroundColor: isDark ? colors.primary : '#1A1523',
+            backgroundColor: isDark ? '#FFFFFF' : colors.primary,
         },
-        buttonText: { color: '#FFFFFF' },
+        buttonText: { color: isDark ? '#1A1523' : colors.background },
         skipText: { color: '#B4B4B4' },
     }), [colors.background, colors.border, colors.primary, colors.surface, colors.text, isDark]);
     return (
