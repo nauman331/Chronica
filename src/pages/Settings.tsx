@@ -7,6 +7,7 @@ import {
     ScrollView,
     TouchableOpacity,
     Modal,
+    Alert,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useDispatch } from 'react-redux';
@@ -48,7 +49,8 @@ const Settings = ({ navigation }: any) => {
     };
 
     const handleThemeSelect = (option: ThemeOption) => {
-        dispatch(setTheme(option));
+        // dispatch(setTheme(option));
+        Alert.alert("Coming soon feature")
         setIsThemeModalVisible(false);
     };
 
