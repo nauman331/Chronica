@@ -337,7 +337,11 @@ const LifeMap = ({ navigation }: any) => {
             <View style={styles.header}>
                 <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Your Life Map</Text>
                 <View style={styles.statsRow}>
-                    <Text style={[styles.statsLargeNumber, { color: colors.text }]}>
+                    <Text
+                        style={[styles.statsLargeNumber, { color: colors.text }]}
+                        numberOfLines={1}
+                        ellipsizeMode="clip"
+                    >
                         11,791 <Text style={[styles.statsDays, { color: colors.textSecondary }]}>days</Text>
                     </Text>
                     <Pressable style={[styles.todayButton, dynamicTodayButton]} onPress={handleTodayPress}>
@@ -407,8 +411,8 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     header: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 16 },
     headerSubtitle: { fontSize: 14, fontWeight: '400', marginBottom: 2 },
-    statsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-    statsLargeNumber: { fontSize: 34, fontWeight: 'bold', letterSpacing: -0.5 },
+    statsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, width: '100%' },
+    statsLargeNumber: { flexShrink: 1, minWidth: 0, fontSize: 34, fontWeight: 'bold', letterSpacing: -0.5 },
     statsDays: { fontSize: 16, fontWeight: '400', letterSpacing: 0 },
     todayButton: {
         paddingVertical: 10,
@@ -419,6 +423,7 @@ const styles = StyleSheet.create({
         shadowRadius: 12,
         elevation: 8,
         zIndex: 2,
+        flexShrink: 0,
     },
     todayButtonText: { fontSize: 14, fontWeight: '500' },
     headerSubtitleBottom: { fontSize: 13, fontWeight: '400' },

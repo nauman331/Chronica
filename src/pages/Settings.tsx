@@ -49,8 +49,7 @@ const Settings = ({ navigation }: any) => {
     };
 
     const handleThemeSelect = (option: ThemeOption) => {
-        // dispatch(setTheme(option));
-        Alert.alert("Coming soon feature")
+        dispatch(setTheme(option));
         setIsThemeModalVisible(false);
     };
 

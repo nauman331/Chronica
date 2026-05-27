@@ -1,17 +1,13 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
 import BottomTabBar from '../components/BottomTabBar';
-
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
-// Fixed Colors for map states
 import {
-    white, // Keeping white for text inside the colored dots
+    white,
     COLOR_CROWNED,
     COLOR_DOCUMENTED,
     COLOR_PAST,
-    COLOR_FUTURE
 } from '../utils/colors';
 
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SolidSparkleIcon } from '../utils/icons';
@@ -19,7 +15,6 @@ import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SolidSparkleIcon } fr
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const MonthViewScreen = ({ navigation, route }: any) => {
-    // --- 1. Get dynamic colors ---
     const { colors } = useAppTheme();
 
     const { year = 2026, month = 'April' } = route.params || {};
@@ -39,7 +34,6 @@ const MonthViewScreen = ({ navigation, route }: any) => {
         return days;
     }, []);
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         iconButton: { backgroundColor: colors.surfaceMuted },
@@ -49,7 +43,7 @@ const MonthViewScreen = ({ navigation, route }: any) => {
             backgroundColor: colors.primary,
             shadowColor: colors.primary
         },
-        todayButtonText: { color: colors.background }, // Inverts automatically
+        todayButtonText: { color: colors.background },
 
         calendarCard: {
             backgroundColor: colors.surface,
@@ -84,7 +78,13 @@ const MonthViewScreen = ({ navigation, route }: any) => {
                 </View>
 
                 <View style={styles.headerTitleContainer}>
-                    <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>{month} {year}</Text>
+                    <Text
+                        style={[styles.headerTitle, dynamicStyles.headerTitle]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
+                        {month} {year}
+                    </Text>
                     <Text style={[styles.headerSubtitle, dynamicStyles.headerSubtitle]}>31 days - 35% documented</Text>
                 </View>
 
@@ -101,7 +101,6 @@ const MonthViewScreen = ({ navigation, route }: any) => {
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                {/* Top Progress Line (Yellow line above text) */}
                 <View style={styles.progressContainer}>
                     <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
                         <View style={[styles.progressFill, { width: '100%' }]} />
@@ -124,10 +123,8 @@ const MonthViewScreen = ({ navigation, route }: any) => {
                                 return <View key={`empty-${index}`} style={styles.dayCellContainer} />;
                             }
 
-                            // Keep these strict colors for consistency with LifeMap
                             let bgColor = COLOR_PAST;
 
-                            // Text inside map dots is always white to contrast against the dark background colors
                             let textColor = white;
 
                             if (item.state === 'documented') bgColor = COLOR_DOCUMENTED;
@@ -203,7 +200,6 @@ const MonthViewScreen = ({ navigation, route }: any) => {
 
 export default MonthViewScreen;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -215,8 +211,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 12
     },
-    headerControls: { flexDirection: 'row', gap: 8 },
-    headerControlsRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    headerControls: { flexDirection: 'row', gap: 8, flexShrink: 0 },
+    headerControlsRight: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 },
     iconButton: {
         width: 34,
         height: 34,
@@ -224,9 +220,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center'
     },
-    headerTitleContainer: { alignItems: 'center' },
-    headerTitle: { fontSize: 18, fontWeight: '700' },
-    headerSubtitle: { fontSize: 12, marginTop: 2 },
+    headerTitleContainer: { alignItems: 'center', flex: 1, minWidth: 0, paddingHorizontal: 8 },
+    headerTitle: { fontSize: 18, fontWeight: '700', textAlign: 'center' },
+    headerSubtitle: { fontSize: 9, marginTop: 2 },
     todayButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -238,7 +234,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.22,
         shadowRadius: 12,
         elevation: 8,
-        zIndex: 2
+        zIndex: 2,
+        flexShrink: 0,
     },
     todayButtonText: { fontSize: 13, fontWeight: '600' },
     scrollContent: {
@@ -263,7 +260,7 @@ const styles = StyleSheet.create({
     },
     progressText: {
         fontSize: 13,
-        color: COLOR_CROWNED, // Keeping text yellow to match bar
+        color: COLOR_CROWNED,
         fontWeight: '500'
     },
     calendarCard: {
