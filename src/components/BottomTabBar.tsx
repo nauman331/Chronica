@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MapIcon, CalendarIcon, ChartIcon, UserIcon } from '../utils/icons';
 
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
 interface BottomTabBarProps {
@@ -13,14 +12,11 @@ interface BottomTabBarProps {
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
     const navigation = useNavigation<any>();
 
-    // --- 1. Get dynamic colors ---
     const { colors } = useAppTheme();
 
-    // Helper constants for icon colors
     const activeColor = colors.text;
     const inactiveColor = colors.textSecondary;
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         tabBar: {
             backgroundColor: colors.background,
@@ -37,11 +33,31 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
         }
     });
 
+    const routeToTab: Record<string, BottomTabBarProps['activeTab']> = {
+        LifeMap: 'map',
+        EnhanceCrown: 'today',
+        Insights: 'insights',
+        Profile: 'profile',
+    };
+
+    const goToRoute = (routeName: string) => {
+        if (activeTab === routeToTab[routeName]) {
+            return;
+        }
+
+        if (typeof navigation.replace === 'function') {
+            navigation.replace(routeName as never);
+            return;
+        }
+
+        navigation.navigate(routeName as never);
+    };
+
     return (
         <View style={[styles.tabBar, dynamicStyles.tabBar]}>
             <Pressable
                 style={[styles.tabItem, activeTab === 'map' && [styles.activeTab, dynamicStyles.activeTab]]}
-                onPress={() => navigation.navigate('LifeMap' as never)}
+                onPress={() => goToRoute('LifeMap')}
             >
                 <MapIcon color={activeTab === 'map' ? activeColor : inactiveColor} />
                 <Text style={activeTab === 'map' ? [styles.activeTabText, dynamicStyles.activeTabText] : [styles.tabText, dynamicStyles.tabText]}>
@@ -51,7 +67,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
 
             <Pressable
                 style={[styles.tabItem, activeTab === 'today' && [styles.activeTab, dynamicStyles.activeTab]]}
-                onPress={() => navigation.navigate('EnhanceCrown' as never)}
+                onPress={() => goToRoute('EnhanceCrown')}
             >
                 <CalendarIcon color={activeTab === 'today' ? activeColor : inactiveColor} />
                 <Text style={activeTab === 'today' ? [styles.activeTabText, dynamicStyles.activeTabText] : [styles.tabText, dynamicStyles.tabText]}>
@@ -61,7 +77,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
 
             <Pressable
                 style={[styles.tabItem, activeTab === 'insights' && [styles.activeTab, dynamicStyles.activeTab]]}
-                onPress={() => navigation.navigate('Insights' as never)}
+                onPress={() => goToRoute('Insights')}
             >
                 <ChartIcon color={activeTab === 'insights' ? activeColor : inactiveColor} />
                 <Text style={activeTab === 'insights' ? [styles.activeTabText, dynamicStyles.activeTabText] : [styles.tabText, dynamicStyles.tabText]}>
@@ -71,7 +87,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
 
             <Pressable
                 style={[styles.tabItem, activeTab === 'profile' && [styles.activeTab, dynamicStyles.activeTab]]}
-                onPress={() => navigation.navigate('Profile' as never)}
+                onPress={() => goToRoute('Profile')}
             >
                 <UserIcon color={activeTab === 'profile' ? activeColor : inactiveColor} />
                 <Text style={activeTab === 'profile' ? [styles.activeTabText, dynamicStyles.activeTabText] : [styles.tabText, dynamicStyles.tabText]}>
@@ -84,7 +100,6 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
 
 export default BottomTabBar;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     tabBar: {
         flexDirection: 'row',

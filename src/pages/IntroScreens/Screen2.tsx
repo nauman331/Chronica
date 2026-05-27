@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, FlatList, Dimensions, Platform } from 'react-native';
+import React, { memo, useMemo } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, Dimensions, Platform } from 'react-native';
 import { Canvas, Group, Skia, Path, Blur, Shadow } from '@shopify/react-native-skia';
 
 import { useAppTheme } from '../../hooks/useAppTheme';
@@ -15,38 +15,25 @@ const CROWN_RADIUS = RADIUS * 1.2;
 const HALO_RADIUS = RADIUS * 2.5;
 const GLOW_PADDING = 8;
 
-const YearRow = ({ year, age, dotsCount }: any) => {
-    const paths = useMemo(() => {
-        const pUndocumented = Skia.Path.Make();
-        const pDocumented = Skia.Path.Make();
-        const pCrowned = Skia.Path.Make();
-        const pCrownedHalo = Skia.Path.Make();
+type YearState = {
+    year: number;
+    age: number;
+    dotsCount: number;
+};
 
-        for (let d = 0; d < dotsCount; d++) {
-            const col = d % NODES_PER_ROW;
-            const row = Math.floor(d / NODES_PER_ROW);
+type YearPaths = {
+    pUndocumented: ReturnType<typeof Skia.Path.Make>;
+    pDocumented: ReturnType<typeof Skia.Path.Make>;
+    pCrowned: ReturnType<typeof Skia.Path.Make>;
+    pCrownedHalo: ReturnType<typeof Skia.Path.Make>;
+};
 
-            const cx = col * CELL_SIZE + RADIUS + GLOW_PADDING;
-            const cy = row * CELL_SIZE + RADIUS + GLOW_PADDING;
-            const rand = Math.random();
+type YearViewModel = YearState & {
+    paths: YearPaths;
+    canvasHeight: number;
+};
 
-            if (rand > 0.95) {
-                pCrownedHalo.addCircle(cx, cy, HALO_RADIUS);
-                pCrowned.addCircle(cx, cy, CROWN_RADIUS);
-            }
-            else if (rand > 0.70) {
-                pDocumented.addCircle(cx, cy, RADIUS);
-            }
-            else {
-                pUndocumented.addCircle(cx, cy, RADIUS);
-            }
-        }
-        return { pUndocumented, pDocumented, pCrowned, pCrownedHalo };
-    }, [dotsCount]);
-
-    const baseCanvasHeight = Math.ceil(dotsCount / NODES_PER_ROW) * CELL_SIZE;
-    const canvasHeight = baseCanvasHeight > 0 ? baseCanvasHeight + (GLOW_PADDING * 2) : 0;
-
+const YearRow = memo(({ year, age, canvasHeight, paths }: YearViewModel) => {
     return (
         <View style={styles.yearRowContainer}>
             <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING - 1, color: '#B4B4B4' }]}>{year}</Text>
@@ -71,15 +58,15 @@ const YearRow = ({ year, age, dotsCount }: any) => {
             <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING - 1, color: '#B4B4B4' }]}>{age}y</Text>
         </View>
     );
-};
+});
 
 const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
     const { colors, isDark } = useAppTheme();
     const bDate = useMemo(() => new Date(birthDate), [birthDate]);
     const today = new Date();
 
-    const yearsData = useMemo(() => {
-        const years = [];
+    const yearsData = useMemo<YearViewModel[]>(() => {
+        const years: YearViewModel[] = [];
         let current = new Date(bDate);
         let age = 0;
 
@@ -93,16 +80,51 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             const dotsCount = Math.min(Math.ceil(diffDays / 7), 52);
 
-            years.push({ year, age, dotsCount });
+            const pUndocumented = Skia.Path.Make();
+            const pDocumented = Skia.Path.Make();
+            const pCrowned = Skia.Path.Make();
+            const pCrownedHalo = Skia.Path.Make();
+
+            for (let d = 0; d < dotsCount; d++) {
+                const col = d % NODES_PER_ROW;
+                const row = Math.floor(d / NODES_PER_ROW);
+                const cx = col * CELL_SIZE + RADIUS + GLOW_PADDING;
+                const cy = row * CELL_SIZE + RADIUS + GLOW_PADDING;
+                const rand = Math.random();
+
+                if (rand > 0.95) {
+                    pCrownedHalo.addCircle(cx, cy, HALO_RADIUS);
+                    pCrowned.addCircle(cx, cy, CROWN_RADIUS);
+                }
+                else if (rand > 0.70) {
+                    pDocumented.addCircle(cx, cy, RADIUS);
+                }
+                else {
+                    pUndocumented.addCircle(cx, cy, RADIUS);
+                }
+            }
+
+            const baseCanvasHeight = Math.ceil(dotsCount / NODES_PER_ROW) * CELL_SIZE;
+            const canvasHeight = baseCanvasHeight > 0 ? baseCanvasHeight + (GLOW_PADDING * 2) : 0;
+
+            years.push({
+                year,
+                age,
+                dotsCount,
+                canvasHeight,
+                paths: { pUndocumented, pDocumented, pCrowned, pCrownedHalo },
+            });
+
             current.setFullYear(current.getFullYear() + 1);
             current.setMonth(0);
             current.setDate(1);
             age++;
         }
-        return years;
-    }, [bDate]);
 
-    const dynamicStyles = StyleSheet.create({
+        return years;
+    }, [bDate, today]);
+
+    const dynamicStyles = useMemo(() => StyleSheet.create({
         container: { backgroundColor: colors.background },
         title: { color: colors.text },
         subtitle: { color: '#8C8B9C' },
@@ -122,8 +144,7 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
         },
         buttonText: { color: '#FFFFFF' },
         skipText: { color: '#B4B4B4' },
-    });
-
+    }), [colors.background, colors.border, colors.primary, colors.surface, colors.text, isDark]);
     return (
         <View style={[styles.container, dynamicStyles.container]}>
             <View style={styles.header}>
@@ -134,14 +155,23 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
             </View>
 
             <View style={[styles.card, dynamicStyles.card]}>
-                <FlatList
-                    data={yearsData}
-                    keyExtractor={(item) => item.year.toString()}
-                    renderItem={({ item }) => <YearRow year={item.year} age={item.age} dotsCount={item.dotsCount} />}
-                    contentContainerStyle={styles.listContent}
+                <ScrollView
                     showsVerticalScrollIndicator={false}
+                    bounces={false}
                     style={{ maxHeight: height * 0.4 }}
-                />
+                    contentContainerStyle={styles.listContent}
+                >
+                    {yearsData.map((item) => (
+                        <YearRow
+                            key={item.year}
+                            year={item.year}
+                            age={item.age}
+                            dotsCount={item.dotsCount}
+                            canvasHeight={item.canvasHeight}
+                            paths={item.paths}
+                        />
+                    ))}
+                </ScrollView>
                 <View style={styles.legendContainer}>
                     <View style={styles.legendItem}>
                         <View style={[styles.legendDot, { backgroundColor: COLOR_UNDOCUMENTED }]} />
@@ -193,7 +223,7 @@ const styles = StyleSheet.create({
     legendDot: { width: 8, height: 8, borderRadius: 4 },
     legendText: { fontSize: 11.5, fontWeight: '500' },
     bottomSection: {
-        marginTop: 24, paddingHorizontal: 24, paddingTop: 24, paddingBottom: height > 800 ? 50 : 34,
+        marginTop: 10, paddingHorizontal: 24, paddingTop: 24, paddingBottom: height > 800 ? 50 : 34,
         borderTopWidth: 1
     },
     button: {

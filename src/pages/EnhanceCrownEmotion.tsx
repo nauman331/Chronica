@@ -72,7 +72,14 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
                     <TouchableOpacity
                         style={[styles.primaryButton, dynamicStyles.primaryButton]}
                         activeOpacity={0.85}
-                        onPress={() => navigation.navigate("EnhanceCrown")}
+                        onPress={() => {
+                            if (typeof navigation.replace === 'function') {
+                                navigation.replace('EnhanceCrown');
+                                return;
+                            }
+
+                            navigation.navigate('EnhanceCrown');
+                        }}
                     >
                         <Text style={[styles.primaryButtonText, dynamicStyles.primaryButtonText]}>Return to Today</Text>
                     </TouchableOpacity>
@@ -80,7 +87,14 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
                     <TouchableOpacity
                         style={[styles.secondaryButton, dynamicStyles.secondaryButton]}
                         activeOpacity={0.7}
-                        onPress={() => navigation.navigate("LifeMap")}
+                        onPress={() => {
+                            if (typeof navigation.replace === 'function') {
+                                navigation.replace('LifeMap');
+                                return;
+                            }
+
+                            navigation.navigate('LifeMap');
+                        }}
                     >
                         <Text style={[styles.secondaryButtonText, dynamicStyles.secondaryButtonText]}>View Life Map →</Text>
                     </TouchableOpacity>

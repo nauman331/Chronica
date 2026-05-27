@@ -1,5 +1,5 @@
-import React, { useMemo, useCallback, memo } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import React, { useMemo, useCallback, memo, useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, View, ScrollView, Pressable, InteractionManager } from 'react-native';
 import { Canvas, Group, Skia, Path, Blur, Shadow } from '@shopify/react-native-skia';
 import BottomTabBar from '../components/BottomTabBar';
 
@@ -22,13 +22,13 @@ const CROWN_RADIUS = RADIUS * 1.2;
 const HALO_RADIUS = RADIUS * 2.5;
 const GLOW_PADDING = 8;
 
-// ─── Pre-computed canvas dimensions (static, computed once) ───────────────────
 const CANVAS_HEIGHT = (2 * CELL_SIZE) + (GLOW_PADDING * 2);
 const CANVAS_WIDTH = (NODES_PER_ROW * CELL_SIZE) + (GLOW_PADDING * 2);
+const YEAR_ROW_GAP = 20;
+const YEAR_ROW_STRIDE = CANVAS_HEIGHT + YEAR_ROW_GAP;
+const ROWS_PER_CHUNK = 12;
+const CHUNK_BUFFER_ROWS = 2;
 
-// ─── Static week data generated once outside the component ───────────────────
-// Math.random() was inside useMemo before — unstable across remounts.
-// Moved here so it runs exactly once per app session.
 const CURRENT_YEAR = 2026;
 const CURRENT_WEEK_IN_YEAR = 20;
 const TOTAL_YEARS = 32;
@@ -63,12 +63,8 @@ function buildYearsData(): YearData[] {
     return data;
 }
 
-// Stable reference — never recreated.
 const YEARS_DATA: YearData[] = buildYearsData();
 
-// ─── Pre-build all Skia paths once, outside React ────────────────────────────
-// Previously each YearRow re-built paths inside useMemo with [weeks] dep.
-// Since YEARS_DATA is static, we can build all paths once at module load.
 interface YearPaths {
     pPast: ReturnType<typeof Skia.Path.Make>;
     pDocumented: ReturnType<typeof Skia.Path.Make>;
@@ -104,7 +100,6 @@ function buildPaths(weeks: WeekState[]): YearPaths {
     return { pPast, pDocumented, pCrowned, pCrownedHalo, pFuture };
 }
 
-// All paths built synchronously at module load — zero cost at render time.
 const ALL_YEAR_PATHS: YearPaths[] = YEARS_DATA.map(d => buildPaths(d.weeks));
 
 interface YearViewModel extends YearData {
@@ -116,25 +111,39 @@ const YEARS_VIEW_MODEL: YearViewModel[] = YEARS_DATA.map((yearData, index) => ({
     paths: ALL_YEAR_PATHS[index],
 }));
 
-// ─── Static future-dot color ──────────────────────────────────────────────────
-// Previously used colors.border (dynamic theme value) as a Skia color, which
-// caused two problems: (1) Skia colors must be resolved strings at path-paint
-// time, not reactive values; (2) it forced YearRow to depend on theme, making
-// React.memo useless. COLOR_FUTURE is a static constant — correct approach.
-// If you need a theme-aware future color, derive it once at the LifeMap level
-// and pass it as a stable prop. Here we keep COLOR_FUTURE (from utils/colors).
+interface YearChunk {
+    index: number;
+    offsetY: number;
+    height: number;
+    rows: YearViewModel[];
+}
 
-// ─── YearRow ─────────────────────────────────────────────────────────────────
+const YEAR_CHUNKS: YearChunk[] = [];
+
+for (let index = 0, offsetY = 0; index < YEARS_VIEW_MODEL.length; index += ROWS_PER_CHUNK) {
+    const rows = YEARS_VIEW_MODEL.slice(index, index + ROWS_PER_CHUNK);
+    const height = rows.length * YEAR_ROW_STRIDE;
+
+    YEAR_CHUNKS.push({
+        index: YEAR_CHUNKS.length,
+        offsetY,
+        height,
+        rows,
+    });
+
+    offsetY += height;
+}
+
+const TOTAL_YEARS_HEIGHT = YEAR_CHUNKS.reduce((sum, chunk) => sum + chunk.height, 0);
+
 interface YearRowProps {
     year: number;
     age: number;
     paths: YearPaths;
-    textSecondaryColor: string; // passed from parent to avoid useAppTheme per-row
+    textSecondaryColor: string;
     onPress: (year: number, age: number) => void;
 }
 
-// React.memo with a custom comparison — onPress is stable (useCallback in parent)
-// so default shallow compare is fine, but explicit for clarity.
 const YearRow = memo(({ year, age, paths, textSecondaryColor, onPress }: YearRowProps) => {
     const handlePress = useCallback(() => onPress(year, age), [onPress, year, age]);
 
@@ -170,9 +179,130 @@ const YearRow = memo(({ year, age, paths, textSecondaryColor, onPress }: YearRow
     );
 });
 
+interface YearChunkProps {
+    chunk: YearChunk;
+    textSecondaryColor: string;
+    onPress: (year: number, age: number) => void;
+}
+
+const YearChunkSection = memo(({ chunk, textSecondaryColor, onPress }: YearChunkProps) => {
+    return (
+        <View style={[styles.chunkRow, { height: chunk.height }]}>
+            {chunk.rows.map((item, rowIndex) => (
+                <Pressable
+                    key={`hit-${item.year}`}
+                    style={[styles.rowPressTarget, { top: rowIndex * YEAR_ROW_STRIDE, height: YEAR_ROW_STRIDE }]}
+                    onPress={() => onPress(item.year, item.age)}
+                />
+            ))}
+
+            <View style={styles.yearColumn}>
+                {chunk.rows.map((item) => (
+                    <View
+                        key={item.year}
+                        style={[styles.chunkLabelCell, { height: YEAR_ROW_STRIDE }]}
+                    >
+                        <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING, color: textSecondaryColor }]}>
+                            {item.year}
+                        </Text>
+                    </View>
+                ))}
+            </View>
+
+            <View style={styles.chunkCanvasWrap}>
+                <Canvas style={{ width: CANVAS_WIDTH, height: chunk.height }}>
+                    {chunk.rows.map((item, rowIndex) => {
+                        const rowOffset = rowIndex * YEAR_ROW_STRIDE;
+
+                        return (
+                            <Group key={item.year} transform={[{ translateY: rowOffset }]}>
+                                <Group color={COLOR_PAST}><Path path={item.paths.pPast} /></Group>
+                                <Group color={COLOR_DOCUMENTED}><Path path={item.paths.pDocumented} /></Group>
+
+                                <Group color={COLOR_CROWNED} opacity={0.15}>
+                                    <Blur blur={4} />
+                                    <Path path={item.paths.pCrownedHalo} />
+                                </Group>
+
+                                <Group color={COLOR_CROWNED}>
+                                    <Shadow dx={0} dy={0} blur={6} color={COLOR_CROWNED} />
+                                    <Path path={item.paths.pCrowned} />
+                                </Group>
+
+                                <Group color={COLOR_FUTURE}><Path path={item.paths.pFuture} /></Group>
+                            </Group>
+                        );
+                    })}
+                </Canvas>
+            </View>
+
+            <View style={styles.ageColumn}>
+                {chunk.rows.map((item) => (
+                    <View
+                        key={item.year}
+                        style={[styles.chunkLabelCell, { height: YEAR_ROW_STRIDE }]}
+                    >
+                        <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING, color: textSecondaryColor }]}>
+                            {item.age}y
+                        </Text>
+                    </View>
+                ))}
+            </View>
+        </View>
+    );
+});
+
 // ─── LifeMap ──────────────────────────────────────────────────────────────────
 const LifeMap = ({ navigation }: any) => {
     const { colors } = useAppTheme();
+    const [viewportHeight, setViewportHeight] = useState(0);
+    const [visibleRange, setVisibleRange] = useState({ start: 0, end: Math.min(1, YEAR_CHUNKS.length - 1) });
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            void import('./EnhanceCrown');
+        });
+
+        return () => task.cancel();
+    }, []);
+
+    const updateVisibleRange = useCallback((offsetY: number, nextViewportHeight: number) => {
+        if (nextViewportHeight <= 0) {
+            return;
+        }
+
+        const bufferPx = YEAR_ROW_STRIDE * CHUNK_BUFFER_ROWS;
+        const visibleTop = Math.max(0, offsetY - bufferPx);
+        const visibleBottom = offsetY + nextViewportHeight + bufferPx;
+
+        let start = 0;
+        while (start < YEAR_CHUNKS.length - 1 && YEAR_CHUNKS[start].offsetY + YEAR_CHUNKS[start].height <= visibleTop) {
+            start++;
+        }
+
+        let end = YEAR_CHUNKS.length - 1;
+        while (end > start && YEAR_CHUNKS[end].offsetY >= visibleBottom) {
+            end--;
+        }
+
+        setVisibleRange((current) => {
+            if (current.start === start && current.end === end) {
+                return current;
+            }
+
+            return { start, end };
+        });
+    }, []);
+
+    const handleListLayout = useCallback((event: any) => {
+        const nextViewportHeight = event.nativeEvent.layout.height;
+        setViewportHeight(nextViewportHeight);
+        updateVisibleRange(0, nextViewportHeight);
+    }, [updateVisibleRange]);
+
+    const handleScroll = useCallback((event: any) => {
+        updateVisibleRange(event.nativeEvent.contentOffset.y, viewportHeight);
+    }, [updateVisibleRange, viewportHeight]);
 
     // Stable callback — rows stay memo-friendly and navigation gets the data directly.
     const handleYearPress = useCallback((year: number, age: number) => {
@@ -180,6 +310,11 @@ const LifeMap = ({ navigation }: any) => {
     }, [navigation]);
 
     const handleTodayPress = useCallback(() => {
+        if (typeof navigation.replace === 'function') {
+            navigation.replace('EnhanceCrown');
+            return;
+        }
+
         navigation.navigate('EnhanceCrown');
     }, [navigation]);
 
@@ -244,17 +379,19 @@ const LifeMap = ({ navigation }: any) => {
                 showsVerticalScrollIndicator={false}
                 bounces={false}
                 scrollEventThrottle={16}
+                onLayout={handleListLayout}
+                onScroll={handleScroll}
             >
-                {YEARS_VIEW_MODEL.map((item) => (
-                    <YearRow
-                        key={item.year}
-                        year={item.year}
-                        age={item.age}
-                        paths={item.paths}
+                <View style={{ height: YEAR_CHUNKS[visibleRange.start]?.offsetY ?? 0 }} />
+                {YEAR_CHUNKS.slice(visibleRange.start, visibleRange.end + 1).map((chunk) => (
+                    <YearChunkSection
+                        key={chunk.index}
+                        chunk={chunk}
                         textSecondaryColor={colors.textSecondary}
                         onPress={handleYearPress}
                     />
                 ))}
+                <View style={{ height: Math.max(0, TOTAL_YEARS_HEIGHT - ((YEAR_CHUNKS[visibleRange.end]?.offsetY ?? 0) + (YEAR_CHUNKS[visibleRange.end]?.height ?? 0))) }} />
             </ScrollView>
 
             <View style={[styles.bottomTabContainer, dynamicBottomTab]}>
@@ -294,6 +431,12 @@ const styles = StyleSheet.create({
     divider: { height: 1, marginBottom: 24 },
     listWrapper: { flex: 1 },
     listContent: { paddingHorizontal: 24, paddingBottom: 40 },
+    chunkRow: { flexDirection: 'row', alignItems: 'flex-start' },
+    rowPressTarget: { position: 'absolute', left: 0, right: 0, zIndex: 5 },
+    yearColumn: { width: 36 },
+    ageColumn: { width: 28 },
+    chunkCanvasWrap: { flex: 1, alignItems: 'center' },
+    chunkLabelCell: { justifyContent: 'flex-start' },
     yearRowContainer: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 },
     yearLabel: { width: 36, fontSize: 11, fontWeight: '400', textAlign: 'left' },
     canvasContainer: { flex: 1, alignItems: 'center' },

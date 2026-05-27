@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions, SafeAreaView } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, ScrollView, Dimensions, SafeAreaView, InteractionManager } from 'react-native';
 
 // Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -17,6 +17,15 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
     const [activeIndex, setActiveIndex] = useState(0);
 
     const birthDate = route?.params?.birthDate || new Date(1996, 0, 1).toISOString();
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            void import('./EnhanceCrown');
+            void import('./LifeMap');
+        });
+
+        return () => task.cancel();
+    }, []);
 
     const handleScroll = (event: any) => {
         const scrollPosition = event.nativeEvent.contentOffset.x;

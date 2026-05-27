@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, Pressable, SafeAreaView, ScrollView, Platform } from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, ScrollView, Platform, InteractionManager } from 'react-native';
+import React, { useEffect } from 'react';
 import BottomTabBar from '../components/BottomTabBar';
 
 // Import custom theme hook
@@ -11,6 +11,14 @@ import { BellIcon, SparkIcon, ReflectionIcon, ArrowUpIcon } from '../utils/icons
 
 const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
     const { colors, isDark } = useAppTheme();
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            void import('./LifeMap');
+        });
+
+        return () => task.cancel();
+    }, []);
 
     const today = new Date();
     const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
