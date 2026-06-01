@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -6,10 +6,11 @@ import {
     View,
     ScrollView,
     TouchableOpacity,
+    DimensionValue
 } from 'react-native';
 import BottomTabBar from '../components/BottomTabBar';
 import LinearGradient from 'react-native-linear-gradient';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import LogoutModal from '../components/LogoutModal';
 
@@ -34,9 +35,11 @@ import {
     lightPurple,
     darkPurple
 } from '../utils/colors';
+import { RootState } from '../store/store';
 
 const Profile = ({ navigation }: any) => {
     const dispatch = useDispatch();
+    const { userdata } = useSelector((state: RootState) => state.auth);
 
     const { colors, isDark } = useAppTheme();
 
@@ -46,6 +49,76 @@ const Profile = ({ navigation }: any) => {
         setIsLogoutModalVisible(false);
         dispatch(logout());
     };
+
+    // --- Dynamic Life Calculations ---
+    const lifeStats = useMemo(() => {
+        if (!userdata?.birth_date) {
+            return {
+                age: 0, daysLived: '0', weeksLived: '0',
+                formattedDob: 'N/A', yearsRemaining: 80,
+                daysAhead: '0', progressPercentage: 0,
+                daysToBirthday: 0, turningAge: 0
+            };
+        }
+
+        const birthDate = new Date(userdata.birth_date);
+        const now = new Date();
+        const targetAge = 80;
+
+        // 1. Formatted DOB (e.g., "January 1, 1994")
+        const formattedDob = birthDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        // 2. Exact Age calculation
+        let age = now.getFullYear() - birthDate.getFullYear();
+        const monthDiff = now.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        // 3. Time Lived
+        const diffTimeMs = now.getTime() - birthDate.getTime();
+        const daysLivedNum = Math.floor(diffTimeMs / (1000 * 60 * 60 * 24));
+        const weeksLivedNum = Math.floor(daysLivedNum / 7);
+
+        // 4. Time Remaining (Assuming 80 years)
+        const yearsRemaining = Math.max(0, targetAge - age);
+
+        const eightiethBirthday = new Date(birthDate);
+        eightiethBirthday.setFullYear(eightiethBirthday.getFullYear() + targetAge);
+
+        const remainingTimeMs = eightiethBirthday.getTime() - now.getTime();
+        const daysAheadNum = Math.max(0, Math.floor(remainingTimeMs / (1000 * 60 * 60 * 24)));
+
+        // 5. Progress Percentage
+        const totalExpectedDays = daysLivedNum + daysAheadNum;
+        const rawPercentage = (daysLivedNum / totalExpectedDays) * 100;
+        const progressPercentage = Math.min(100, Math.max(0, rawPercentage)); // Clamp between 0-100
+
+        // 6. Next Birthday
+        const nextBirthday = new Date(birthDate);
+        nextBirthday.setFullYear(now.getFullYear());
+
+        // If birthday has passed this year, look to next year
+        if (now.getTime() > nextBirthday.getTime()) {
+            nextBirthday.setFullYear(now.getFullYear() + 1);
+        }
+
+        const daysToBirthday = Math.ceil((nextBirthday.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const turningAge = nextBirthday.getFullYear() - birthDate.getFullYear();
+
+        return {
+            age,
+            daysLived: daysLivedNum.toLocaleString(),
+            weeksLived: weeksLivedNum.toLocaleString(),
+            formattedDob,
+            yearsRemaining,
+            daysAhead: daysAheadNum.toLocaleString(),
+            progressPercentage: progressPercentage.toFixed(1), // 1 decimal place like "40.4"
+            daysToBirthday,
+            turningAge
+        };
+    }, [userdata?.birth_date]);
+
 
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
@@ -94,8 +167,10 @@ const Profile = ({ navigation }: any) => {
                             <SparkleSmallIcon color={white} />
                         </View>
                     </View>
-                    <Text style={[styles.userName, dynamicStyles.userName]}>Chronica User</Text>
-                    <Text style={[styles.userSubtitle, dynamicStyles.userSubtitle]}>32 years old · 11,791 days lived</Text>
+                    <Text style={[styles.userName, dynamicStyles.userName]}>{userdata?.full_name || 'N/A'}</Text>
+                    <Text style={[styles.userSubtitle, dynamicStyles.userSubtitle]}>
+                        {lifeStats.age} years old · {lifeStats.daysLived} days lived
+                    </Text>
                 </View>
 
                 <View style={styles.progressCardContainer}>
@@ -109,15 +184,15 @@ const Profile = ({ navigation }: any) => {
                     <View style={styles.progressCardContent}>
                         <View style={styles.progressHeader}>
                             <Text style={styles.progressLabelText}>Life Progress</Text>
-                            <Text style={styles.progressLabelText}>Age 32</Text>
+                            <Text style={styles.progressLabelText}>Age {lifeStats.age}</Text>
                         </View>
                         <View style={styles.progressDataRow}>
-                            <Text style={styles.progressPercentage}>40.4%</Text>
+                            <Text style={styles.progressPercentage}>{lifeStats.progressPercentage}%</Text>
                             <Text style={styles.progressTotal}>of 80 years</Text>
                         </View>
 
                         <View style={styles.progressBarTrack}>
-                            <View style={[styles.progressBarFill, { width: '40.4%' }]} />
+                            <View style={[styles.progressBarFill, { width: `${lifeStats.progressPercentage}%` as DimensionValue }]} />
                         </View>
 
                         <View style={styles.progressFooter}>
@@ -130,39 +205,36 @@ const Profile = ({ navigation }: any) => {
                 {/* --- Stats Grid --- */}
                 <View style={styles.statsGrid}>
                     <View style={[styles.statCard, dynamicStyles.statCard]}>
-                        <Text style={[styles.statValue, dynamicStyles.statValue]}>48</Text>
+                        <Text style={[styles.statValue, dynamicStyles.statValue]}>{lifeStats.yearsRemaining}</Text>
                         <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Years remaining</Text>
                         <Text style={[styles.statSubLabel, dynamicStyles.statSubLabel]}>to age 80</Text>
                     </View>
                     <View style={[styles.statCard, dynamicStyles.statCard]}>
-                        <Text style={[styles.statValue, dynamicStyles.statValue]}>17,409</Text>
+                        <Text style={[styles.statValue, dynamicStyles.statValue]}>{lifeStats.daysAhead}</Text>
                         <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Days ahead</Text>
                         <Text style={[styles.statSubLabel, dynamicStyles.statSubLabel]}>approx.</Text>
                     </View>
                     <View style={[styles.statCard, dynamicStyles.statCard]}>
-                        {/* Fixed brand color for this specific stat */}
-                        <Text style={[styles.statValue, { color: '#4A85F6' }]}>1,684</Text>
+                        <Text style={[styles.statValue, { color: '#4A85F6' }]}>{lifeStats.weeksLived}</Text>
                         <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Weeks lived</Text>
                         <Text style={[styles.statSubLabel, dynamicStyles.statSubLabel]}>of 4,160</Text>
                     </View>
                     <View style={[styles.statCard, dynamicStyles.statCard]}>
-                        {/* Fixed brand color for this specific stat */}
-                        <Text style={[styles.statValue, { color: yellow }]}>261</Text>
+                        <Text style={[styles.statValue, { color: yellow }]}>{lifeStats.daysToBirthday}</Text>
                         <Text style={[styles.statLabel, dynamicStyles.statLabel]}>Days to birthday</Text>
-                        <Text style={[styles.statSubLabel, dynamicStyles.statSubLabel]}>turning 33</Text>
+                        <Text style={[styles.statSubLabel, dynamicStyles.statSubLabel]}>turning {lifeStats.turningAge}</Text>
                     </View>
                 </View>
 
                 {/* --- Info List (Dates) --- */}
                 <View style={[styles.listContainer, dynamicStyles.listContainer]}>
                     <View style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]}>
-                        {/* Kept brand lightyellow for birthdate */}
                         <View style={[styles.listIconCircle, { backgroundColor: isDark ? colors.surfaceMuted : lightyellow }]}>
                             <CalendarIcon color={yellow} />
                         </View>
                         <View style={styles.listContent}>
                             <Text style={[styles.listSubtitle, dynamicStyles.listSubtitle]}>Date of Birth</Text>
-                            <Text style={[styles.listTitle, dynamicStyles.listTitle]}>January 1, 1994</Text>
+                            <Text style={[styles.listTitle, dynamicStyles.listTitle]}>{lifeStats.formattedDob}</Text>
                         </View>
                     </View>
                     <View style={styles.listItem}>
@@ -171,7 +243,9 @@ const Profile = ({ navigation }: any) => {
                         </View>
                         <View style={styles.listContent}>
                             <Text style={[styles.listSubtitle, dynamicStyles.listSubtitle]}>Time on Earth</Text>
-                            <Text style={[styles.listTitle, dynamicStyles.listTitle]}>11,791 days · 1,684 weeks</Text>
+                            <Text style={[styles.listTitle, dynamicStyles.listTitle]}>
+                                {lifeStats.daysLived} days · {lifeStats.weeksLived} weeks
+                            </Text>
                         </View>
                     </View>
                 </View>
@@ -238,7 +312,6 @@ const Profile = ({ navigation }: any) => {
                 <BottomTabBar activeTab="profile" />
             </View>
 
-            {/* --- Reusable Modal --- */}
             <LogoutModal
                 visible={isLogoutModalVisible}
                 onClose={() => setIsLogoutModalVisible(false)}
