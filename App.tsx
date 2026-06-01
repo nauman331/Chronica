@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from "./src/store/store";
+import Toast from 'react-native-toast-message';
 
 
 const App: React.FC = () => {
@@ -12,6 +13,7 @@ const App: React.FC = () => {
       <PersistGate loading={null} persistor={persistor}>
         <SafeAreaProvider>
           <CombinedNav />
+          <Toast />
         </SafeAreaProvider>
       </PersistGate>
     </Provider>

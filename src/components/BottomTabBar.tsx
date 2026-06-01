@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MapIcon, CalendarIcon, ChartIcon, UserIcon } from '../utils/icons';
 
+
 import { useAppTheme } from '../hooks/useAppTheme';
 
 interface BottomTabBarProps {

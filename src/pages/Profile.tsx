@@ -13,7 +13,6 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import LogoutModal from '../components/LogoutModal';
 
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
 import {
@@ -28,7 +27,6 @@ import {
     SparkleSmallIcon
 } from '../utils/icons';
 
-// Keep fixed brand colors for gradients and accents
 import {
     white,
     yellow,
@@ -40,7 +38,6 @@ import {
 const Profile = ({ navigation }: any) => {
     const dispatch = useDispatch();
 
-    // --- 1. Get dynamic colors & theme state ---
     const { colors, isDark } = useAppTheme();
 
     const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
@@ -50,7 +47,6 @@ const Profile = ({ navigation }: any) => {
         dispatch(logout());
     };
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         badge: { borderColor: colors.background },
@@ -67,9 +63,7 @@ const Profile = ({ navigation }: any) => {
         listTitle: { color: colors.text },
         listSubtitle: { color: colors.textSecondary },
 
-        // Use surfaceMuted for standard menu icons so they adapt in dark mode
         menuIconCircle: { backgroundColor: colors.surfaceMuted },
-        // Use a themed transparent red for the sign out button background
         signOutIconCircle: { backgroundColor: isDark ? 'rgba(229, 57, 53, 0.15)' : '#FFF1F1' },
         signOutText: { color: colors.danger },
 
@@ -104,7 +98,6 @@ const Profile = ({ navigation }: any) => {
                     <Text style={[styles.userSubtitle, dynamicStyles.userSubtitle]}>32 years old · 11,791 days lived</Text>
                 </View>
 
-                {/* --- Life Progress Card (Fixed Dark Theme for Brand Consistency) --- */}
                 <View style={styles.progressCardContainer}>
                     <LinearGradient
                         colors={[darkPurple, lightPurple]}
