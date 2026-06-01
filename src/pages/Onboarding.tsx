@@ -42,7 +42,8 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
     };
 
     const skipOnboarding = () => {
-        navigation.navigate('EnhanceCrown');
+        // Open register bottom sheet on GetStarted with the selected birthDate
+        navigation.navigate('GetStarted', { openAuth: 'signup', birthDate });
     };
 
     const dynamicStyles = StyleSheet.create({
@@ -72,7 +73,10 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
                         <Screen2 birthDate={birthDate} onNext={goToNext} onSkip={skipOnboarding} />
                     </View>
                     <View style={{ width }}>
-                        <Screen3 onNext={goToNext} onSkip={skipOnboarding} />
+                        <Screen3
+                            onNext={goToNext}
+                            onBegin={() => navigation.navigate('GetStarted', { openAuth: 'signup', birthDate })}
+                        />
                     </View>
                 </ScrollView>
             </View>

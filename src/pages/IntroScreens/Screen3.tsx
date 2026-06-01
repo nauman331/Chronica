@@ -13,10 +13,14 @@ const SparkleIcon = ({ size = 28, color = "#FFFFFF" }) => (
     </Svg>
 );
 
-const Screen3 = ({ onSkip }: any) => {
+const Screen3 = ({ onSkip, onBegin }: any) => {
     const { colors, isDark } = useAppTheme();
 
     const handleBeginRitual = () => {
+        if (onBegin) {
+            onBegin();
+            return;
+        }
         if (onSkip) {
             onSkip();
         }
@@ -66,9 +70,11 @@ const Screen3 = ({ onSkip }: any) => {
                     <SparkleIcon size={14} color={isDark ? '#1A1523' : white} />
                 </Pressable>
 
-                <Pressable style={styles.skipButton} hitSlop={10} onPress={onSkip}>
-                    <Text style={[styles.skipText, dynamicStyles.skipText]}>Skip intro</Text>
-                </Pressable>
+                {onSkip && (
+                    <Pressable style={styles.skipButton} hitSlop={10} onPress={onSkip}>
+                        <Text style={[styles.skipText, dynamicStyles.skipText]}>Skip intro</Text>
+                    </Pressable>
+                )}
             </View>
         </View>
     );

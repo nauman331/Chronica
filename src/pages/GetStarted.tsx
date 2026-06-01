@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, Pressable, Platform, Image } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
@@ -12,7 +12,7 @@ import facebookIcon from '../assets/facebook.png';
 import gmailIcon from '../assets/gmail.png';
 import { white } from '../utils/colors';
 
-const GetStarted: React.FC = () => {
+const GetStarted: React.FC<any> = ({ navigation, route }) => {
     const { colors } = useAppTheme();
 
     const [date, setDate] = useState(new Date());
@@ -58,14 +58,32 @@ const GetStarted: React.FC = () => {
             });
             return;
         }
-        setAuthMode('signup');
-        setIsSheetVisible(true);
+        // Navigate to onboarding and pass the selected date
+        navigation.navigate('Onboarding', { birthDate: formatDjangoDate(date) });
     };
 
     const handleOpenLogin = () => {
         setAuthMode('login');
         setIsSheetVisible(true);
     };
+
+    // If navigated back from onboarding with params, open the auth sheet
+    useEffect(() => {
+        const params = route?.params;
+        if (params?.openAuth) {
+            if (params.birthDate) {
+                const parsed = new Date(params.birthDate);
+                if (!isNaN(parsed.getTime())) {
+                    setDate(parsed);
+                    setIsDateSelected(true);
+                }
+            }
+            setAuthMode(params.openAuth);
+            setIsSheetVisible(true);
+            // clear params to avoid re-triggering
+            navigation.setParams({ openAuth: undefined, birthDate: undefined });
+        }
+    }, [route?.params]);
 
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },

@@ -12,8 +12,8 @@ type UnAuthStackParamList = {
     Screen1: undefined;
     Screen2: undefined;
     Screen3: undefined;
-    GetStarted: undefined;
-    Onboarding: undefined;
+    GetStarted: { openAuth?: 'signup' | 'login'; birthDate?: string } | undefined;
+    Onboarding: { birthDate?: string } | undefined;
     SplashScreen: undefined;
 };
 
