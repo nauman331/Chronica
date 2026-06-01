@@ -44,10 +44,24 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onClose })
     }, [visible, userdata]);
 
     const handleUpdate = async () => {
+        const trimmedFullName = fullName.trim();
+        const trimmedUsername = username.trim();
+        const trimmedBirthplace = birthplace.trim();
+
+        if (!trimmedFullName || !trimmedUsername || !trimmedBirthplace) {
+            Toast.show({
+                type: 'error',
+                text1: 'Required Fields Missing',
+                text2: 'Please fill out your Full Name, Username, and Birthplace.',
+                position: 'top'
+            });
+            return;
+        }
+
         const payload = {
-            full_name: fullName.trim(),
-            username: username.trim(),
-            birth_place: birthplace.trim()
+            full_name: trimmedFullName,
+            username: trimmedUsername,
+            birth_place: trimmedBirthplace
         };
 
         const response = await submit('users/me', payload, { method: 'PATCH' });
@@ -148,7 +162,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onClose })
                 </View>
             </KeyboardAvoidingView>
 
-            {/* Inner Toast to catch any validation errors in the modal */}
             <Toast />
         </Modal>
     );

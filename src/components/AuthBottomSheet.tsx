@@ -51,14 +51,31 @@ const AuthBottomSheet: React.FC<AuthBottomSheetProps> = ({
     }, [visible, initialMode]);
 
     const handleSubmit = async () => {
+        const trimmedEmail = email.trim();
+        const trimmedPassword = password;
+
         if (mode === 'signup') {
+            const trimmedFullName = fullName.trim();
+            const trimmedUsername = username.trim();
+            const trimmedBirthplace = birthplace.trim();
+
+            if (!trimmedEmail || !trimmedPassword || !trimmedFullName || !trimmedUsername || !trimmedBirthplace) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Required Fields Missing',
+                    text2: 'Please fill out all fields to create your account.',
+                    position: 'top'
+                });
+                return;
+            }
+
             const payload = {
-                email: email.trim(),
-                username: username.trim() || email.split('@')[0],
-                full_name: fullName.trim(),
-                password: password,
+                email: trimmedEmail,
+                username: trimmedUsername,
+                full_name: trimmedFullName,
+                password: trimmedPassword,
                 birth_date: birthDate,
-                birth_place: birthplace.trim()
+                birth_place: trimmedBirthplace
             };
 
             const response = await submit('auth/signup', payload, { method: 'POST' });
@@ -71,9 +88,19 @@ const AuthBottomSheet: React.FC<AuthBottomSheetProps> = ({
                 }));
             }
         } else {
+            if (!trimmedEmail || !trimmedPassword) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Required Fields Missing',
+                    text2: 'Please enter your email and password.',
+                    position: 'top'
+                });
+                return;
+            }
+
             const payload = {
-                email: email.trim(),
-                password: password
+                email: trimmedEmail,
+                password: trimmedPassword
             };
 
             const response = await submit('auth/login', payload, { method: 'POST' });
