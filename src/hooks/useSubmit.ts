@@ -54,12 +54,26 @@ const useSubmit = ({ isAuth = false }: { isAuth?: boolean } = {}) => {
                 if (!res.ok) {
                     let errorMsg = "Something went wrong";
 
-                    if (json?.message) {
-                        errorMsg = json.message as string;
-                    } else if (json?.errors && typeof json.errors === "object") {
+                    // 1. Prioritize the new Django 'fields' object
+                    if (json?.fields && typeof json.fields === "object") {
+                        const firstErrorKey = Object.keys(json.fields)[0];
+                        if (firstErrorKey && Array.isArray(json.fields[firstErrorKey])) {
+                            errorMsg = json.fields[firstErrorKey][0] as string;
+                        }
+                    }
+                    // 2. Legacy fallback for existing endpoints using 'errors'
+                    else if (json?.errors && typeof json.errors === "object") {
                         const firstErrorKey = Object.keys(json.errors)[0];
                         if (firstErrorKey && Array.isArray(json.errors[firstErrorKey])) {
                             errorMsg = json.errors[firstErrorKey][0] as string;
+                        }
+                    }
+                    // 3. Fallback to 'message', but avoid showing stringified Django dicts
+                    else if (json?.message && typeof json.message === "string") {
+                        if (!json.message.includes("ErrorDetail")) {
+                            errorMsg = json.message;
+                        } else if (json?.error && typeof json.error === "string") {
+                            errorMsg = json.error; // Fallback to "VALIDATION_ERROR"
                         }
                     }
 
@@ -79,7 +93,7 @@ const useSubmit = ({ isAuth = false }: { isAuth?: boolean } = {}) => {
                 Toast.show({
                     type: 'error',
                     text1: 'Error',
-                    text2: "Submit request failed:"
+                    text2: "Submit request failed: " + message
                 });
                 console.error("Submit request error:", message);
                 return null;
