@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { apiURL } from "../utils/exports";
 import type { RootState } from "../store/store";
+import { login, logout } from "../store/slices/authSlice";
 import Toast from 'react-native-toast-message';
 
 type UseFetchOptions = {
@@ -12,7 +13,9 @@ const useFetch = (
     endpoint: string,
     { isAuth = false }: UseFetchOptions = {},
 ) => {
-    const token = useSelector((state: RootState) => state.auth.token);
+    const { token, refresh: refreshToken, userdata } = useSelector((state: RootState) => state.auth);
+    const dispatch = useDispatch();
+
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<unknown>(null);
 
@@ -30,13 +33,55 @@ const useFetch = (
                     headers["Authorization"] = `Bearer ${token}`;
                 }
 
-                const res = await fetch(`${apiURL}${endpoint}`, {
+                const fetchOptions: RequestInit = {
                     method: "GET",
                     headers,
                     credentials: "include",
-                });
+                };
 
-                const json = await res.json();
+                let res = await fetch(`${apiURL}${endpoint}`, fetchOptions);
+                let json = await res.json();
+
+                if (res.status === 401 && refreshToken && isAuth) {
+                    console.log("Token expired during fetch, attempting refresh...");
+
+                    const refreshRes = await fetch(`${apiURL}/api/v1/auth/token/refresh`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refresh: refreshToken })
+                    });
+
+                    if (refreshRes.ok) {
+                        const refreshData = await refreshRes.json();
+
+                        const newToken = refreshData.access || refreshData.token;
+                        const newRefresh = refreshData.refresh || refreshToken;
+
+                        dispatch(login({
+                            token: newToken,
+                            refresh: newRefresh,
+                            userdata: userdata
+                        }));
+
+                        if (fetchOptions.headers) {
+                            (fetchOptions.headers as Record<string, string>)["Authorization"] = `Bearer ${newToken}`;
+                        }
+
+                        res = await fetch(`${apiURL}${endpoint}`, fetchOptions);
+                        json = await res.json();
+                    } else {
+                        console.log("Refresh token expired. Logging out.");
+                        dispatch(logout());
+                        Toast.show({
+                            type: 'error',
+                            text1: 'Session Expired',
+                            text2: 'Please log in again to continue.',
+                            position: 'top'
+                        });
+                        setData(null);
+                        return;
+                    }
+                }
 
                 if (!res.ok) {
                     let errorMsg = "Failed to fetch data";
@@ -51,7 +96,8 @@ const useFetch = (
                     Toast.show({
                         type: 'error',
                         text1: 'Error',
-                        text2: errorMsg
+                        text2: errorMsg,
+                        position: 'top'
                     });
 
                     setData(null);
@@ -65,13 +111,14 @@ const useFetch = (
                 Toast.show({
                     type: 'error',
                     text1: 'Error',
-                    text2: "Fetch request failed: " + message
+                    text2: "Fetch request failed: " + message,
+                    position: 'top'
                 });
             } finally {
                 setLoading(false);
             }
         },
-        [endpoint, isAuth, token],
+        [endpoint, isAuth, token, refreshToken, userdata, dispatch],
     );
 
     return { data, loading, refetch: fetchData };
