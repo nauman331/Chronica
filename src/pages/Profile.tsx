@@ -13,7 +13,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import LogoutModal from '../components/LogoutModal';
-
+import EditProfileModal from '../components/EditProfileModal';
 import { useAppTheme } from '../hooks/useAppTheme';
 
 import {
@@ -44,13 +44,13 @@ const Profile = ({ navigation }: any) => {
     const { colors, isDark } = useAppTheme();
 
     const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
     const handleConfirmLogout = () => {
         setIsLogoutModalVisible(false);
         dispatch(logout());
     };
 
-    // --- Dynamic Life Calculations ---
     const lifeStats = useMemo(() => {
         if (!userdata?.birth_date) {
             return {
@@ -65,22 +65,18 @@ const Profile = ({ navigation }: any) => {
         const now = new Date();
         const targetAge = 80;
 
-        // 1. Formatted DOB (e.g., "January 1, 1994")
         const formattedDob = birthDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-        // 2. Exact Age calculation
         let age = now.getFullYear() - birthDate.getFullYear();
         const monthDiff = now.getMonth() - birthDate.getMonth();
         if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
             age--;
         }
 
-        // 3. Time Lived
         const diffTimeMs = now.getTime() - birthDate.getTime();
         const daysLivedNum = Math.floor(diffTimeMs / (1000 * 60 * 60 * 24));
         const weeksLivedNum = Math.floor(daysLivedNum / 7);
 
-        // 4. Time Remaining (Assuming 80 years)
         const yearsRemaining = Math.max(0, targetAge - age);
 
         const eightiethBirthday = new Date(birthDate);
@@ -89,16 +85,13 @@ const Profile = ({ navigation }: any) => {
         const remainingTimeMs = eightiethBirthday.getTime() - now.getTime();
         const daysAheadNum = Math.max(0, Math.floor(remainingTimeMs / (1000 * 60 * 60 * 24)));
 
-        // 5. Progress Percentage
         const totalExpectedDays = daysLivedNum + daysAheadNum;
         const rawPercentage = (daysLivedNum / totalExpectedDays) * 100;
-        const progressPercentage = Math.min(100, Math.max(0, rawPercentage)); // Clamp between 0-100
+        const progressPercentage = Math.min(100, Math.max(0, rawPercentage));
 
-        // 6. Next Birthday
         const nextBirthday = new Date(birthDate);
         nextBirthday.setFullYear(now.getFullYear());
 
-        // If birthday has passed this year, look to next year
         if (now.getTime() > nextBirthday.getTime()) {
             nextBirthday.setFullYear(now.getFullYear() + 1);
         }
@@ -113,7 +106,7 @@ const Profile = ({ navigation }: any) => {
             formattedDob,
             yearsRemaining,
             daysAhead: daysAheadNum.toLocaleString(),
-            progressPercentage: progressPercentage.toFixed(1), // 1 decimal place like "40.4"
+            progressPercentage: progressPercentage.toFixed(1),
             daysToBirthday,
             turningAge
         };
@@ -253,6 +246,18 @@ const Profile = ({ navigation }: any) => {
                 {/* --- Actions Menu --- */}
                 <View style={[styles.listContainer, dynamicStyles.listContainer]}>
                     <TouchableOpacity style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]} activeOpacity={0.7}
+                        onPress={() => setIsEditModalVisible(true)}
+                    >
+                        <View style={[styles.listIconCircle, dynamicStyles.menuIconCircle]}>
+                            <UserIcon color={yellow} />
+                        </View>
+                        <View style={styles.listContent}>
+                            <Text style={[styles.listTitle, dynamicStyles.listTitle]}>Edit Profile</Text>
+                            <Text style={[styles.listSubtitle, dynamicStyles.listSubtitle]}>Name, Username, Birthplace</Text>
+                        </View>
+                        <ChevronRightIcon color={colors.textSecondary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]} activeOpacity={0.7}
                         onPress={() => navigation.navigate("SubscriptionScreen")}
                     >
                         <View style={[styles.listIconCircle, dynamicStyles.menuIconCircle]}>
@@ -317,13 +322,16 @@ const Profile = ({ navigation }: any) => {
                 onClose={() => setIsLogoutModalVisible(false)}
                 onConfirm={handleConfirmLogout}
             />
+            <EditProfileModal
+                visible={isEditModalVisible}
+                onClose={() => setIsEditModalVisible(false)}
+            />
         </SafeAreaView>
     );
 };
 
 export default Profile;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
