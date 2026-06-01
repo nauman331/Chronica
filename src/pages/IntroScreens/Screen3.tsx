@@ -1,15 +1,12 @@
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { login } from '../../store/slices/authSlice';
-import { useDispatch } from 'react-redux';
 
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { white, yellow } from '../../utils/colors';
 
 const { height } = Dimensions.get('window');
 
-// 4-point Spark icon specifically matching Figma
 const SparkleIcon = ({ size = 28, color = "#FFFFFF" }) => (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
         <Path d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z" fill={color} />
@@ -17,11 +14,12 @@ const SparkleIcon = ({ size = 28, color = "#FFFFFF" }) => (
 );
 
 const Screen3 = ({ onSkip }: any) => {
-    const dispatch = useDispatch();
     const { colors, isDark } = useAppTheme();
 
     const handleBeginRitual = () => {
-        dispatch(login('true'));
+        if (onSkip) {
+            onSkip();
+        }
     };
 
     const dynamicStyles = StyleSheet.create({
@@ -43,7 +41,6 @@ const Screen3 = ({ onSkip }: any) => {
         <View style={[styles.container, dynamicStyles.container]}>
             <View style={styles.centerSection}>
 
-                {/* Replaced glowing badge with the solid dark circle from Figma */}
                 <View style={[styles.iconCircle, dynamicStyles.iconCircle]}>
                     <SparkleIcon size={32} color={isDark ? '#1A1523' : '#FFFFFF'} />
                 </View>

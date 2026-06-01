@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
 import { SafeAreaView, View, Text, StyleSheet, Pressable, Platform, Image } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Toast from 'react-native-toast-message';
 
-// Import custom theme hook
+// Components & Hooks
 import { useAppTheme } from '../hooks/useAppTheme';
+import AuthBottomSheet from '../components/AuthBottomSheet';
 
 import googleIcon from '../assets/logo.png';
 import facebookIcon from '../assets/facebook.png';
 import gmailIcon from '../assets/gmail.png';
 import { white } from '../utils/colors';
 
-const GetStarted: React.FC<any> = ({ navigation }) => {
-    const { colors } = useAppTheme(); // <-- 1. Get dynamic colors
+const GetStarted: React.FC = () => {
+    const { colors } = useAppTheme();
 
     const [date, setDate] = useState(new Date());
     const [showPicker, setShowPicker] = useState(false);
     const [isDateSelected, setIsDateSelected] = useState(false);
+
+    // Bottom Sheet States
+    const [isSheetVisible, setIsSheetVisible] = useState(false);
+    const [authMode, setAuthMode] = useState<'signup' | 'login'>('signup');
 
     const onDateChange = (event: any, selectedDate?: Date) => {
         const currentDate = selectedDate || date;
@@ -34,65 +40,60 @@ const GetStarted: React.FC<any> = ({ navigation }) => {
         return `${day}/${month}/${year}`;
     };
 
-    const handleContinue = () => {
-        navigation.navigate('Onboarding', { birthDate: date.toISOString() });
+    const formatDjangoDate = (dateToFormat: Date) => {
+        const day = dateToFormat.getDate().toString().padStart(2, '0');
+        const month = (dateToFormat.getMonth() + 1).toString().padStart(2, '0');
+        const year = dateToFormat.getFullYear();
+        return `${year}-${month}-${day}`;
     };
 
-    // --- 2. Dynamic Styles based on active theme ---
+    const handleOpenSignup = () => {
+        if (!isDateSelected) {
+            Toast.show({
+                type: 'error',
+                text1: 'Date Required',
+                text2: 'Please select your birth date to continue.',
+                position: 'bottom',
+                bottomOffset: 120
+            });
+            return;
+        }
+        setAuthMode('signup');
+        setIsSheetVisible(true);
+    };
+
+    const handleOpenLogin = () => {
+        setAuthMode('login');
+        setIsSheetVisible(true);
+    };
+
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         title: { color: colors.text },
         accent: { color: colors.accent },
         subtitle: { color: colors.textSecondary },
-        card: {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-            shadowColor: colors.text // Soft shadow based on text color for both modes
-        },
+        card: { backgroundColor: colors.surface, borderColor: colors.border, shadowColor: colors.text },
         inputLabel: { color: colors.text },
-        input: {
-            backgroundColor: colors.background,
-            borderColor: colors.accent
-        },
-        inputText: {
-            color: isDateSelected ? (colors.background === white ? colors.text : white) : colors.textSecondary
-        },
+        input: { backgroundColor: colors.background, borderColor: colors.accent },
+        inputText: { color: isDateSelected ? (colors.background === white ? colors.text : white) : colors.textSecondary },
         primaryButton: {
-            backgroundColor: colors.primary,
+            backgroundColor: colors.text,
             ...Platform.select({
-                ios: {
-                    shadowColor: colors.primary,
-                    shadowOpacity: 0.3,
-                    shadowRadius: 10,
-                    shadowOffset: { width: 0, height: 8 },
-                },
-                android: {
-                    elevation: 6,
-                }
+                ios: { shadowColor: colors.text, shadowOpacity: 0.3, shadowRadius: 10, shadowOffset: { width: 0, height: 8 } },
+                android: { elevation: 6 }
             })
         },
-        primaryButtonText: {
-            color: colors.background
-        },
-        secondaryButton: {
-            backgroundColor: colors.surface,
-            borderColor: colors.border
-        },
+        primaryButtonText: { color: colors.background },
+        secondaryButton: { backgroundColor: colors.surface, borderColor: colors.border },
         secondaryButtonText: { color: colors.text },
         line: { backgroundColor: colors.border },
         dividerText: { color: colors.textSecondary },
-        socialButton: {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-            borderWidth: 1
-        },
+        socialButton: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 },
         footerText: { color: colors.textSecondary },
     });
 
     return (
         <SafeAreaView style={[styles.container, dynamicStyles.container]}>
-
-            {/* Centered Main Content Wrapper */}
             <View style={styles.mainContent}>
                 <View style={styles.header}>
                     <Text style={[styles.title, dynamicStyles.title]}>
@@ -108,65 +109,54 @@ const GetStarted: React.FC<any> = ({ navigation }) => {
                     <View style={styles.inputGroup}>
                         <Text style={[styles.inputLabel, dynamicStyles.inputLabel]}>Your Birth Date</Text>
 
-                        <Pressable
-                            style={[styles.input, dynamicStyles.input]}
-                            onPress={() => setShowPicker(true)}
-                        >
+                        <Pressable style={[styles.input, dynamicStyles.input]} onPress={() => setShowPicker(true)}>
                             <Text style={[styles.inputTextBase, dynamicStyles.inputText]}>
                                 {isDateSelected ? formatDate(date) : "dd/mm/yyyy"}
                             </Text>
                         </Pressable>
 
                         {showPicker && (
-                            <DateTimePicker
-                                value={date}
-                                mode="date"
-                                display="default"
-                                onChange={onDateChange}
-                                maximumDate={new Date()}
-                            />
+                            <DateTimePicker value={date} mode="date" display="default" onChange={onDateChange} maximumDate={new Date()} />
                         )}
                     </View>
 
-                    {/* Primary Button */}
-                    <Pressable style={[styles.primaryButton, dynamicStyles.primaryButton]} onPress={handleContinue}>
+                    <Pressable style={[styles.primaryButton, dynamicStyles.primaryButton]} onPress={handleOpenSignup}>
                         <Text style={[styles.primaryButtonText, dynamicStyles.primaryButtonText]}>Begin Your Journey</Text>
                     </Pressable>
 
-                    {/* Secondary Button */}
-                    <Pressable style={[styles.secondaryButton, dynamicStyles.secondaryButton]} onPress={handleContinue}>
+                    <Pressable style={[styles.secondaryButton, dynamicStyles.secondaryButton]} onPress={handleOpenLogin}>
                         <Text style={[styles.secondaryButtonText, dynamicStyles.secondaryButtonText]}>Already have an account</Text>
                     </Pressable>
 
-                    {/* Divider */}
                     <View style={styles.dividerContainer}>
                         <View style={[styles.line, dynamicStyles.line]} />
                         <Text style={[styles.dividerText, dynamicStyles.dividerText]}>Or continue with</Text>
                         <View style={[styles.line, dynamicStyles.line]} />
                     </View>
 
-                    {/* Socials */}
                     <View style={styles.socialContainer}>
-                        <Pressable style={[styles.socialButton, dynamicStyles.socialButton]}>
-                            <Image source={googleIcon} style={styles.iconImage} />
-                        </Pressable>
-                        <Pressable style={[styles.socialButton, dynamicStyles.socialButton]}>
-                            <Image source={facebookIcon} style={styles.iconImage} />
-                        </Pressable>
-                        <Pressable style={[styles.socialButton, dynamicStyles.socialButton]}>
-                            <Image source={gmailIcon} style={styles.iconImage} />
-                        </Pressable>
+                        <Pressable style={[styles.socialButton, dynamicStyles.socialButton]}><Image source={googleIcon} style={styles.iconImage} /></Pressable>
+                        <Pressable style={[styles.socialButton, dynamicStyles.socialButton]}><Image source={facebookIcon} style={styles.iconImage} /></Pressable>
+                        <Pressable style={[styles.socialButton, dynamicStyles.socialButton]}><Image source={gmailIcon} style={styles.iconImage} /></Pressable>
                     </View>
                 </View>
             </View>
 
-            {/* Pushed Footer Section */}
             <View style={styles.footer}>
                 <Text style={[styles.footerText, dynamicStyles.footerText]}>
                     Your data stays private and is stored{'\n'}locally on your device
                 </Text>
             </View>
 
+            <AuthBottomSheet
+                visible={isSheetVisible}
+                initialMode={authMode}
+                onClose={() => setIsSheetVisible(false)}
+                birthDate={formatDjangoDate(date)}
+            />
+
+            {/* Outer Toast for Validation messages before the modal opens */}
+            <Toast />
         </SafeAreaView>
     );
 };
@@ -174,36 +164,18 @@ const GetStarted: React.FC<any> = ({ navigation }) => {
 export default GetStarted;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    mainContent: {
-        flex: 1,
-        justifyContent: 'center',
-        paddingHorizontal: 24,
-    },
+    container: { flex: 1 },
+    mainContent: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
     header: { alignItems: 'center', marginBottom: 32 },
     title: { fontSize: 32, lineHeight: 40, fontWeight: '800', textAlign: 'center' },
     accent: {},
     subtitle: { marginTop: 16, textAlign: 'center', lineHeight: 22, fontSize: 15 },
-    card: {
-        borderRadius: 24, padding: 24, borderWidth: 1,
-        shadowOpacity: 0.06, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 1
-    },
+    card: { borderRadius: 24, padding: 24, borderWidth: 1, shadowOpacity: 0.06, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 1 },
     inputGroup: { gap: 8, marginBottom: 24 },
     inputLabel: { fontSize: 14, fontWeight: '600', marginLeft: 4 },
-    input: {
-        borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, justifyContent: 'center'
-    },
-    inputTextBase: {
-        fontSize: 15
-    },
-    primaryButton: {
-        paddingVertical: 16,
-        borderRadius: 16,
-        alignItems: 'center',
-        marginBottom: 16,
-    },
+    input: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, justifyContent: 'center' },
+    inputTextBase: { fontSize: 15 },
+    primaryButton: { paddingVertical: 16, borderRadius: 16, alignItems: 'center', marginBottom: 16 },
     primaryButtonText: { fontSize: 15, fontWeight: '600' },
     secondaryButton: { borderWidth: 1, paddingVertical: 15, borderRadius: 16, alignItems: 'center', marginBottom: 16 },
     secondaryButtonText: { fontSize: 14, fontWeight: '500' },
@@ -213,15 +185,6 @@ const styles = StyleSheet.create({
     socialContainer: { flexDirection: 'row', justifyContent: 'center', gap: 24 },
     socialButton: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
     iconImage: { width: 24, height: 24, resizeMode: 'contain' },
-    footer: {
-        paddingBottom: 24,
-        paddingHorizontal: 24,
-        alignItems: 'center',
-    },
-    footerText: {
-        textAlign: 'center',
-        lineHeight: 20,
-        fontSize: 13,
-        fontWeight: '400',
-    },
+    footer: { paddingBottom: 24, paddingHorizontal: 24, alignItems: 'center' },
+    footerText: { textAlign: 'center', lineHeight: 20, fontSize: 13, fontWeight: '400' },
 });

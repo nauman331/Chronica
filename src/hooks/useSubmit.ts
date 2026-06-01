@@ -53,35 +53,41 @@ const useSubmit = ({ isAuth = false }: { isAuth?: boolean } = {}) => {
 
                 if (!res.ok) {
                     let errorMsg = "Something went wrong";
+                    let errorTitle = "Error";
 
-                    // 1. Prioritize the new Django 'fields' object
+                    // 1. Django 'fields' object (Prioritized)
                     if (json?.fields && typeof json.fields === "object") {
                         const firstErrorKey = Object.keys(json.fields)[0];
                         if (firstErrorKey && Array.isArray(json.fields[firstErrorKey])) {
-                            errorMsg = json.fields[firstErrorKey][0] as string;
+                            const combinedErrors = json.fields[firstErrorKey].join(" ");
+                            errorTitle = firstErrorKey.charAt(0).toUpperCase() + firstErrorKey.slice(1).replace('_', ' ');
+                            errorMsg = combinedErrors;
                         }
                     }
-                    // 2. Legacy fallback for existing endpoints using 'errors'
+                    // 2. Legacy 'errors' fallback
                     else if (json?.errors && typeof json.errors === "object") {
                         const firstErrorKey = Object.keys(json.errors)[0];
                         if (firstErrorKey && Array.isArray(json.errors[firstErrorKey])) {
-                            errorMsg = json.errors[firstErrorKey][0] as string;
+                            errorTitle = firstErrorKey.charAt(0).toUpperCase() + firstErrorKey.slice(1);
+                            errorMsg = json.errors[firstErrorKey].join(" ");
                         }
                     }
-                    // 3. Fallback to 'message', but avoid showing stringified Django dicts
+                    // 3. Fallback to 'message'
                     else if (json?.message && typeof json.message === "string") {
                         if (!json.message.includes("ErrorDetail")) {
                             errorMsg = json.message;
                         } else if (json?.error && typeof json.error === "string") {
-                            errorMsg = json.error; // Fallback to "VALIDATION_ERROR"
+                            errorMsg = json.error;
                         }
                     }
 
                     console.error("Submit API error:", errorMsg);
                     Toast.show({
                         type: 'error',
-                        text1: 'Error',
-                        text2: errorMsg
+                        text1: errorTitle,
+                        text2: errorMsg,
+                        position: 'top', // Drops cleanly from the top of the modal
+                        visibilityTime: 4000, // Gives user 4 seconds to read longer password errors
                     });
                     return null;
                 }
@@ -92,8 +98,9 @@ const useSubmit = ({ isAuth = false }: { isAuth?: boolean } = {}) => {
                 const message = err instanceof Error ? err.message : "Network error";
                 Toast.show({
                     type: 'error',
-                    text1: 'Error',
-                    text2: "Submit request failed: " + message
+                    text1: 'Network Error',
+                    text2: message,
+                    position: 'top',
                 });
                 console.error("Submit request error:", message);
                 return null;
