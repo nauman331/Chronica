@@ -66,9 +66,25 @@ const MonthViewScreen = ({ navigation, route }: any) => {
             days.push({ day: i, state, dateStr });
         }
 
-        const pastDays = Math.min(now.getDate(), lastDay); // Rough estimation of past days in this month
-        const remaining = Math.max(0, pastDays - (documentedCount + crownedCount));
-        const percentage = Math.round(((documentedCount + crownedCount) / pastDays) * 100) || 0;
+        // Calculate accurate pastDays for the viewed month (handles past, current, and future months)
+        let pastDays = 0;
+        const nowYear = now.getFullYear();
+        const nowMonth = now.getMonth() + 1; // 1-based month
+
+        if (year < nowYear || (year === nowYear && monthNum < nowMonth)) {
+            // The viewed month is in the past
+            pastDays = lastDay;
+        } else if (year === nowYear && monthNum === nowMonth) {
+            // The viewed month is the current month
+            pastDays = now.getDate();
+        } else {
+            // The viewed month is in the future
+            pastDays = 0;
+        }
+
+        const totalDocumented = documentedCount + crownedCount;
+        const remaining = Math.max(0, pastDays - totalDocumented);
+        const percentage = pastDays === 0 ? 0 : Math.round((totalDocumented / pastDays) * 100);
 
         return {
             calendarDays: days,
