@@ -23,9 +23,11 @@ const useFetch = (
             setLoading(true);
 
             try {
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
                 const headers: Record<string, string> = {
                     Accept: "application/json",
                     "Content-Type": "application/json",
+                    "X-Timezone": timezone,
                 };
 
                 if (isAuth && token) {

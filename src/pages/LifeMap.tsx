@@ -184,24 +184,17 @@ const LifeMap = ({ navigation }: any) => {
             };
         }
 
-        // --- BUG FIX 1: Timezone Safe Date Parsing ---
-        // Splits the string and forces it to 12:00 PM local time to avoid DST shifts
-        const [bYear, bMonth, bDay] = data.birth_date.split('-').map(Number);
-        const bDate = new Date(bYear, bMonth - 1, bDay, 12, 0, 0);
-
+        const bDate = new Date(data.birth_date);
         const lifeSpan = data.life_span_years || 80;
         const statesMap = data.states || {};
-
         const now = new Date();
-        // Set todayEnd to 11:59:59 PM to ensure today is fully calculated
-        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
         const viewModels: YearViewModel[] = [];
 
         // Build grid logic mapping 52 weeks per year
         for (let age = 0; age <= lifeSpan; age++) {
             const currentYearDate = new Date(bDate);
-            currentYearDate.setFullYear(bYear + age);
+            currentYearDate.setFullYear(bDate.getFullYear() + age);
             const yearLabel = currentYearDate.getFullYear();
 
             const weeks: WeekState[] = new Array(52);
@@ -210,7 +203,7 @@ const LifeMap = ({ navigation }: any) => {
                 const weekStartDate = new Date(currentYearDate);
                 weekStartDate.setDate(currentYearDate.getDate() + (w * 7));
 
-                if (weekStartDate > todayEnd) {
+                if (weekStartDate > now) {
                     weeks[w] = 'future';
                 } else {
                     let weekState: WeekState = 'past';
@@ -220,7 +213,7 @@ const LifeMap = ({ navigation }: any) => {
                         const checkDate = new Date(weekStartDate);
                         checkDate.setDate(weekStartDate.getDate() + d);
 
-                        if (checkDate > todayEnd) break;
+                        if (checkDate > now) break;
 
                         // Safely format date to match YYYY-MM-DD
                         const dateStr = `${checkDate.getFullYear()}-${(checkDate.getMonth() + 1).toString().padStart(2, '0')}-${checkDate.getDate().toString().padStart(2, '0')}`;
@@ -232,9 +225,7 @@ const LifeMap = ({ navigation }: any) => {
                         if (isCrowned) {
                             weekState = 'crowned';
                             break; // Crowned overrides standard documentation
-                        } else if (isDoc) {
-                            // --- BUG FIX 2: Strict boolean mapping ---
-                            // Removed the "|| dayState" which turned generic JSON objects into blue dots
+                        } else if (isDoc || dayState) {
                             weekState = 'documented';
                         }
                     }

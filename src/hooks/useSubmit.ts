@@ -29,8 +29,10 @@ const useSubmit = ({ isAuth = false }: { isAuth?: boolean } = {}) => {
             setData(null);
 
             try {
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
                 const headers: Record<string, string> = {
                     Accept: "application/json",
+                    "X-Timezone": timezone,
                 };
 
                 if (!isFormData) {
@@ -57,9 +59,12 @@ const useSubmit = ({ isAuth = false }: { isAuth?: boolean } = {}) => {
                 if (res.status === 401 && refreshToken && isAuth) {
                     console.log("Token expired, attempting refresh...");
 
-                    const refreshRes = await fetch(`${apiURL}/api/v1/auth/token/refresh`, {
+                    const refreshRes = await fetch(`${apiURL}auth/token/refresh`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Timezone': timezone,
+                        },
                         body: JSON.stringify({ refresh: refreshToken })
                     });
 
