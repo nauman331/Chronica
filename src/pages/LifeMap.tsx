@@ -191,31 +191,33 @@ const LifeMap = ({ navigation }: any) => {
 
         const viewModels: YearViewModel[] = [];
 
-        // Build grid logic mapping 52 weeks per year
-        for (let age = 0; age <= lifeSpan; age++) {
-            const currentYearDate = new Date(bDate);
-            currentYearDate.setFullYear(bDate.getFullYear() + age);
-            const yearLabel = currentYearDate.getFullYear();
+        // Build grid logic mapping 52 weeks per calendar year
+        const birthYear = bDate.getFullYear();
+        const endYear = birthYear + lifeSpan;
+
+        for (let year = birthYear; year <= endYear; year++) {
+            const yearLabel = year;
+            const age = year - birthYear;
+            const yearStartDate = new Date(year, 0, 1);
 
             const weeks: WeekState[] = new Array(52);
 
             for (let w = 0; w < 52; w++) {
-                const weekStartDate = new Date(currentYearDate);
-                weekStartDate.setDate(currentYearDate.getDate() + (w * 7));
+                const weekStartDate = new Date(yearStartDate);
+                weekStartDate.setDate(yearStartDate.getDate() + (w * 7));
 
                 if (weekStartDate > now) {
                     weeks[w] = 'future';
                 } else {
-                    let weekState: WeekState = 'past';
+                    let weekState: WeekState = 'future';
 
-                    // Check all 7 days of the week against the states map
                     for (let d = 0; d < 7; d++) {
                         const checkDate = new Date(weekStartDate);
                         checkDate.setDate(weekStartDate.getDate() + d);
 
                         if (checkDate > now) break;
+                        if (checkDate < bDate) continue;
 
-                        // Safely format date to match YYYY-MM-DD
                         const dateStr = `${checkDate.getFullYear()}-${(checkDate.getMonth() + 1).toString().padStart(2, '0')}-${checkDate.getDate().toString().padStart(2, '0')}`;
                         const dayState = statesMap[dateStr];
 
@@ -227,6 +229,8 @@ const LifeMap = ({ navigation }: any) => {
                             break; // Crowned overrides standard documentation
                         } else if (isDoc || dayState) {
                             weekState = 'documented';
+                        } else if (weekState === 'future') {
+                            weekState = 'past';
                         }
                     }
                     weeks[w] = weekState;
