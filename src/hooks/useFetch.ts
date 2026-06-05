@@ -1,9 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { apiURL } from "../utils/exports";
 import type { RootState } from "../store/store";
 import { login, logout } from "../store/slices/authSlice";
-import Toast from 'react-native-toast-message';
 
 type UseFetchOptions = {
     isAuth?: boolean;
@@ -45,7 +44,7 @@ const useFetch = (
                 if (res.status === 401 && refreshToken && isAuth) {
                     console.log("Token expired during fetch, attempting refresh...");
 
-                    const refreshRes = await fetch(`${apiURL}/api/v1/auth/token/refresh`, {
+                    const refreshRes = await fetch(`${apiURL}auth/token/refresh`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ refresh: refreshToken })
@@ -72,12 +71,7 @@ const useFetch = (
                     } else {
                         console.log("Refresh token expired. Logging out.");
                         dispatch(logout());
-                        Toast.show({
-                            type: 'error',
-                            text1: 'Session Expired',
-                            text2: 'Please log in again to continue.',
-                            position: 'top'
-                        });
+                        console.error("Session expired. Please log in again.");
                         setData(null);
                         return;
                     }
@@ -93,12 +87,7 @@ const useFetch = (
                     }
 
                     console.error("Fetch API error:", errorMsg);
-                    Toast.show({
-                        type: 'error',
-                        text1: 'Error',
-                        text2: errorMsg,
-                        position: 'top'
-                    });
+                    console.error("Full response:", res);
 
                     setData(null);
                     return;
@@ -108,18 +97,15 @@ const useFetch = (
             } catch (err) {
                 const message = err instanceof Error ? err.message : "Network error";
                 console.error("Fetch request failed:", message);
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: "Fetch request failed: " + message,
-                    position: 'top'
-                });
             } finally {
                 setLoading(false);
             }
         },
         [endpoint, isAuth, token, refreshToken, userdata, dispatch],
     );
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     return { data, loading, refetch: fetchData };
 };

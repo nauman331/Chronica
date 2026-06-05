@@ -1,11 +1,22 @@
-import { View, Text, StyleSheet, Pressable, SafeAreaView, ScrollView, Platform, InteractionManager } from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    Pressable,
+    SafeAreaView,
+    ScrollView,
+    Platform,
+    InteractionManager,
+    ActivityIndicator
+} from 'react-native';
 import React, { useEffect } from 'react';
 import BottomTabBar from '../components/BottomTabBar';
 
-// Import custom theme hook
+// Hooks
 import { useAppTheme } from '../hooks/useAppTheme';
+import useFetch from '../hooks/useFetch';
 
-// Keep fixed brand colors for the specific input categories
+// Assets
 import { yellow, lightBlue, lightGreen } from '../utils/colors';
 import { BellIcon, SparkIcon, ReflectionIcon, ArrowUpIcon } from '../utils/icons';
 
@@ -20,9 +31,22 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
         return () => task.cancel();
     }, []);
 
+    // 1. Date Math for Navigation & API Payload
     const today = new Date();
+    const year = today.getFullYear();
+    const day = today.getDate();
+    const month = today.toLocaleDateString('en-US', { month: 'long' });
     const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
-    const formattedDate = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const formattedDate = `${month} ${day}, ${year}`;
+
+    const dateStr = `${year}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+    // 2. Fetch today's data to check if it's already documented or crowned
+    const { data: apiData, loading } = useFetch(`life-days/${dateStr}`, { isAuth: true });
+
+    const dayData = (apiData as any)?.life_day || apiData;
+    const isDocumented = !!dayData && Object.keys(dayData).length > 0;
+    const isCrowned = dayData?.is_crowned;
 
     const dynamicStyles = StyleSheet.create({
         safeArea: { backgroundColor: colors.background },
@@ -30,17 +54,12 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
         headerSubtitle: { color: '#8C8B9C' },
         headerTitle: { color: colors.text },
         headerDate: { color: '#8C8B9C' },
-
-        // Exact light blue tint from Figma for the bell button background
         bellButton: { backgroundColor: isDark ? colors.surfaceMuted : '#F0F5FE' },
         notificationDot: { borderColor: isDark ? colors.surfaceMuted : '#F0F5FE' },
         divider: { backgroundColor: isDark ? colors.border : '#F3EFE6' },
-
         itemTitleMain: { color: colors.text },
         itemSubtitle: { color: '#8C8B9C' },
         bottomActionContainer: { backgroundColor: colors.background },
-
-        // Dynamic tinted backgrounds for the icon boxes
         iconBoxYellow: { backgroundColor: isDark ? 'rgba(201, 162, 39, 0.15)' : '#FEF9EC' },
         iconBoxBlue: { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#F0F5FE' },
         iconBoxGreen: { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#EAF8F3' },
@@ -72,7 +91,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
                     <View style={styles.contentWrapper}>
-                        {/* Intention */}
                         <View style={styles.ritualItem}>
                             <View style={styles.iconRow}>
                                 <View style={[styles.iconBox, dynamicStyles.iconBoxYellow]}>
@@ -83,7 +101,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                             <Text style={[styles.itemSubtitle, dynamicStyles.itemSubtitle]}>What matters most today?</Text>
                         </View>
 
-                        {/* Reflection */}
                         <View style={styles.ritualItem}>
                             <View style={styles.iconRow}>
                                 <View style={[styles.iconBox, dynamicStyles.iconBoxBlue]}>
@@ -94,7 +111,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                             <Text style={[styles.itemSubtitle, dynamicStyles.itemSubtitle]}>What did today teach you?</Text>
                         </View>
 
-                        {/* Achievement */}
                         <View style={styles.ritualItem}>
                             <View style={styles.iconRow}>
                                 <View style={[styles.iconBox, dynamicStyles.iconBoxGreen]}>
@@ -113,14 +129,30 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                     <View style={[styles.divider, dynamicStyles.divider]} />
                     <Pressable
                         style={styles.primaryButton}
-                        onPress={() => navigation.navigate('EnhanceCrownEmotion')}
+                        disabled={loading}
+                        onPress={() => navigation.navigate('DocumentDay', {
+                            day,
+                            month,
+                            year,
+                            dayOfWeek: dayName,
+                            dateStr,
+                            status: isCrowned ? 'Crowned' : isDocumented ? 'Documented' : 'Not documented',
+                            existingData: dayData // Passes forward any existing text from today
+                        })}
                     >
-                        <Text style={styles.primaryButtonText}>Crown This Day</Text>
-                        <SparkIcon color="#FFFFFF" size={14} />
+                        {loading ? (
+                            <ActivityIndicator color="#FFFFFF" />
+                        ) : (
+                            <>
+                                <Text style={styles.primaryButtonText}>
+                                    {isCrowned ? "Edit Today's Crown" : isDocumented ? "Crown This Day" : "Document This Day"}
+                                </Text>
+                                <SparkIcon color="#FFFFFF" size={14} />
+                            </>
+                        )}
                     </Pressable>
                 </View>
 
-                {/* Fixed Bottom Tab Bar */}
                 <BottomTabBar activeTab="today" />
 
             </View>
@@ -131,12 +163,8 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
 export default EnhanceCrown;
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-    },
-    container: {
-        flex: 1,
-    },
+    safeArea: { flex: 1 },
+    container: { flex: 1 },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -145,79 +173,20 @@ const styles = StyleSheet.create({
         paddingTop: Platform.OS === 'android' ? 24 : 12,
         paddingBottom: 20,
     },
-    headerSubtitle: {
-        fontSize: 12.5,
-        fontWeight: '500',
-        marginBottom: 2,
-    },
-    headerTitle: {
-        fontSize: 28,
-        fontWeight: '800',
-        letterSpacing: -0.5,
-        marginBottom: 2,
-    },
-    headerDate: {
-        fontSize: 14,
-    },
-    bellButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-    },
-    notificationDot: {
-        position: 'absolute',
-        top: 10,
-        right: 12,
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#FF4B4B',
-        borderWidth: 1.5,
-    },
-    divider: {
-        height: 1,
-        width: '100%',
-    },
-    scrollContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        paddingVertical: 20,
-    },
-    contentWrapper: {
-        alignItems: 'center',
-    },
-    ritualItem: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 44,
-    },
-    iconRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        marginBottom: 12,
-    },
-    iconBox: {
-        width: 44,
-        height: 44,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    itemTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        letterSpacing: -0.3,
-    },
-    itemSubtitle: {
-        fontSize: 15.5,
-    },
-    bottomActionContainer: {
-        paddingBottom: 0,
-    },
+    headerSubtitle: { fontSize: 12.5, fontWeight: '500', marginBottom: 2 },
+    headerTitle: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5, marginBottom: 2 },
+    headerDate: { fontSize: 14 },
+    bellButton: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', position: 'relative' },
+    notificationDot: { position: 'absolute', top: 10, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF4B4B', borderWidth: 1.5 },
+    divider: { height: 1, width: '100%' },
+    scrollContent: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
+    contentWrapper: { alignItems: 'center' },
+    ritualItem: { alignItems: 'center', justifyContent: 'center', marginBottom: 44 },
+    iconRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+    iconBox: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+    itemTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.3 },
+    itemSubtitle: { fontSize: 15.5 },
+    bottomActionContainer: { paddingBottom: 0 },
     primaryButton: {
         flexDirection: 'row',
         justifyContent: 'center',
@@ -235,10 +204,5 @@ const styles = StyleSheet.create({
         shadowRadius: 16,
         elevation: 6,
     },
-    primaryButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16.5,
-        fontWeight: '600',
-        letterSpacing: 0.2,
-    },
+    primaryButtonText: { color: '#FFFFFF', fontSize: 16.5, fontWeight: '600', letterSpacing: 0.2 },
 });

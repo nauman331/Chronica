@@ -1,13 +1,52 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
 import { BadgeIcon } from '../utils/icons';
 
 import { useAppTheme } from '../hooks/useAppTheme';
+import useSubmit from '../hooks/useSubmit';
 
 import { yellow } from '../utils/colors';
 
-const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any }) => {
+const EnhanceCrownEmotion: React.FC<any> = ({ navigation, route }: { navigation: any, route: any }) => {
     const { colors, isDark } = useAppTheme();
+    const { submit } = useSubmit({ isAuth: true });
+
+    const {
+        day = 15,
+        month = 'April',
+        year = 2026,
+        dateStr,
+        intention = '',
+        reflection = '',
+        achievement = '',
+        existingData
+    } = route?.params || {};
+
+    const [isSaving, setIsSaving] = useState(!!dateStr);
+
+    useEffect(() => {
+        const crownDay = async () => {
+            if (!dateStr) return;
+
+            const payload = {
+                date: dateStr,
+                intention: intention.trim(),
+                reflection: reflection.trim(),
+                achievement: achievement.trim(),
+                is_crowned: true
+            };
+
+            const endpoint = existingData ? `life-days/${dateStr}` : 'life-days/';
+            const method = existingData ? 'PATCH' : 'POST';
+
+            await submit(endpoint, payload, { method });
+            setIsSaving(false);
+        };
+
+        if (dateStr) {
+            crownDay();
+        }
+    }, [dateStr]);
 
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
@@ -15,30 +54,39 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
 
         datePill: {
             backgroundColor: isDark ? 'rgba(201, 162, 39, 0.15)' : '#FEF9EC',
-            borderColor: isDark ? 'rgba(201, 162, 39, 0.3)' : '#FDECA6'
         },
         bodyText: { color: colors.text },
         quoteText: { color: '#8C8B9C' },
 
         primaryButton: {
-            backgroundColor: isDark ? '#FFFFFF' : '#1A1523',
+            backgroundColor: colors.text,
         },
         primaryButtonText: {
-            color: isDark ? '#1A1523' : '#FFFFFF'
+            color: colors.background
         },
         secondaryButton: {
-            backgroundColor: colors.surface,
-            borderColor: isDark ? colors.border : '#F3EFE6'
+            backgroundColor: 'transparent',
+            borderColor: isDark ? colors.border : '#EAEAEA'
         },
-        secondaryButtonText: { color: '#8C8B9C' },
+        secondaryButtonText: { color: colors.textSecondary },
     });
+
+    if (isSaving) {
+        return (
+            <SafeAreaView style={[styles.container, dynamicStyles.container, styles.loadingCenter]}>
+                <ActivityIndicator size="large" color={yellow} />
+                <Text style={[styles.bodyText, dynamicStyles.bodyText, { marginTop: 16 }]}>Crowning your day...</Text>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <View style={styles.content}>
 
-                {/* Direct Badge implementation to ensure 100% accurate Figma Shadow */}
+                {/* Badge implementation with strict Figma Soft Glow */}
                 <View style={styles.badgeContainer}>
+                    <View style={styles.glow} />
                     <View style={styles.iconCircle}>
                         <BadgeIcon color="#FFFFFF" size={42} />
                     </View>
@@ -47,10 +95,10 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
                 {/* Title */}
                 <Text style={[styles.title, dynamicStyles.title]}>Day Crowned</Text>
 
-                {/* Date Pill */}
+                {/* Dynamic Date Pill */}
                 <View style={[styles.datePill, dynamicStyles.datePill]}>
                     <View style={styles.dot} />
-                    <Text style={styles.dateText}>April 15, 2026</Text>
+                    <Text style={styles.dateText}>{month} {day}, {year}</Text>
                 </View>
 
                 {/* Body Text */}
@@ -73,7 +121,6 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
                                 navigation.replace('EnhanceCrown');
                                 return;
                             }
-
                             navigation.navigate('EnhanceCrown');
                         }}
                     >
@@ -88,7 +135,6 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation }: { navigation: any })
                                 navigation.replace('LifeMap');
                                 return;
                             }
-
                             navigation.navigate('LifeMap');
                         }}
                     >
@@ -107,6 +153,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    loadingCenter: {
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     content: {
         flex: 1,
         alignItems: 'center',
@@ -115,6 +165,21 @@ const styles = StyleSheet.create({
     },
     badgeContainer: {
         marginBottom: 28,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    glow: {
+        position: 'absolute',
+        width: 104,
+        height: 104,
+        borderRadius: 52,
+        backgroundColor: yellow,
+        opacity: 0.4,
+        shadowColor: yellow,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 30,
+        elevation: 15,
     },
     iconCircle: {
         width: 104,
@@ -123,11 +188,6 @@ const styles = StyleSheet.create({
         backgroundColor: yellow,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: yellow,
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.35,
-        shadowRadius: 28,
-        elevation: 10,
     },
     title: {
         fontSize: 34,
@@ -140,8 +200,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 7,
         paddingHorizontal: 16,
-        borderRadius: 20,
-        borderWidth: 1,
+        borderRadius: 100,
         marginBottom: 28,
     },
     dot: {
@@ -178,7 +237,7 @@ const styles = StyleSheet.create({
     primaryButton: {
         width: '90%',
         paddingVertical: 18,
-        borderRadius: 18,
+        borderRadius: 100,
         alignItems: 'center',
         shadowColor: '#000000',
         shadowOffset: { width: 0, height: 8 },
@@ -194,7 +253,7 @@ const styles = StyleSheet.create({
     secondaryButton: {
         width: '90%',
         paddingVertical: 18,
-        borderRadius: 18,
+        borderRadius: 100,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
