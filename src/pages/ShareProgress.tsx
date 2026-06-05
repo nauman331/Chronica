@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -6,13 +6,26 @@ import {
     View,
     TouchableOpacity,
     ScrollView,
+    ActivityIndicator,
+    Platform,
+    PermissionsAndroid,
+    Alert
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import Svg, { Path, Rect, Circle } from 'react-native-svg';
+import Toast from 'react-native-toast-message';
+
+// Standard native integrations for capture and share
+import ViewShot from 'react-native-view-shot';
+import Share from 'react-native-share';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
+import Clipboard from '@react-native-clipboard/clipboard';
+
 import BottomTabBar from '../components/BottomTabBar';
 import { useAppTheme } from '../hooks/useAppTheme';
+import useFetch from '../hooks/useFetch';
 import { ArrowLeftIcon, DownloadIcon, MiniCrown, WidgetsIcon } from '../utils/icons';
 import { lightyellow, yellow } from '../utils/colors';
-import Svg, { Path, Rect, Circle } from 'react-native-svg';
 
 type ShareMode = 'day' | 'weekly' | 'lifemap';
 
@@ -49,18 +62,12 @@ const DotIcon = ({ color = yellow, size = 6 }) => (
 
 const FilledSparkIcon = ({ color = yellow, size = 14 }) => (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <Path
-            d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z"
-            fill={color}
-        />
+        <Path d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z" fill={color} />
     </Svg>
 );
-// ---------------------------------
 
 const segmentSubtitle = (mode: ShareMode) => {
-    if (mode === 'lifemap') {
-        return "Every dot is a piece of your life — what's lived, what still awaits.";
-    }
+    if (mode === 'lifemap') return "Every dot is a piece of your life — what's lived, what still awaits.";
     return 'Share when you complete a day. Dark, gold, timeless.';
 };
 
@@ -68,21 +75,129 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
     const { colors, isDark } = useAppTheme();
     const [mode, setMode] = useState<ShareMode>('day');
 
-    const weeklyCells = useMemo(
-        () => [
-            true, true, false, true, true, true, false,
-            false, true, true, true, false, true, true,
-            true, true, true, false, true, false, false,
-            true, true, true, true, false, false, false,
-        ],
-        []
-    );
+    const viewShotRef = useRef<any>(null);
+
+    // --- Clean API Calls ---
+    const { data: shareData, loading: loadingShare } = useFetch('share/progress-summary', { isAuth: true });
+    const { data: lifeMapData, loading: loadingLifeMap } = useFetch('life-map/', { isAuth: true });
+
+    const safeShareData = (shareData as any) || {};
+    const safeLifeMapData = (lifeMapData as any) || {};
+
+    const now = new Date();
+    const todayDateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const currentMonthName = now.toLocaleDateString('en-US', { month: 'long' });
+    const currentWeekOfMonth = Math.ceil(now.getDate() / 7);
+
+    // --- Dynamic UI Calculations ---
+
+    const weeklyCells = useMemo(() => {
+        const cells = Array(28).fill(false);
+        const statesMap = safeLifeMapData.states || {};
+
+        const dayOfWeek = now.getDay();
+        const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+
+        const endOfWeek = new Date(now);
+        endOfWeek.setDate(now.getDate() + daysToSunday);
+
+        for (let i = 0; i < 28; i++) {
+            const checkDate = new Date(endOfWeek);
+            checkDate.setDate(endOfWeek.getDate() - (27 - i));
+
+            if (checkDate <= now) {
+                const dateStr = `${checkDate.getFullYear()}-${(checkDate.getMonth() + 1).toString().padStart(2, '0')}-${checkDate.getDate().toString().padStart(2, '0')}`;
+                const dayState = statesMap[dateStr];
+
+                if (dayState === 'crowned' || dayState?.is_crowned || dayState?.state === 'crowned') {
+                    cells[i] = true;
+                }
+            }
+        }
+        return cells;
+    }, [safeLifeMapData]);
 
     const lifeMapDots = useMemo(() => {
-        const total = 17 * 14;
-        const lived = 96;
-        return Array.from({ length: total }, (_, idx) => idx < lived);
-    }, []);
+        const totalVisualDots = 17 * 14; // 238 total proxy dots
+        const lifePercentage = safeShareData.life_percentage || 0;
+        const filledDotsCount = Math.floor((lifePercentage / 100) * totalVisualDots);
+        return Array.from({ length: totalVisualDots }, (_, idx) => idx < filledDotsCount);
+    }, [safeShareData]);
+
+    const currentWeekCount = useMemo(() => weeklyCells.slice(-7).filter(Boolean).length, [weeklyCells]);
+    const rhythmDays = useMemo(() => weeklyCells.filter(Boolean).length, [weeklyCells]);
+
+    // --- Action Handlers ---
+    const captureImage = async () => {
+        if (viewShotRef.current && viewShotRef.current.capture) {
+            return await viewShotRef.current.capture();
+        }
+        throw new Error("Capture failed");
+    };
+
+    const handleShare = async () => {
+        try {
+            const uri = await captureImage();
+            await Share.open({
+                url: uri,
+                title: 'My Chronica Progress',
+                message: 'This is my life, in days. #Chronica',
+            });
+        } catch (error) {
+            console.log("Share cancelled or failed");
+        }
+    };
+
+    // --- Bulletproof Download Handler ---
+    const handleDownload = async () => {
+        try {
+            const uri = await captureImage();
+
+            if (Platform.OS === 'android' && Platform.Version < 33) {
+                const permission = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+                if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
+                    Alert.alert('Permission Denied', 'Please allow storage access in your phone settings to save the image.');
+                    return;
+                }
+            }
+
+            await CameraRoll.save(uri, { type: 'photo' });
+            Toast.show({ type: 'success', text1: 'Saved to Gallery!' });
+
+        } catch (error) {
+            console.error("CameraRoll Error:", error);
+
+            // iOS Simulator Crash Fallback: If direct save fails, open the native Share Sheet
+            // so the user can just tap "Save Image" natively.
+            try {
+                const uriFallback = await captureImage();
+                await Share.open({
+                    url: uriFallback,
+                    failOnCancel: false,
+                });
+            } catch (fallbackError) {
+                Toast.show({ type: 'error', text1: 'Failed to save image', text2: 'Please check your permissions.' });
+            }
+        }
+    };
+
+    const handleCopy = async () => {
+        try {
+            let textToCopy = `My Chronica Progress:\n`;
+            if (mode === 'day') {
+                textToCopy += `I have lived ${safeShareData.days_lived?.toLocaleString()} days and crowned ${safeShareData.crowned_days} days. This day is complete.`;
+            } else if (mode === 'weekly') {
+                textToCopy += `I've crowned ${currentWeekCount}/7 days this week, keeping my rhythm strong!`;
+            } else {
+                textToCopy += `I've lived ${(safeShareData.life_percentage || 0).toFixed(1)}% of my life. Making every day count.`;
+            }
+
+            Clipboard.setString(textToCopy);
+            Toast.show({ type: 'success', text1: 'Stats copied to clipboard!', text2: 'Use the Share button to post the image.' });
+        } catch (error) {
+            Toast.show({ type: 'error', text1: 'Failed to copy' });
+        }
+    };
 
     const paleColor = '#F6ECD7';
 
@@ -92,9 +207,7 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
         headerSubtitle: { color: '#8C8B9C' },
         backBtn: { backgroundColor: isDark ? colors.surfaceMuted : '#F9F8F5' },
         sectionDivider: { backgroundColor: '#F3EFE6' },
-        segmentWrap: {
-            borderColor: '#F3EFE6',
-        },
+        segmentWrap: { borderColor: '#F3EFE6' },
         segmentText: { color: '#8C8B9C' },
         segmentActive: {
             backgroundColor: isDark ? colors.surfaceMuted : '#FFFFFF',
@@ -103,33 +216,17 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
             shadowOpacity: 0.04,
             shadowRadius: 6,
             elevation: 2,
-            boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.04)',
         },
         segmentActiveText: { color: colors.text },
-        card: {
-            backgroundColor: colors.surface,
-            borderColor: '#F3EFE6',
-            boxShadow: isDark ? '0px 48px 96px rgba(0, 0, 0, 0.08)' : '0px 48px 96px rgba(0, 0, 0, 0.04)',
-
-        },
+        card: { backgroundColor: colors.surface, borderColor: '#F3EFE6' },
         mutedText: { color: '#8C8B9C' },
         mainText: { color: colors.text },
         paleSurface: { backgroundColor: isDark ? colors.surfaceMuted : '#FEF9EC' },
         borderTone: { borderColor: '#F3EFE6' },
-        helperCard: {
-            backgroundColor: colors.surface,
-            borderColor: '#F3EFE6',
-        },
-        sideBtnFill: {
-            backgroundColor: colors.surface,
-        },
-        bottomTabContainer: {
-            backgroundColor: colors.background,
-            borderTopColor: '#F3EFE6',
-        },
-        darkShadow: {
-            shadowOpacity: isDark ? 0 : 0.04,
-        },
+        helperCard: { backgroundColor: colors.surface, borderColor: '#F3EFE6' },
+        sideBtnFill: { backgroundColor: colors.surface },
+        bottomTabContainer: { backgroundColor: colors.background, borderTopColor: '#F3EFE6' },
+        darkShadow: { shadowOpacity: isDark ? 0 : 0.04 },
     });
 
     return (
@@ -151,197 +248,199 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
 
                 <View style={[styles.topDivider, dynamicStyles.sectionDivider]} />
 
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                    {/* Segmented Control */}
-                    <View style={[styles.segmentWrap, dynamicStyles.segmentWrap]}>
-                        <TouchableOpacity
-                            style={[styles.segmentBtn, mode === 'day' && styles.segmentBtnActive, mode === 'day' && dynamicStyles.segmentActive]}
-                            onPress={() => setMode('day')}
-                            activeOpacity={0.9}
-                        >
-                            <FilledSparkIcon color={mode === 'day' ? yellow : '#8C8B9C'} size={14} />
-                            <Text style={mode === 'day' ? [styles.segmentTextActive, dynamicStyles.segmentActiveText] : [styles.segmentText, dynamicStyles.segmentText]}>
-                                Day Crowned
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[styles.segmentBtn, mode === 'weekly' && styles.segmentBtnActive, mode === 'weekly' && dynamicStyles.segmentActive]}
-                            onPress={() => setMode('weekly')}
-                            activeOpacity={0.9}
-                        >
-                            <ExactWeeklyIcon color={mode === 'weekly' ? yellow : '#8C8B9C'} size={14} />
-                            <Text style={mode === 'weekly' ? [styles.segmentTextActive, dynamicStyles.segmentActiveText] : [styles.segmentText, dynamicStyles.segmentText]}>
-                                Weekly
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[styles.segmentBtn, mode === 'lifemap' && styles.segmentBtnActive, mode === 'lifemap' && dynamicStyles.segmentActive]}
-                            onPress={() => setMode('lifemap')}
-                            activeOpacity={0.9}
-                        >
-                            <WidgetsIcon color={mode === 'lifemap' ? yellow : '#8C8B9C'} size={13} />
-                            <Text style={mode === 'lifemap' ? [styles.segmentTextActive, dynamicStyles.segmentActiveText] : [styles.segmentText, dynamicStyles.segmentText]}>
-                                Life Map
-                            </Text>
-                        </TouchableOpacity>
+                {loadingShare || loadingLifeMap ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <ActivityIndicator size="large" color={yellow} />
                     </View>
+                ) : (
+                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
-                    {/* Main Dynamic Card */}
-                    <View style={[styles.card, dynamicStyles.card, styles.cardShadow, dynamicStyles.darkShadow]}>
-                        {mode === 'day' && (
-                            <>
-                                <View style={styles.cardTopRow}>
-                                    <Text style={styles.brandGoldText}>Chronica</Text>
-                                    <View style={[styles.pillTag, dynamicStyles.paleSurface]}>
-                                        <DotIcon color={yellow} size={5.5} />
-                                        <Text style={styles.pillTagTextGold}>Day Crowned</Text>
-                                    </View>
-                                </View>
+                        <View style={[styles.segmentWrap, dynamicStyles.segmentWrap]}>
+                            <TouchableOpacity
+                                style={[styles.segmentBtn, mode === 'day' && styles.segmentBtnActive, mode === 'day' && dynamicStyles.segmentActive]}
+                                onPress={() => setMode('day')}
+                                activeOpacity={0.9}
+                            >
+                                <FilledSparkIcon color={mode === 'day' ? yellow : '#8C8B9C'} size={14} />
+                                <Text style={mode === 'day' ? [styles.segmentTextActive, dynamicStyles.segmentActiveText] : [styles.segmentText, dynamicStyles.segmentText]}>
+                                    Day Crowned
+                                </Text>
+                            </TouchableOpacity>
 
-                                <View style={styles.dayCenterWrap}>
-                                    <View style={styles.bigGoldCircle}>
-                                        <MiniCrown color="#FFFFFF" size={34} />
-                                    </View>
-                                    <Text style={[styles.dayTitle, dynamicStyles.mainText]}>This day is complete.</Text>
-                                    <Text style={[styles.daySub, dynamicStyles.mutedText]}>One more day accounted for.</Text>
-                                    <View style={[styles.datePill, dynamicStyles.borderTone]}>
-                                        <DotIcon color={yellow} size={6} />
-                                        <Text style={styles.datePillText}>April 15, 2026</Text>
-                                    </View>
-                                </View>
+                            <TouchableOpacity
+                                style={[styles.segmentBtn, mode === 'weekly' && styles.segmentBtnActive, mode === 'weekly' && dynamicStyles.segmentActive]}
+                                onPress={() => setMode('weekly')}
+                                activeOpacity={0.9}
+                            >
+                                <ExactWeeklyIcon color={mode === 'weekly' ? yellow : '#8C8B9C'} size={14} />
+                                <Text style={mode === 'weekly' ? [styles.segmentTextActive, dynamicStyles.segmentActiveText] : [styles.segmentText, dynamicStyles.segmentText]}>
+                                    Weekly
+                                </Text>
+                            </TouchableOpacity>
 
-                                <View style={styles.cardFooterStats}>
-                                    <View>
-                                        <Text style={styles.statMainGold}>11,791</Text>
-                                        <Text style={[styles.statSub, dynamicStyles.mutedText]}>days lived</Text>
-                                    </View>
-                                    <View style={styles.statRight}>
-                                        <Text style={[styles.statMain, dynamicStyles.mainText]}>128</Text>
-                                        <Text style={[styles.statSub, dynamicStyles.mutedText]}>days crowned</Text>
-                                    </View>
-                                </View>
-                            </>
-                        )}
+                            <TouchableOpacity
+                                style={[styles.segmentBtn, mode === 'lifemap' && styles.segmentBtnActive, mode === 'lifemap' && dynamicStyles.segmentActive]}
+                                onPress={() => setMode('lifemap')}
+                                activeOpacity={0.9}
+                            >
+                                <WidgetsIcon color={mode === 'lifemap' ? yellow : '#8C8B9C'} size={13} />
+                                <Text style={mode === 'lifemap' ? [styles.segmentTextActive, dynamicStyles.segmentActiveText] : [styles.segmentText, dynamicStyles.segmentText]}>
+                                    Life Map
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
 
-                        {mode === 'weekly' && (
-                            <>
-                                <View style={styles.cardTopRow}>
-                                    <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>Chronica</Text>
-                                    <View style={[styles.pillTag, dynamicStyles.paleSurface]}>
-                                        <Text style={styles.goldBig}>5</Text>
-                                        <Text style={[styles.pillTagText, dynamicStyles.mutedText]}>/ 7 days</Text>
-                                    </View>
-                                </View>
-
-                                <Text style={[styles.weekTitle, dynamicStyles.mainText]}>April</Text>
-                                <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>Week 3 in review</Text>
-                                <Text style={[styles.weekHint, dynamicStyles.mutedText]}>Consistency compounds.</Text>
-
-                                <View style={styles.weekdayRow}>
-                                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-                                        <Text key={`${day}-${index}`} style={[styles.weekdayText, dynamicStyles.mutedText]}>{day}</Text>
-                                    ))}
-                                </View>
-
-                                <View style={styles.weekGrid}>
-                                    {weeklyCells.map((on, idx) => (
-                                        <View
-                                            key={`w-${idx}`}
-                                            style={[
-                                                styles.weekCell,
-                                                { backgroundColor: on ? '#C9A227' : paleColor },
-                                            ]}
-                                        />
-                                    ))}
-                                </View>
-
-                                <View style={styles.weekBottomRow}>
-                                    <View>
-                                        <View style={styles.rowCenter}>
-                                            <Text style={[styles.statMain, dynamicStyles.mainText]}>18 days</Text>
-                                            <View style={{ marginLeft: 6 }}>
-                                                <FilledSparkIcon color={colors.text} size={14} />
+                        <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
+                            <View style={[styles.card, dynamicStyles.card, styles.cardShadow, dynamicStyles.darkShadow]}>
+                                {mode === 'day' && (
+                                    <>
+                                        <View style={styles.cardTopRow}>
+                                            <Text style={styles.brandGoldText}>{safeShareData.watermark || "Chronica"}</Text>
+                                            <View style={[styles.pillTag, dynamicStyles.paleSurface]}>
+                                                <DotIcon color={yellow} size={5.5} />
+                                                <Text style={styles.pillTagTextGold}>Day Crowned</Text>
                                             </View>
                                         </View>
-                                        <Text style={[styles.smallLabel, dynamicStyles.mutedText, { marginTop: 4 }]}>this rhythm is yours</Text>
-                                    </View>
-                                    <View style={styles.legendWrap}>
-                                        <View style={styles.legendRow}>
-                                            <DotIcon color="#C9A227" size={6.5} />
-                                            <Text style={[styles.legendText, dynamicStyles.mutedText]}>Crowned</Text>
-                                            <DotIcon color={paleColor} size={6.5} />
-                                            <Text style={[styles.legendText, dynamicStyles.mutedText]}>Missed</Text>
+
+                                        <View style={styles.dayCenterWrap}>
+                                            <View style={styles.bigGoldCircle}>
+                                                <MiniCrown color="#FFFFFF" size={34} />
+                                            </View>
+                                            <Text style={[styles.dayTitle, dynamicStyles.mainText]}>This day is complete.</Text>
+                                            <Text style={[styles.daySub, dynamicStyles.mutedText]}>One more day accounted for.</Text>
+                                            <View style={[styles.datePill, dynamicStyles.borderTone]}>
+                                                <DotIcon color={yellow} size={6} />
+                                                <Text style={styles.datePillText}>{todayDateStr}</Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                </View>
-                            </>
-                        )}
 
-                        {mode === 'lifemap' && (
-                            <>
-                                <View style={styles.cardTopRow}>
-                                    <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>Chronica · Life Map</Text>
-                                    <View style={[styles.pillTag, dynamicStyles.paleSurface]}>
-                                        <FilledSparkIcon color={yellow} size={12} />
-                                        <Text style={styles.pillTagTextGold}>11,791 days</Text>
-                                    </View>
-                                </View>
+                                        <View style={styles.cardFooterStats}>
+                                            <View>
+                                                <Text style={styles.statMainGold}>{safeShareData.days_lived?.toLocaleString() || 0}</Text>
+                                                <Text style={[styles.statSub, dynamicStyles.mutedText]}>days lived</Text>
+                                            </View>
+                                            <View style={styles.statRight}>
+                                                <Text style={[styles.statMain, dynamicStyles.mainText]}>{safeShareData.crowned_days || 0}</Text>
+                                                <Text style={[styles.statSub, dynamicStyles.mutedText]}>days crowned</Text>
+                                            </View>
+                                        </View>
+                                    </>
+                                )}
 
-                                <Text style={[styles.lifePercent, dynamicStyles.mainText]}>40.4%</Text>
-                                <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>of a life, lived</Text>
-                                <Text style={[styles.weekHint, dynamicStyles.mutedText, { marginBottom: 16 }]}>This is your life, in days</Text>
+                                {mode === 'weekly' && (
+                                    <>
+                                        <View style={styles.cardTopRow}>
+                                            <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>{safeShareData.watermark || "Chronica"}</Text>
+                                            <View style={[styles.pillTag, dynamicStyles.paleSurface]}>
+                                                <Text style={styles.goldBig}>{currentWeekCount}</Text>
+                                                <Text style={[styles.pillTagText, dynamicStyles.mutedText]}>/ 7 days</Text>
+                                            </View>
+                                        </View>
 
-                                <View style={styles.lifeGrid}>
-                                    {lifeMapDots.map((isLived, idx) => (
-                                        <View
-                                            key={`d-${idx}`}
-                                            style={[
-                                                styles.lifeDot,
-                                                { backgroundColor: isLived ? '#C9A227' : paleColor },
-                                            ]}
-                                        />
-                                    ))}
-                                </View>
-                            </>
-                        )}
-                    </View>
+                                        <Text style={[styles.weekTitle, dynamicStyles.mainText]}>{currentMonthName}</Text>
+                                        <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>Week {currentWeekOfMonth} in review</Text>
 
-                    <Text style={[styles.caption, dynamicStyles.mutedText, { marginLeft: 25 }]}>Chronica — your life, in days</Text>
+                                        <Text style={[styles.weekHint, dynamicStyles.mutedText]}>Consistency compounds.</Text>
 
-                    {/* Action Row */}
-                    <View style={styles.actionRow}>
-                        <TouchableOpacity activeOpacity={0.85} style={styles.shareMainBtnWrapper}>
-                            <LinearGradient
-                                colors={['#1A1523', '#2D1B4E']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                style={styles.shareMainBtnGradient}
-                            >
-                                <ExactShareIcon color="#FFFFFF" size={18} />
-                                <Text style={styles.shareMainText}>Share Image</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
+                                        <View style={styles.weekdayRow}>
+                                            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+                                                <Text key={`${day}-${index}`} style={[styles.weekdayText, dynamicStyles.mutedText]}>{day}</Text>
+                                            ))}
+                                        </View>
 
-                        <TouchableOpacity activeOpacity={0.85} style={[styles.sideBtn, dynamicStyles.borderTone, dynamicStyles.sideBtnFill]}>
-                            <ExactCopyIcon color="#8C8B9C" size={20} />
-                        </TouchableOpacity>
+                                        <View style={styles.weekGrid}>
+                                            {weeklyCells.map((on, idx) => (
+                                                <View
+                                                    key={`w-${idx}`}
+                                                    style={[
+                                                        styles.weekCell,
+                                                        { backgroundColor: on ? '#C9A227' : paleColor },
+                                                    ]}
+                                                />
+                                            ))}
+                                        </View>
 
-                        <TouchableOpacity activeOpacity={0.85} style={[styles.sideBtn, dynamicStyles.borderTone, dynamicStyles.sideBtnFill]}>
-                            <DownloadIcon color="#8C8B9C" size={20} />
-                        </TouchableOpacity>
-                    </View>
+                                        <View style={styles.weekBottomRow}>
+                                            <View>
+                                                <View style={styles.rowCenter}>
+                                                    <Text style={[styles.statMain, dynamicStyles.mainText]}>{rhythmDays} days</Text>
+                                                    <View style={{ marginLeft: 6 }}>
+                                                        <FilledSparkIcon color={colors.text} size={14} />
+                                                    </View>
+                                                </View>
+                                                <Text style={[styles.smallLabel, dynamicStyles.mutedText, { marginTop: 4 }]}>this rhythm is yours</Text>
+                                            </View>
+                                            <View style={styles.legendWrap}>
+                                                <View style={styles.legendRow}>
+                                                    <DotIcon color="#C9A227" size={6.5} />
+                                                    <Text style={[styles.legendText, dynamicStyles.mutedText]}>Crowned</Text>
+                                                    <DotIcon color={paleColor} size={6.5} />
+                                                    <Text style={[styles.legendText, dynamicStyles.mutedText]}>Missed</Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </>
+                                )}
 
-                    {/* Helper Callout */}
-                    <View style={[styles.helperCard, dynamicStyles.helperCard]}>
-                        <View style={styles.helperRow}>
-                            <Text style={[styles.helperText, dynamicStyles.mutedText]}>
-                                <FilledSparkIcon color="#8C8B9C" size={14} /> All share cards export as high-res images (1080×1080px) -— optimized for Instagram Stories, Twitter, and any social format. No branding clutter.
-                            </Text>
+                                {mode === 'lifemap' && (
+                                    <>
+                                        <View style={styles.cardTopRow}>
+                                            <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>{safeShareData.watermark || "Chronica"} · Life Map</Text>
+                                            <View style={[styles.pillTag, dynamicStyles.paleSurface]}>
+                                                <FilledSparkIcon color={yellow} size={12} />
+                                                <Text style={styles.pillTagTextGold}>{safeShareData.days_lived?.toLocaleString() || 0} days</Text>
+                                            </View>
+                                        </View>
+
+                                        <Text style={[styles.lifePercent, dynamicStyles.mainText]}>{(safeShareData.life_percentage || 0).toFixed(1)}%</Text>
+                                        <Text style={[styles.smallLabel, dynamicStyles.mutedText]}>of a life, lived</Text>
+                                        <Text style={[styles.weekHint, dynamicStyles.mutedText, { marginBottom: 16 }]}>This is your life, in days</Text>
+
+                                        <View style={styles.lifeGrid}>
+                                            {lifeMapDots.map((isLived, idx) => (
+                                                <View
+                                                    key={`d-${idx}`}
+                                                    style={[
+                                                        styles.lifeDot,
+                                                        { backgroundColor: isLived ? '#C9A227' : paleColor },
+                                                    ]}
+                                                />
+                                            ))}
+                                        </View>
+                                    </>
+                                )}
+                            </View>
+                        </ViewShot>
+
+                        <Text style={[styles.caption, dynamicStyles.mutedText, { marginLeft: 25 }]}>{safeShareData.watermark || "Chronica"} — your life, in days</Text>
+
+                        {/* Action Row */}
+                        <View style={styles.actionRow}>
+                            <TouchableOpacity activeOpacity={0.85} style={styles.shareMainBtnWrapper} onPress={handleShare}>
+                                <LinearGradient colors={['#1A1523', '#2D1B4E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.shareMainBtnGradient}>
+                                    <ExactShareIcon color="#FFFFFF" size={18} />
+                                    <Text style={styles.shareMainText}>Share Image</Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity activeOpacity={0.85} style={[styles.sideBtn, dynamicStyles.borderTone, dynamicStyles.sideBtnFill]} onPress={handleCopy}>
+                                <ExactCopyIcon color="#8C8B9C" size={20} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity activeOpacity={0.85} style={[styles.sideBtn, dynamicStyles.borderTone, dynamicStyles.sideBtnFill]} onPress={handleDownload}>
+                                <DownloadIcon color="#8C8B9C" size={20} />
+                            </TouchableOpacity>
                         </View>
-                    </View>
-                </ScrollView>
+
+                        <View style={[styles.helperCard, dynamicStyles.helperCard]}>
+                            <View style={styles.helperRow}>
+                                <Text style={[styles.helperText, dynamicStyles.mutedText]}>
+                                    <FilledSparkIcon color="#8C8B9C" size={14} /> All share cards export as high-res images (1080×1080px) -— optimized for Instagram Stories, Twitter, and any social format. No branding clutter.
+                                </Text>
+                            </View>
+                        </View>
+                    </ScrollView>
+                )}
             </View>
 
             <View style={[styles.bottomTabContainer, dynamicStyles.bottomTabContainer]}>
@@ -354,328 +453,62 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
 export default ShareProgress;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    content: {
-        flex: 1,
-    },
-    headerRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 8,
-        paddingBottom: 14,
-    },
-    backButton: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 14,
-    },
-    headerTextWrap: {
-        flex: 1,
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        marginBottom: 2,
-        letterSpacing: -0.3,
-    },
-    headerSubtitle: {
-        fontSize: 10,
-        lineHeight: 16,
-    },
-    topDivider: {
-        height: 1,
-    },
-    scrollContent: {
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        paddingBottom: 30,
-    },
-    segmentWrap: {
-        flexDirection: 'row',
-        borderWidth: 1,
-        borderRadius: 18,
-        padding: 4,
-        marginBottom: 24,
-    },
-    segmentBtn: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        borderRadius: 15,
-        paddingVertical: 12,
-    },
-    segmentBtnActive: {
-        // backgroundColor and shadow handled in dynamicStyles for dark mode compatibility
-    },
-    segmentText: {
-        fontSize: 13,
-        fontWeight: '400',
-    },
-    segmentTextActive: {
-        fontSize: 13,
-        fontWeight: '400',
-    },
-    card: {
-        borderRadius: 32,
-        borderWidth: 1,
-        padding: 24,
-        marginBottom: 20,
-    },
-    cardShadow: {
-        shadowColor: '#000000',
-        shadowOffset: { width: 0, height: 12 },
-        shadowRadius: 24,
-    },
-    cardTopRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 24,
-    },
-    brandGoldText: {
-        color: yellow,
-        fontSize: 13.5,
-        fontWeight: '400',
-    },
-    pillTag: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        borderRadius: 16,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-    },
-    pillTagText: {
-        fontSize: 12,
-        fontWeight: '400',
-    },
-    pillTagTextGold: {
-        color: yellow,
-        fontSize: 12,
-        fontWeight: '400',
-    },
-    dayCenterWrap: {
-        alignItems: 'center',
-        paddingVertical: 10,
-    },
-    bigGoldCircle: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#C9A227',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#C9A227',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.35,
-        shadowRadius: 20,
-        elevation: 10,
-        marginBottom: 26,
-    },
-    dayTitle: {
-        fontSize: 28,
-        fontWeight: '600',
-        marginBottom: 6,
-        textAlign: 'center',
-        letterSpacing: -0.5,
-    },
-    daySub: {
-        fontSize: 13.5,
-        marginBottom: 20,
-    },
-    datePill: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        borderWidth: 1,
-        borderRadius: 20,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        backgroundColor: lightyellow,
-    },
-    datePillText: {
-        color: yellow,
-        fontSize: 14.5,
-        fontWeight: '400',
-    },
-    cardFooterStats: {
-        marginTop: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-    },
-    statMain: {
-        fontSize: 15,
-        fontWeight: '500',
-    },
-    statMainGold: {
-        color: yellow,
-        fontSize: 15,
-        fontWeight: '500',
-    },
-    statSub: {
-        fontSize: 12,
-        marginTop: 2,
-    },
-    statRight: {
-        alignItems: 'flex-end',
-    },
-    smallLabel: {
-        fontSize: 13,
-        fontWeight: '500',
-    },
-    goldBig: {
-        color: yellow,
-        fontSize: 18,
-        fontWeight: '700',
-        marginRight: -2,
-    },
-    weekTitle: {
-        marginTop: -25,
-        fontSize: 32,
-        lineHeight: 36,
-        fontWeight: '500',
-        marginBottom: 2,
-        letterSpacing: -0.5,
-    },
-    weekHint: {
-        fontSize: 12,
-        marginTop: 18,
-        marginBottom: 14,
-    },
-    weekdayRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-    },
-    weekdayText: {
-        width: 34,
-        textAlign: 'center',
-        fontSize: 10,
-        fontWeight: '400',
-        textTransform: 'uppercase',
-    },
-    weekGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        columnGap: 10,
-        rowGap: 10,
-        marginBottom: 20,
-    },
-    weekCell: {
-        width: 34,
-        height: 16,
-        borderRadius: 8,
-    },
-    weekBottomRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
-        marginTop: 6,
-    },
-    rowCenter: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    legendWrap: {
-        alignItems: 'flex-end',
-        justifyContent: 'flex-end',
-        paddingBottom: 4,
-    },
-    legendRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    legendText: {
-        fontSize: 11.5,
-        marginRight: 6,
-    },
-    lifePercent: {
-        marginTop: -20,
-        fontSize: 30,
-        lineHeight: 40,
-        fontWeight: '600',
-        letterSpacing: -0.5,
-        marginBottom: 4,
-    },
-    lifeGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        columnGap: 5,
-        rowGap: 5,
-    },
-    lifeDot: {
-        width: 13,
-        height: 13,
-        borderRadius: 6.5,
-    },
-    caption: {
-        fontSize: 12,
-        marginBottom: 16,
-        marginLeft: 4,
-    },
-    actionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        marginBottom: 18,
-        justifyContent: 'space-between',
-    },
-    shareMainBtnWrapper: {
-        flex: 1,
-        height: 58,
-        borderRadius: 18,
-        overflow: 'hidden',
-    },
-    shareMainBtnGradient: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 10,
-    },
-    shareMainText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    sideBtn: {
-        width: 58,
-        height: 58,
-        borderRadius: 18,
-        borderWidth: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    helperCard: {
-        borderRadius: 20,
-        borderWidth: 1,
-        paddingHorizontal: 18,
-        paddingVertical: 16,
-    },
-    helperRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-    },
-    helperIconWrap: {
-        marginRight: 10,
-        marginTop: 3,
-    },
-    helperText: {
-        flex: 1,
-        fontSize: 11,
-        lineHeight: 20,
-    },
-    bottomTabContainer: {
-        borderTopWidth: 1,
-    },
+    container: { flex: 1 },
+    content: { flex: 1 },
+    headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 14 },
+    backButton: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+    headerTextWrap: { flex: 1 },
+    headerTitle: { fontSize: 20, fontWeight: '700', marginBottom: 2, letterSpacing: -0.3 },
+    headerSubtitle: { fontSize: 10, lineHeight: 16 },
+    topDivider: { height: 1 },
+    scrollContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 30 },
+    segmentWrap: { flexDirection: 'row', borderWidth: 1, borderRadius: 18, padding: 4, marginBottom: 24 },
+    segmentBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 15, paddingVertical: 12 },
+    segmentBtnActive: {},
+    segmentText: { fontSize: 13, fontWeight: '400' },
+    segmentTextActive: { fontSize: 13, fontWeight: '400' },
+    card: { borderRadius: 32, borderWidth: 1, padding: 24, marginBottom: 20 },
+    cardShadow: { shadowColor: '#000000', shadowOffset: { width: 0, height: 12 }, shadowRadius: 24 },
+    cardTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+    brandGoldText: { color: yellow, fontSize: 13.5, fontWeight: '400' },
+    pillTag: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
+    pillTagText: { fontSize: 12, fontWeight: '400' },
+    pillTagTextGold: { color: yellow, fontSize: 12, fontWeight: '400' },
+    dayCenterWrap: { alignItems: 'center', paddingVertical: 10 },
+    bigGoldCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#C9A227', alignItems: 'center', justifyContent: 'center', shadowColor: '#C9A227', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.35, shadowRadius: 20, elevation: 10, marginBottom: 26 },
+    dayTitle: { fontSize: 28, fontWeight: '600', marginBottom: 6, textAlign: 'center', letterSpacing: -0.5 },
+    daySub: { fontSize: 13.5, marginBottom: 20 },
+    datePill: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: lightyellow },
+    datePillText: { color: yellow, fontSize: 14.5, fontWeight: '400' },
+    cardFooterStats: { marginTop: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+    statMain: { fontSize: 15, fontWeight: '500' },
+    statMainGold: { color: yellow, fontSize: 15, fontWeight: '500' },
+    statSub: { fontSize: 12, marginTop: 2 },
+    statRight: { alignItems: 'flex-end' },
+    smallLabel: { fontSize: 13, fontWeight: '500' },
+    goldBig: { color: yellow, fontSize: 18, fontWeight: '700', marginRight: -2 },
+    weekTitle: { marginTop: -25, fontSize: 32, lineHeight: 36, fontWeight: '500', marginBottom: 2, letterSpacing: -0.5 },
+    weekHint: { fontSize: 12, marginTop: 18, marginBottom: 14 },
+    weekdayRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+    weekdayText: { width: 34, textAlign: 'center', fontSize: 10, fontWeight: '400', textTransform: 'uppercase' },
+    weekGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 10, rowGap: 10, marginBottom: 20 },
+    weekCell: { width: 34, height: 16, borderRadius: 8 },
+    weekBottomRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 6 },
+    rowCenter: { flexDirection: 'row', alignItems: 'center' },
+    legendWrap: { alignItems: 'flex-end', justifyContent: 'flex-end', paddingBottom: 4 },
+    legendRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    legendText: { fontSize: 11.5, marginRight: 6 },
+    lifePercent: { marginTop: -20, fontSize: 30, lineHeight: 40, fontWeight: '600', letterSpacing: -0.5, marginBottom: 4 },
+    lifeGrid: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 5, rowGap: 5 },
+    lifeDot: { width: 13, height: 13, borderRadius: 6.5 },
+    caption: { fontSize: 12, marginBottom: 16, marginLeft: 4 },
+    actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18, justifyContent: 'space-between' },
+    shareMainBtnWrapper: { flex: 1, height: 58, borderRadius: 18, overflow: 'hidden' },
+    shareMainBtnGradient: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+    shareMainText: { color: '#FFFFFF', fontSize: 16, fontWeight: '500' },
+    sideBtn: { width: 58, height: 58, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+    helperCard: { borderRadius: 20, borderWidth: 1, paddingHorizontal: 18, paddingVertical: 16 },
+    helperRow: { flexDirection: 'row', alignItems: 'flex-start' },
+    helperText: { flex: 1, fontSize: 11, lineHeight: 20 },
+    bottomTabContainer: { borderTopWidth: 1 },
 });

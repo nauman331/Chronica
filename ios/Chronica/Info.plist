@@ -56,5 +56,10 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Chronica needs access to your photo library to save your progress images.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Chronica needs access to your gallery to save your progress images.</string>
 </dict>
 </plist>
