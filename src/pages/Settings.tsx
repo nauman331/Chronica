@@ -20,6 +20,7 @@ import useSubmit from '../hooks/useSubmit';
 import { CustomSwitch } from '../components/CustomSwith';
 import LogoutModal from '../components/LogoutModal';
 import { ChevronLeftIcon, ChevronRightIcon } from '../utils/icons';
+import messaging from '@react-native-firebase/messaging';
 
 import {
     white,
@@ -76,10 +77,22 @@ const Settings = ({ navigation }: any) => {
 
     const handleBack = () => navigation?.goBack();
 
-    const handleConfirmLogout = () => {
+    const handleConfirmLogout = async () => {
         setIsLogoutModalVisible(false);
-        dispatch(logout());
-    };
+
+        try {
+            const token = await messaging().getToken();
+
+            if (token) {
+                await submit('notifications/device-tokens', { token }, { method: 'DELETE' });
+                console.log("Device token deleted from backend.");
+            }
+        } catch (error) {
+            console.log("Failed to delete device token on logout", error);
+        } finally {
+            dispatch(logout());
+        }
+    }
 
     const handleThemeSelect = (option: ThemeOption) => {
         dispatch(setTheme(option));
