@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -7,13 +7,15 @@ import {
     ScrollView,
     TouchableOpacity,
     Modal,
-    Alert,
+    ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useDispatch } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { setTheme, ThemeOption } from '../store/slices/ThemeSlice';
 import { useAppTheme } from '../hooks/useAppTheme';
+import useFetch from '../hooks/useFetch';
+import useSubmit from '../hooks/useSubmit';
 
 import { CustomSwitch } from '../components/CustomSwith';
 import LogoutModal from '../components/LogoutModal';
@@ -24,6 +26,7 @@ import {
     gray,
     darkPurple,
     lightPurple,
+    yellow
 } from '../utils/colors';
 
 const Settings = ({ navigation }: any) => {
@@ -32,16 +35,46 @@ const Settings = ({ navigation }: any) => {
     // --- Theme Hook ---
     const { colors, themeOption } = useAppTheme();
 
-    const [selectedLifeSpan, setSelectedLifeSpan] = useState(60);
-    const [isDailyRemindersEnabled, setIsDailyRemindersEnabled] = useState(true);
+    // --- API Hooks for Notifications ---
+    const { data: prefData, loading: prefLoading } = useFetch('notifications/preferences', { isAuth: true });
+    const { submit } = useSubmit({ isAuth: true });
 
-    // --- Modal States ---
+    const [selectedLifeSpan, setSelectedLifeSpan] = useState(60);
+
+    // --- Notification States ---
+    const [preferences, setPreferences] = useState({
+        morning: false,
+        evening: false,
+        weekly: false,
+    });
+
+    useEffect(() => {
+        if (prefData) {
+            setPreferences({
+                morning: !!(prefData as any).morning_enabled,
+                evening: !!(prefData as any).evening_enabled,
+                weekly: !!(prefData as any).weekly_enabled,
+            });
+        }
+    }, [prefData]);
+
+    const togglePreference = async (key: 'morning' | 'evening' | 'weekly') => {
+        const newValue = !preferences[key];
+        setPreferences(prev => ({ ...prev, [key]: newValue }));
+        const apiKey = `${key}_enabled`;
+
+        try {
+            await submit('notifications/preferences', { [apiKey]: newValue }, { method: 'PATCH' });
+        } catch (error) {
+            console.error(`Failed to update ${key} preference`, error);
+            setPreferences(prev => ({ ...prev, [key]: !newValue }));
+        }
+    };
+
     const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
     const [isThemeModalVisible, setIsThemeModalVisible] = useState(false);
 
-    const handleBack = () => {
-        navigation?.goBack();
-    };
+    const handleBack = () => navigation?.goBack();
 
     const handleConfirmLogout = () => {
         setIsLogoutModalVisible(false);
@@ -61,26 +94,12 @@ const Settings = ({ navigation }: any) => {
 
     // --- Dynamic Styles ---
     const dynamicStyles = StyleSheet.create({
-        container: {
-            backgroundColor: colors.background,
-        },
-        textMain: {
-            color: colors.text,
-        },
-        textSecondary: {
-            color: colors.textSecondary,
-        },
-        cardBase: {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-        },
-        cardUnselected: {
-            backgroundColor: colors.surfaceMuted,
-            borderColor: colors.border,
-        },
-        borderOverlay: {
-            borderColor: colors.border,
-        }
+        container: { backgroundColor: colors.background },
+        textMain: { color: colors.text },
+        textSecondary: { color: colors.textSecondary },
+        cardBase: { backgroundColor: colors.surface, borderColor: colors.border },
+        cardUnselected: { backgroundColor: colors.surfaceMuted, borderColor: colors.border },
+        borderOverlay: { borderColor: colors.border }
     });
 
     return (
@@ -93,10 +112,7 @@ const Settings = ({ navigation }: any) => {
                 <Text style={[styles.headerTitle, dynamicStyles.textMain]}>Settings</Text>
             </View>
 
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-            >
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                 {/* --- Section: Life Span View --- */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Your Life Span View</Text>
@@ -113,11 +129,7 @@ const Settings = ({ navigation }: any) => {
                                 key={item.years}
                                 activeOpacity={0.9}
                                 onPress={() => setSelectedLifeSpan(item.years)}
-                                style={[
-                                    styles.cardBase,
-                                    dynamicStyles.cardBase,
-                                    !isSelected && dynamicStyles.cardUnselected
-                                ]}
+                                style={[styles.cardBase, dynamicStyles.cardBase, !isSelected && dynamicStyles.cardUnselected]}
                             >
                                 {isSelected && (
                                     <LinearGradient
@@ -138,17 +150,47 @@ const Settings = ({ navigation }: any) => {
                     })}
                 </View>
 
-                {/* --- Section: Notifications --- */}
+                {/* --- Section: Notifications (API INTEGRATED) --- */}
                 <View style={styles.section}>
-                    <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Notifications</Text>
-                    <View style={[styles.cardBase, dynamicStyles.cardUnselected, styles.cardRow]}>
+                    <View style={styles.rowBetween}>
+                        <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Notifications</Text>
+                        {prefLoading && <ActivityIndicator size="small" color={yellow} />}
+                    </View>
+
+                    <View style={[styles.cardBase, dynamicStyles.cardUnselected, styles.cardRow, { marginBottom: 8 }]}>
                         <View style={styles.cardTextContent}>
-                            <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Daily Reminders</Text>
-                            <Text style={[styles.cardDescription, dynamicStyles.textSecondary]}>Gentle nudges to complete your ritual</Text>
+                            <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Morning Reminder</Text>
+                            <Text style={[styles.cardDescription, dynamicStyles.textSecondary]}>Today is one of your life days.</Text>
                         </View>
                         <CustomSwitch
-                            value={isDailyRemindersEnabled}
-                            onValueChange={(val: boolean) => setIsDailyRemindersEnabled(val)}
+                            value={preferences.morning}
+                            onValueChange={() => togglePreference('morning')}
+                            activeColor={colors.primary}
+                            inactiveColor={colors.border}
+                        />
+                    </View>
+
+                    <View style={[styles.cardBase, dynamicStyles.cardUnselected, styles.cardRow, { marginBottom: 8 }]}>
+                        <View style={styles.cardTextContent}>
+                            <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Evening Prompt</Text>
+                            <Text style={[styles.cardDescription, dynamicStyles.textSecondary]}>Don't let today pass undocumented.</Text>
+                        </View>
+                        <CustomSwitch
+                            value={preferences.evening}
+                            onValueChange={() => togglePreference('evening')}
+                            activeColor={colors.primary}
+                            inactiveColor={colors.border}
+                        />
+                    </View>
+
+                    <View style={[styles.cardBase, dynamicStyles.cardUnselected, styles.cardRow]}>
+                        <View style={styles.cardTextContent}>
+                            <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Weekly Reflection</Text>
+                            <Text style={[styles.cardDescription, dynamicStyles.textSecondary]}>Reflect on the week that has passed.</Text>
+                        </View>
+                        <CustomSwitch
+                            value={preferences.weekly}
+                            onValueChange={() => togglePreference('weekly')}
                             activeColor={colors.primary}
                             inactiveColor={colors.border}
                         />
@@ -186,7 +228,6 @@ const Settings = ({ navigation }: any) => {
                         <ChevronRightIcon color={colors.accent} />
                     </TouchableOpacity>
 
-                    {/* --- ADDED NAVIGATION HERE --- */}
                     <TouchableOpacity
                         style={[styles.cardBase, dynamicStyles.cardBase, styles.cardRow]}
                         onPress={() => navigation.navigate("SubscriptionScreen")}
@@ -194,7 +235,6 @@ const Settings = ({ navigation }: any) => {
                         <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Subscription</Text>
                         <ChevronRightIcon color={colors.accent} />
                     </TouchableOpacity>
-
                 </View>
 
                 {/* --- Section: Privacy & Data --- */}
@@ -230,14 +270,12 @@ const Settings = ({ navigation }: any) => {
 
             </ScrollView>
 
-            {/* --- Reusable Logout Modal --- */}
             <LogoutModal
                 visible={isLogoutModalVisible}
                 onClose={() => setIsLogoutModalVisible(false)}
                 onConfirm={handleConfirmLogout}
             />
 
-            {/* --- Theme Selection Modal --- */}
             <Modal
                 visible={isThemeModalVisible}
                 transparent={true}
@@ -279,97 +317,23 @@ export default Settings;
 
 // Static Layout Styles
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 56,
-        paddingHorizontal: 20,
-    },
-    backButton: {
-        position: 'absolute',
-        left: 20,
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-    },
-    headerTitle: {
-        fontSize: 17,
-        fontWeight: '700',
-    },
-    scrollContent: {
-        paddingHorizontal: 20,
-        paddingTop: 10,
-        paddingBottom: 40,
-    },
-    section: {
-        marginBottom: 24,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '800',
-        marginBottom: 4,
-    },
-    sectionSubtitle: {
-        fontSize: 13,
-        marginBottom: 12,
-    },
-    cardBase: {
-        borderRadius: 16,
-        paddingVertical: 18,
-        paddingHorizontal: 16,
-        marginBottom: 10,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderWidth: 1,
-        overflow: 'hidden',
-    },
-    cardRow: {
-        alignItems: 'center',
-    },
-    cardTextContent: {
-        flex: 1,
-    },
-    cardTitle: {
-        fontSize: 15,
-        fontWeight: '600',
-    },
-    cardDescription: {
-        fontSize: 12,
-        marginTop: 2,
-    },
-    cardRightText: {
-        fontSize: 14,
-        fontWeight: '500',
-    },
-
-    // Theme Modal Styles
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'flex-end',
-    },
-    themeModalContent: {
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        padding: 24,
-        paddingBottom: 40,
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: '800',
-    },
-    themeOptionBtn: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 12,
-        borderBottomWidth: 1,
-        borderRadius: 8,
-    }
+    container: { flex: 1 },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 56, paddingHorizontal: 20 },
+    backButton: { position: 'absolute', left: 20, width: 40, height: 40, justifyContent: 'center' },
+    headerTitle: { fontSize: 17, fontWeight: '700' },
+    scrollContent: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 40 },
+    section: { marginBottom: 24 },
+    rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    sectionTitle: { fontSize: 16, fontWeight: '800', marginBottom: 4 },
+    sectionSubtitle: { fontSize: 13, marginBottom: 12 },
+    cardBase: { borderRadius: 16, paddingVertical: 18, paddingHorizontal: 16, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, overflow: 'hidden' },
+    cardRow: { alignItems: 'center' },
+    cardTextContent: { flex: 1, paddingRight: 12 },
+    cardTitle: { fontSize: 15, fontWeight: '600' },
+    cardDescription: { fontSize: 12, marginTop: 4, lineHeight: 18 },
+    cardRightText: { fontSize: 14, fontWeight: '500' },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'flex-end' },
+    themeModalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
+    modalTitle: { fontSize: 20, fontWeight: '800' },
+    themeOptionBtn: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 12, borderBottomWidth: 1, borderRadius: 8 }
 });
