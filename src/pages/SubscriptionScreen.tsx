@@ -14,7 +14,8 @@ import { useAppTheme } from '../hooks/useAppTheme';
 
 import { ChevronLeftIcon } from '../utils/icons';
 
-import { yellow, white, lightPurple, darkPurple } from '../utils/colors';
+import { yellow, white, lightPurple, darkPurple, lightyellow } from '../utils/colors';
+import Toast from 'react-native-toast-message';
 
 const SubscriptionScreen = ({ navigation }: any) => {
     const { colors, isDark } = useAppTheme();
@@ -29,15 +30,13 @@ const SubscriptionScreen = ({ navigation }: any) => {
         valuePropTitle: { color: colors.text },
         valuePropText: { color: colors.textSecondary },
 
-        // Unselected card styles
         cardUnselected: {
             backgroundColor: colors.surface,
             borderColor: colors.border,
             borderWidth: 1,
         },
-        // Selected card styles (Brand Yellow with drop shadow)
         cardSelected: {
-            backgroundColor: isDark ? 'rgba(201, 162, 39, 0.1)' : '#FFFDF5',
+            backgroundColor: isDark ? lightyellow : '#FFFDF5',
             borderColor: yellow,
             borderWidth: 1.5,
             shadowColor: yellow,
@@ -135,7 +134,7 @@ const SubscriptionScreen = ({ navigation }: any) => {
                         <View style={styles.planInfo}>
                             <Text style={[styles.planTitle, dynamicStyles.planTitle]}>Monthly</Text>
                             <Text style={[styles.planPrice, dynamicStyles.planPrice]}>
-                                $9.99 <Text style={[styles.planDuration, dynamicStyles.planDuration]}>/month</Text>
+                                $4.99 <Text style={[styles.planDuration, dynamicStyles.planDuration]}>/month</Text>
                             </Text>
                         </View>
                         <View style={[
@@ -161,7 +160,7 @@ const SubscriptionScreen = ({ navigation }: any) => {
                                 </View>
                             </View>
                             <Text style={[styles.planPrice, dynamicStyles.planPrice]}>
-                                $89 <Text style={[styles.planDuration, dynamicStyles.planDuration]}>/year</Text>
+                                $39.99 <Text style={[styles.planDuration, dynamicStyles.planDuration]}>/year</Text>
                             </Text>
                         </View>
                         <View style={[
@@ -177,7 +176,12 @@ const SubscriptionScreen = ({ navigation }: any) => {
                     <TouchableOpacity
                         style={[styles.ctaButton, dynamicStyles.ctaButton]}
                         activeOpacity={0.8}
-                        onPress={() => {/* Handle Subscription Logic */ }}
+                        onPress={() => Toast.show({
+                            type: 'success',
+                            text1: 'Coming Soon',
+                            text2: 'Subscription will come soon...',
+                            position: 'top'
+                        })}
                     >
                         <Text style={[styles.ctaButtonText, dynamicStyles.ctaButtonText]}>Start 7-Day Free Trial</Text>
                     </TouchableOpacity>
@@ -193,7 +197,6 @@ const SubscriptionScreen = ({ navigation }: any) => {
 
 export default SubscriptionScreen;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     headerSpacer: {
-        width: 40, // Balances the back button for absolute centering of title
+        width: 40,
     },
     scrollContent: {
         paddingHorizontal: 24,

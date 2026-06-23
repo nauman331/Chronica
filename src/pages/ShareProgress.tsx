@@ -156,7 +156,12 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
             if (Platform.OS === 'android' && Platform.Version < 33) {
                 const permission = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
                 if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
-                    Alert.alert('Permission Denied', 'Please allow storage access in your phone settings to save the image.');
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Permission Denied',
+                        text2: 'Please allow storage access in your phone settings to save the image.',
+                        position: 'top'
+                    });
                     return;
                 }
             }

@@ -18,6 +18,7 @@ import { useAppTheme } from '../hooks/useAppTheme';
 import useSubmit from '../hooks/useSubmit';
 import { setuser } from '../store/slices/authSlice';
 import { RootState } from '../store/store';
+import { ArrowLeftIcon } from '../utils/icons';
 
 interface EditProfileModalProps {
     visible: boolean;
@@ -25,7 +26,7 @@ interface EditProfileModalProps {
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onClose }) => {
-    const { colors } = useAppTheme();
+    const { colors, isDark } = useAppTheme();
     const dispatch = useDispatch();
 
     const { userdata } = useSelector((state: RootState) => state.auth);
@@ -106,7 +107,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ visible, onClose })
 
                         <View style={styles.sheetHeader}>
                             <Pressable style={[styles.backButton, dynamicStyles.backButton]} onPress={onClose}>
-                                <Text style={[styles.backButtonArrow, dynamicStyles.backButtonText]}>←</Text>
+                                <Text style={[styles.backButtonArrow, dynamicStyles.backButtonText]}><ArrowLeftIcon color={isDark ? "#fff" : "#111"} /></Text>
                             </Pressable>
                             <Text style={[styles.sheetTitle, dynamicStyles.title]}>Edit Profile</Text>
                             <Text style={[styles.sheetSubtitle, dynamicStyles.subtitle]}>Update your personal details</Text>

@@ -21,6 +21,7 @@ import useSubmit from '../hooks/useSubmit';
 
 import { CustomSwitch } from '../components/CustomSwith';
 import LogoutModal from '../components/LogoutModal';
+import EditProfileModal from '../components/EditProfileModal';
 import { ChevronLeftIcon, ChevronRightIcon } from '../utils/icons';
 import messaging from '@react-native-firebase/messaging';
 
@@ -35,17 +36,13 @@ import {
 const Settings = ({ navigation }: any) => {
     const dispatch = useDispatch();
 
-    // --- Redux Settings Hook ---
     const selectedLifeSpan = useSelector((state: RootState) => state.settings.lifeSpan);
-
-    // --- Theme Hook ---
+    const { userdata } = useSelector((state: RootState) => state.auth);
     const { colors, themeOption } = useAppTheme();
 
-    // --- API Hooks for Notifications ---
     const { data: prefData, loading: prefLoading } = useFetch('notifications/preferences', { isAuth: true });
     const { submit } = useSubmit({ isAuth: true });
 
-    // --- Notification States ---
     const [preferences, setPreferences] = useState({
         morning: false,
         evening: false,
@@ -77,6 +74,7 @@ const Settings = ({ navigation }: any) => {
 
     const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
     const [isThemeModalVisible, setIsThemeModalVisible] = useState(false);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
     const handleBack = () => navigation?.goBack();
 
@@ -108,7 +106,6 @@ const Settings = ({ navigation }: any) => {
         return 'Light Mode';
     };
 
-    // --- Dynamic Styles ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         textMain: { color: colors.text },
@@ -129,7 +126,6 @@ const Settings = ({ navigation }: any) => {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                {/* --- Section: Life Span View --- */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Your Life Span View</Text>
                     <Text style={[styles.sectionSubtitle, dynamicStyles.textSecondary]}>Choose how to visualize your life timeline</Text>
@@ -144,7 +140,7 @@ const Settings = ({ navigation }: any) => {
                             <TouchableOpacity
                                 key={item.years}
                                 activeOpacity={0.9}
-                                onPress={() => dispatch(setLifeSpan(item.years))} // Updated to use Redux dispatch
+                                onPress={() => dispatch(setLifeSpan(item.years))}
                                 style={[styles.cardBase, dynamicStyles.cardBase, !isSelected && dynamicStyles.cardUnselected]}
                             >
                                 {isSelected && (
@@ -166,7 +162,6 @@ const Settings = ({ navigation }: any) => {
                     })}
                 </View>
 
-                {/* --- Section: Notifications (API INTEGRATED) --- */}
                 <View style={styles.section}>
                     <View style={styles.rowBetween}>
                         <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Notifications</Text>
@@ -212,8 +207,6 @@ const Settings = ({ navigation }: any) => {
                         />
                     </View>
                 </View>
-
-                {/* --- Section: Appearance --- */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Appearance</Text>
                     <TouchableOpacity
@@ -230,17 +223,26 @@ const Settings = ({ navigation }: any) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* --- Section: Account --- */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Account</Text>
 
-                    <TouchableOpacity style={[styles.cardBase, dynamicStyles.cardBase, styles.cardRow]}>
+                    <TouchableOpacity
+                        style={[styles.cardBase, dynamicStyles.cardBase, styles.cardRow]}
+                        onPress={() => setIsEditModalVisible(true)}
+                    >
                         <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Profile Settings</Text>
                         <ChevronRightIcon color={colors.accent} />
                     </TouchableOpacity>
 
                     <TouchableOpacity style={[styles.cardBase, dynamicStyles.cardBase, styles.cardRow]}>
-                        <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Email & Password</Text>
+                        <View style={styles.cardTextContent}>
+                            <Text style={[styles.cardTitle, dynamicStyles.textMain]}>Email & Password</Text>
+                            {userdata?.email && (
+                                <Text style={[styles.cardDescription, dynamicStyles.textSecondary]}>
+                                    {userdata.email}
+                                </Text>
+                            )}
+                        </View>
                         <ChevronRightIcon color={colors.accent} />
                     </TouchableOpacity>
 
@@ -253,7 +255,6 @@ const Settings = ({ navigation }: any) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* --- Section: Privacy & Data --- */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Privacy & Data</Text>
                     <Text style={[styles.sectionSubtitle, dynamicStyles.textSecondary]}>How your data is used and protected</Text>
@@ -265,7 +266,6 @@ const Settings = ({ navigation }: any) => {
                     ))}
                 </View>
 
-                {/* --- Section: Support --- */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Support</Text>
                     {['Help Center', 'Contact Support'].map((title) => (
@@ -276,7 +276,6 @@ const Settings = ({ navigation }: any) => {
                     ))}
                 </View>
 
-                {/* --- Logout Trigger --- */}
                 <TouchableOpacity
                     style={[styles.cardBase, dynamicStyles.cardBase, { justifyContent: 'center', marginTop: 10, borderColor: gray }]}
                     onPress={() => setIsLogoutModalVisible(true)}
@@ -290,6 +289,11 @@ const Settings = ({ navigation }: any) => {
                 visible={isLogoutModalVisible}
                 onClose={() => setIsLogoutModalVisible(false)}
                 onConfirm={handleConfirmLogout}
+            />
+
+            <EditProfileModal
+                visible={isEditModalVisible}
+                onClose={() => setIsEditModalVisible(false)}
             />
 
             <Modal
@@ -331,7 +335,6 @@ const Settings = ({ navigation }: any) => {
 
 export default Settings;
 
-// Static Layout Styles
 const styles = StyleSheet.create({
     container: { flex: 1 },
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: 56, paddingHorizontal: 20 },

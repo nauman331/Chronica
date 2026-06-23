@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -16,7 +16,7 @@ import { ArrowLeftIcon } from '../utils/icons';
 import { useAppTheme } from '../hooks/useAppTheme';
 import useSubmit from '../hooks/useSubmit';
 
-import { yellow, lightBlue, lightGreen } from '../utils/colors';
+import { yellow, lightBlue, lightGreen, gray } from '../utils/colors';
 
 const DocumentDayScreen = ({ navigation, route }: any) => {
     const { colors } = useAppTheme();
@@ -42,11 +42,26 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
         }
     }, [dayData]);
 
+    const isEditable = useMemo(() => {
+        if (!dayData) return true;
+        if (dayData.is_locked) return false;
+
+        if (dayData.edit_deadline) {
+            const deadline = new Date(dayData.edit_deadline).getTime();
+            const now = new Date().getTime();
+            return now < deadline;
+        }
+
+        return true;
+    }, [dayData]);
+
     const handleInputFocus = () => {
         setTimeout(() => { scrollRef.current?.scrollToEnd({ animated: true }); }, 120);
     };
 
     const handleSave = async () => {
+        if (!isEditable) return;
+
         const payload = {
             date: dateStr,
             intention: intention.trim(),
@@ -79,7 +94,11 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
         statusBadgeText: { color: colors.textSecondary },
         mainTitle: { color: colors.text },
         mainSubtitle: { color: colors.textSecondary },
-        textInput: { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text },
+        textInput: {
+            backgroundColor: isEditable ? colors.surface : colors.surfaceMuted,
+            borderColor: colors.border,
+            color: isEditable ? colors.text : colors.textSecondary
+        },
         cancelButton: { borderColor: colors.border, backgroundColor: colors.background },
         cancelButtonText: { color: colors.textSecondary },
         bottomTabContainer: { borderTopColor: colors.border, backgroundColor: colors.background }
@@ -106,7 +125,9 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                 <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" bounces={false}>
                     <View style={styles.titleSection}>
                         <Text style={[styles.mainTitle, dynamicStyles.mainTitle]}>Document {month} {day}</Text>
-                        <Text style={[styles.mainSubtitle, dynamicStyles.mainSubtitle]}>Preserve this day in your life story</Text>
+                        <Text style={[styles.mainSubtitle, dynamicStyles.mainSubtitle]}>
+                            {isEditable ? 'Preserve this day in your life story' : 'This entry is locked and cannot be edited'}
+                        </Text>
                     </View>
 
                     <View style={styles.inputSection}>
@@ -114,7 +135,17 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             <View style={[styles.dot, { backgroundColor: yellow }]} />
                             <Text style={[styles.labelText, { color: yellow }]}>INTENTION</Text>
                         </View>
-                        <TextInput style={[styles.textInput, dynamicStyles.textInput]} placeholder="What was your intention for this day?" placeholderTextColor={colors.textSecondary} multiline textAlignVertical="top" value={intention} onChangeText={setIntention} onFocus={handleInputFocus} />
+                        <TextInput
+                            style={[styles.textInput, dynamicStyles.textInput]}
+                            placeholder="What was your intention for this day?"
+                            placeholderTextColor={colors.textSecondary}
+                            multiline
+                            textAlignVertical="top"
+                            value={intention}
+                            onChangeText={setIntention}
+                            onFocus={handleInputFocus}
+                            editable={isEditable}
+                        />
                     </View>
 
                     <View style={styles.inputSection}>
@@ -122,7 +153,17 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             <View style={[styles.dot, { backgroundColor: lightBlue }]} />
                             <Text style={[styles.labelText, { color: lightBlue }]}>REFLECTION</Text>
                         </View>
-                        <TextInput style={[styles.textInput, dynamicStyles.textInput]} placeholder="What did this day teach you?" placeholderTextColor={colors.textSecondary} multiline textAlignVertical="top" value={reflection} onChangeText={setReflection} onFocus={handleInputFocus} />
+                        <TextInput
+                            style={[styles.textInput, dynamicStyles.textInput]}
+                            placeholder="What did this day teach you?"
+                            placeholderTextColor={colors.textSecondary}
+                            multiline
+                            textAlignVertical="top"
+                            value={reflection}
+                            onChangeText={setReflection}
+                            onFocus={handleInputFocus}
+                            editable={isEditable}
+                        />
                     </View>
 
                     <View style={styles.inputSection}>
@@ -130,7 +171,17 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             <View style={[styles.dot, { backgroundColor: lightGreen }]} />
                             <Text style={[styles.labelText, { color: lightGreen }]}>ACHIEVEMENT</Text>
                         </View>
-                        <TextInput style={[styles.textInput, dynamicStyles.textInput]} placeholder="What moved your life forward?" placeholderTextColor={colors.textSecondary} multiline textAlignVertical="top" value={achievement} onChangeText={setAchievement} onFocus={handleInputFocus} />
+                        <TextInput
+                            style={[styles.textInput, dynamicStyles.textInput]}
+                            placeholder="What moved your life forward?"
+                            placeholderTextColor={colors.textSecondary}
+                            multiline
+                            textAlignVertical="top"
+                            value={achievement}
+                            onChangeText={setAchievement}
+                            onFocus={handleInputFocus}
+                            editable={isEditable}
+                        />
                     </View>
 
                     <View style={styles.buttonRow}>
@@ -138,8 +189,21 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
                             <Text style={[styles.cancelButtonText, dynamicStyles.cancelButtonText]}>Cancel</Text>
                         </Pressable>
 
-                        <Pressable style={styles.saveButton} onPress={handleSave} disabled={loading}>
-                            {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveButtonText}>Crown this day</Text>}
+                        <Pressable
+                            style={[
+                                styles.saveButton,
+                                !isEditable && styles.saveButtonDisabled
+                            ]}
+                            onPress={handleSave}
+                            disabled={loading || !isEditable}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="#FFFFFF" />
+                            ) : (
+                                <Text style={styles.saveButtonText}>
+                                    {isEditable ? 'Crown this day' : 'Locked'}
+                                </Text>
+                            )}
                         </Pressable>
                     </View>
                 </ScrollView>
@@ -178,7 +242,6 @@ const styles = StyleSheet.create({
     cancelButton: { flex: 1, borderWidth: 1, borderRadius: 16, paddingVertical: 18, alignItems: 'center', justifyContent: 'center' },
     cancelButtonText: { fontSize: 16, fontWeight: '600' },
 
-    // Updated Save Button to match old Crown Button
     saveButton: {
         flex: 1,
         borderRadius: 16,
@@ -191,6 +254,11 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 12,
         elevation: 6
+    },
+    saveButtonDisabled: {
+        backgroundColor: gray,
+        shadowOpacity: 0,
+        elevation: 0,
     },
     saveButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
 

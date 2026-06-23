@@ -17,7 +17,6 @@ import useFetch from '../hooks/useFetch';
 import useSubmit from '../hooks/useSubmit';
 import { useFocusEffect } from '@react-navigation/native';
 
-// --- EXACT FIGMA ICONS ---
 const SunIcon = ({ color = '#111111' }: { color?: string }) => (
     <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
         <Circle cx="12" cy="12" r="4" fill="none" stroke={color} strokeWidth="1.8" />
@@ -45,13 +44,11 @@ const ExactSparkIcon = ({ color = '#111111' }: { color?: string }) => (
         <Path d="M12 2C12 7.5228 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.5228 12 2 12C7.5228 12 12 7.5228 12 2Z" fill={color} />
     </Svg>
 );
-// ----------------------------
 
 const Notifications = ({ navigation }: { navigation: any }) => {
     const { colors, isDark } = useAppTheme();
     const { submit } = useSubmit({ isAuth: true });
 
-    // --- Fetch Inbox Data ---
     const { data, loading, refetch } = useFetch('notifications/', { isAuth: true });
     const notifications = (data as any)?.results || [];
 
@@ -71,10 +68,9 @@ const Notifications = ({ navigation }: { navigation: any }) => {
             }
         }
 
-        // Navigate based on tap_target from backend
-        if (item.tap_target === 'Today') {
-            navigation.navigate('DocumentDayScreen', { dateStr: new Date().toISOString().split('T')[0] });
-        } else if (item.tap_target === 'Reflections') {
+        if (item.type === 'morning' || item.type === 'evening') {
+            navigation.navigate('DocumentDay', { dateStr: new Date().toISOString().split('T')[0] });
+        } else if (item.type === 'weekly') {
             navigation.navigate('WriteReflection');
         }
     };
@@ -98,7 +94,6 @@ const Notifications = ({ navigation }: { navigation: any }) => {
     });
 
     const renderNotification = ({ item }: { item: any }) => {
-        // Dynamically style based on the notification type returned from the Django backend
         const isMorning = item.type === 'morning';
         const isEvening = item.type === 'evening';
 
@@ -109,7 +104,6 @@ const Notifications = ({ navigation }: { navigation: any }) => {
         const pillDark = isMorning ? 'rgba(201, 162, 39, 0.15)' : (isEvening ? 'rgba(142, 120, 209, 0.15)' : 'rgba(59, 130, 246, 0.15)');
         const iconPillColor = isDark ? pillDark : pillLight;
 
-        // Parse date for display
         const dateObj = new Date(item.created_at || Date.now());
         const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 

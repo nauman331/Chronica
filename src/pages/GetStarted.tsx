@@ -172,8 +172,6 @@ const GetStarted: React.FC<any> = ({ navigation, route }) => {
                 onClose={() => setIsSheetVisible(false)}
                 birthDate={formatDjangoDate(date)}
             />
-
-            {/* Outer Toast for Validation messages before the modal opens */}
             <Toast />
         </SafeAreaView>
     );

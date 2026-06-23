@@ -8,6 +8,29 @@ import CombinedNav from './src/navigation/CombinedNav';
 import { store, persistor, RootState } from "./src/store/store";
 import { setuser, logout } from './src/store/slices/authSlice';
 import { apiURL } from './src/utils/exports';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { yellow } from './src/utils/colors';
+
+const toastConfig = {
+  chronicaNotification: ({ text1, text2, props }: any) => (
+    <View style={styles.toastContainer}>
+      <View style={styles.toastTextContent}>
+        <Text style={styles.toastTitle}>{text1}</Text>
+        <Text style={styles.toastBody}>{text2}</Text>
+      </View>
+
+      {/* The OK Action Button */}
+      <TouchableOpacity
+        style={styles.actionButton}
+        activeOpacity={0.7}
+        onPress={props.onPressOk || (() => Toast.hide())}
+      >
+        <Text style={styles.actionText}>OK</Text>
+      </TouchableOpacity>
+    </View>
+  )
+};
+
 
 const AppContent: React.FC = () => {
   const dispatch = useDispatch();
@@ -60,7 +83,7 @@ const AppContent: React.FC = () => {
   return (
     <SafeAreaProvider>
       <CombinedNav />
-      <Toast />
+      <Toast config={toastConfig} />
     </SafeAreaProvider>
   );
 }
@@ -76,3 +99,49 @@ const App: React.FC = () => {
 }
 
 export default App;
+
+const styles = StyleSheet.create({
+  toastContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '90%',
+    backgroundColor: '#1E1E1E',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginTop: 10,
+  },
+  toastTextContent: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  toastTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  toastBody: {
+    color: '#A0A0A0',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  actionButton: {
+    backgroundColor: 'rgba(201, 162, 39, 0.15)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  actionText: {
+    color: yellow,
+    fontWeight: '700',
+    fontSize: 13,
+  }
+});

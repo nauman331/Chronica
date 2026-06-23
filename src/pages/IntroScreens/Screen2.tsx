@@ -70,7 +70,7 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
         let current = new Date(bDate);
         let age = 0;
 
-        while (current <= today) {
+        while (current <= today && age < 5) {
             const year = current.getFullYear();
             const yearStart = new Date(year, 0, 1);
             const yearEnd = new Date(year, 11, 31);
@@ -145,6 +145,7 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
         buttonText: { color: isDark ? '#1A1523' : colors.background },
         skipText: { color: '#B4B4B4' },
     }), [colors.background, colors.border, colors.primary, colors.surface, colors.text, isDark]);
+
     return (
         <View style={[styles.container, dynamicStyles.container]}>
             <View style={styles.header}>

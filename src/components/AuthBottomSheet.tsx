@@ -17,6 +17,7 @@ import Toast from 'react-native-toast-message';
 import { useAppTheme } from '../hooks/useAppTheme';
 import useSubmit from '../hooks/useSubmit';
 import { login } from '../store/slices/authSlice';
+import { ArrowLeftIcon } from '../utils/icons';
 
 interface AuthBottomSheetProps {
     visible: boolean;
@@ -31,7 +32,7 @@ const AuthBottomSheet: React.FC<AuthBottomSheetProps> = ({
     onClose,
     birthDate,
 }) => {
-    const { colors } = useAppTheme();
+    const { colors, isDark } = useAppTheme();
     const { submit, loading } = useSubmit();
     const dispatch = useDispatch();
 
@@ -146,7 +147,7 @@ const AuthBottomSheet: React.FC<AuthBottomSheetProps> = ({
 
                         <View style={styles.sheetHeader}>
                             <Pressable style={[styles.backButton, dynamicStyles.backButton]} onPress={onClose}>
-                                <Text style={[styles.backButtonArrow, dynamicStyles.backButtonText]}>←</Text>
+                                <Text style={[styles.backButtonArrow, dynamicStyles.backButtonText]}><ArrowLeftIcon color={isDark ? "#fff" : "#111"} /></Text>
                             </Pressable>
                             <Text style={[styles.sheetTitle, dynamicStyles.title]}>
                                 {mode === 'signup' ? 'Sign up to CHRONICA' : 'Sign in to CHRONICA'}

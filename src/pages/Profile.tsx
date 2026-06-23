@@ -13,7 +13,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import LogoutModal from '../components/LogoutModal';
-import EditProfileModal from '../components/EditProfileModal';
 import { useAppTheme } from '../hooks/useAppTheme';
 
 import {
@@ -44,7 +43,6 @@ const Profile = ({ navigation }: any) => {
     const { colors, isDark } = useAppTheme();
 
     const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
-    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
     const handleConfirmLogout = () => {
         setIsLogoutModalVisible(false);
@@ -111,7 +109,6 @@ const Profile = ({ navigation }: any) => {
             turningAge
         };
     }, [userdata?.birth_date]);
-
 
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
@@ -246,18 +243,6 @@ const Profile = ({ navigation }: any) => {
                 {/* --- Actions Menu --- */}
                 <View style={[styles.listContainer, dynamicStyles.listContainer]}>
                     <TouchableOpacity style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]} activeOpacity={0.7}
-                        onPress={() => setIsEditModalVisible(true)}
-                    >
-                        <View style={[styles.listIconCircle, dynamicStyles.menuIconCircle]}>
-                            <UserIcon color={yellow} />
-                        </View>
-                        <View style={styles.listContent}>
-                            <Text style={[styles.listTitle, dynamicStyles.listTitle]}>Edit Profile</Text>
-                            <Text style={[styles.listSubtitle, dynamicStyles.listSubtitle]}>Name, Username, Birthplace</Text>
-                        </View>
-                        <ChevronRightIcon color={colors.textSecondary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.listItem, styles.borderBottom, dynamicStyles.borderBottom]} activeOpacity={0.7}
                         onPress={() => navigation.navigate("SubscriptionScreen")}
                     >
                         <View style={[styles.listIconCircle, dynamicStyles.menuIconCircle]}>
@@ -321,10 +306,6 @@ const Profile = ({ navigation }: any) => {
                 visible={isLogoutModalVisible}
                 onClose={() => setIsLogoutModalVisible(false)}
                 onConfirm={handleConfirmLogout}
-            />
-            <EditProfileModal
-                visible={isEditModalVisible}
-                onClose={() => setIsEditModalVisible(false)}
             />
         </SafeAreaView>
     );

@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
-import { Platform, PermissionsAndroid, Alert } from 'react-native';
+import { Platform, PermissionsAndroid } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import { useNavigation } from '@react-navigation/native';
 import useSubmit from './useSubmit';
+import Toast from 'react-native-toast-message';
 
 export const usePushNotifications = () => {
     const { submit } = useSubmit({ isAuth: true });
+    const navigation = useNavigation<any>();
 
     useEffect(() => {
         const requestUserPermission = async () => {
@@ -25,7 +28,6 @@ export const usePushNotifications = () => {
                 if (enabled) {
                     const token = await messaging().getToken();
                     if (token) {
-                        // REMOVED TRAILING SLASH
                         await submit('notifications/device-tokens', { token }, { method: 'POST' });
                         console.log("Token registered successfully");
                     }
@@ -37,23 +39,43 @@ export const usePushNotifications = () => {
 
         requestUserPermission();
 
-        // 1. Refresh Listener
         const unsubscribeTokenRefresh = messaging().onTokenRefresh(async (newToken) => {
-            // REMOVED TRAILING SLASH
             await submit('notifications/device-tokens', { token: newToken }, { method: 'POST' });
         });
 
-        // 2. NEW: Foreground Listener (App is open)
         const unsubscribeForeground = messaging().onMessage(async remoteMessage => {
             console.log('A new FCM message arrived in the foreground!', remoteMessage);
+
             const title = remoteMessage.notification?.title || 'Chronica';
             const body = remoteMessage.notification?.body || 'You have a new update.';
-            Alert.alert(title, body);
+
+            const tapTarget = remoteMessage.data?.tap_target;
+            const type = remoteMessage.data?.type;
+
+            Toast.show({
+                type: 'chronicaNotification',
+                text1: title,
+                text2: body,
+                position: 'top',
+                visibilityTime: 5000,
+                props: {
+                    onPressOk: () => {
+                        Toast.hide();
+                        if (tapTarget === 'Today' || type === 'morning' || type === 'evening') {
+                            navigation.navigate('DocumentDay', {
+                                dateStr: new Date().toISOString().split('T')[0]
+                            });
+                        } else if (tapTarget === 'Reflections' || type === 'weekly') {
+                            navigation.navigate('WriteReflection');
+                        }
+                    }
+                }
+            });
         });
 
         return () => {
             unsubscribeTokenRefresh();
             unsubscribeForeground();
         };
-    }, []);
+    }, [navigation]);
 };
