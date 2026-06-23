@@ -10,9 +10,11 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { setTheme, ThemeOption } from '../store/slices/ThemeSlice';
+import { setLifeSpan } from '../store/slices/settingsSlice';
+import { RootState } from '../store/store';
 import { useAppTheme } from '../hooks/useAppTheme';
 import useFetch from '../hooks/useFetch';
 import useSubmit from '../hooks/useSubmit';
@@ -33,14 +35,15 @@ import {
 const Settings = ({ navigation }: any) => {
     const dispatch = useDispatch();
 
+    // --- Redux Settings Hook ---
+    const selectedLifeSpan = useSelector((state: RootState) => state.settings.lifeSpan);
+
     // --- Theme Hook ---
     const { colors, themeOption } = useAppTheme();
 
     // --- API Hooks for Notifications ---
     const { data: prefData, loading: prefLoading } = useFetch('notifications/preferences', { isAuth: true });
     const { submit } = useSubmit({ isAuth: true });
-
-    const [selectedLifeSpan, setSelectedLifeSpan] = useState(60);
 
     // --- Notification States ---
     const [preferences, setPreferences] = useState({
@@ -141,7 +144,7 @@ const Settings = ({ navigation }: any) => {
                             <TouchableOpacity
                                 key={item.years}
                                 activeOpacity={0.9}
-                                onPress={() => setSelectedLifeSpan(item.years)}
+                                onPress={() => dispatch(setLifeSpan(item.years))} // Updated to use Redux dispatch
                                 style={[styles.cardBase, dynamicStyles.cardBase, !isSelected && dynamicStyles.cardUnselected]}
                             >
                                 {isSelected && (

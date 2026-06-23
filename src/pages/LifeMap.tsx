@@ -11,6 +11,8 @@ import {
     DimensionValue
 } from 'react-native';
 import { Canvas, Group, Skia, Path, Blur, Shadow } from '@shopify/react-native-skia';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 
 import BottomTabBar from '../components/BottomTabBar';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -161,6 +163,9 @@ const YearChunkSection = memo(({ chunk, textSecondaryColor, onPress }: YearChunk
 const LifeMap = ({ navigation }: any) => {
     const { colors } = useAppTheme();
 
+    // --- Redux Settings Hook ---
+    const selectedLifeSpan = useSelector((state: RootState) => state.settings.lifeSpan);
+
     const { data: apiData, loading } = useFetch('life-map/', { isAuth: true });
 
     const [viewportHeight, setViewportHeight] = useState(0);
@@ -185,7 +190,9 @@ const LifeMap = ({ navigation }: any) => {
         }
 
         const bDate = new Date(data.birth_date);
-        const lifeSpan = data.life_span_years || 80;
+
+        // <-- Use Redux State for lifespan instead of backend default -->
+        const lifeSpan = selectedLifeSpan || data.life_span_years || 80;
         const statesMap = data.states || {};
         const now = new Date();
 
@@ -193,7 +200,7 @@ const LifeMap = ({ navigation }: any) => {
 
         // Build grid logic mapping 52 weeks per calendar year
         const birthYear = bDate.getFullYear();
-        const endYear = birthYear + lifeSpan;
+        const endYear = birthYear + lifeSpan - 1; // Adjust to prevent showing N+1 years
 
         for (let year = birthYear; year <= endYear; year++) {
             const yearLabel = year;
@@ -256,16 +263,22 @@ const LifeMap = ({ navigation }: any) => {
             offsetY += height;
         }
 
+        // <-- Dynamically calculate life percentage based on chosen Redux lifespan -->
+        const daysLived = data.days_lived || 0;
+        const totalLifeDays = lifeSpan * 365.2425; // Factoring in leap years for precision
+        let dynamicPercentage = (daysLived / totalLifeDays) * 100;
+        if (dynamicPercentage > 100) dynamicPercentage = 100;
+
         return {
             yearChunks: chunks,
             totalHeight: offsetY,
             lifeStats: {
-                days: (data.days_lived || 0).toLocaleString(),
-                weeks: Math.floor((data.days_lived || 0) / 7).toLocaleString(),
-                percentage: (data.life_percentage || 0).toFixed(1)
+                days: daysLived.toLocaleString(),
+                weeks: Math.floor(daysLived / 7).toLocaleString(),
+                percentage: dynamicPercentage.toFixed(1)
             }
         };
-    }, [apiData]);
+    }, [apiData, selectedLifeSpan]); // <-- Added selectedLifeSpan to dependency array
 
     const updateVisibleRange = useCallback((offsetY: number, nextViewportHeight: number, chunks: YearChunk[]) => {
         if (nextViewportHeight <= 0 || chunks.length === 0) return;
