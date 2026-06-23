@@ -5,11 +5,9 @@ import { useAppTheme } from '../hooks/useAppTheme';
 import useFetch from '../hooks/useFetch';
 
 import {
-    white,
     COLOR_CROWNED,
     COLOR_DOCUMENTED,
     COLOR_PAST,
-    COLOR_FUTURE
 } from '../utils/colors';
 
 import { ArrowLeftIcon, SolidSparkleIcon } from '../utils/icons';
@@ -19,10 +17,9 @@ const DOT_SIZE = 9;
 const CONTAINER_SIZE = 16;
 
 const YearViewScreen = ({ navigation, route }: any) => {
-    const { colors, isDark } = useAppTheme();
+    const { colors } = useAppTheme();
     const { year = new Date().getFullYear(), age = 31 } = route.params || {};
 
-    // Fetch entries for the entire year
     const { data: apiData, loading } = useFetch(`life-days/?start_date=${year}-01-01&end_date=${year}-12-31`, { isAuth: true });
 
     const { monthsData, totalStats } = useMemo(() => {
@@ -76,7 +73,7 @@ const YearViewScreen = ({ navigation, route }: any) => {
             return {
                 name: MONTHS[monthIndex],
                 fullName: new Date(year, monthIndex, 1).toLocaleString('default', { month: 'long' }),
-                dots, // Accurately reflects all days
+                dots,
                 progress: monthProgress,
                 progressColor
             };
@@ -161,7 +158,6 @@ const YearViewScreen = ({ navigation, route }: any) => {
                         </View>
                     </View>
 
-                    {/* Month Grid */}
                     <View style={styles.monthGrid}>
                         {monthsData.map((month, index) => (
                             <Pressable

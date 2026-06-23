@@ -21,7 +21,6 @@ const Screen1 = ({ birthDate, onNext, onSkip }: any) => {
     const progressPercent = Math.min(daysLived / (80 * 365), 1);
     const strokeDashoffset = circumference - (circumference * progressPercent);
 
-    // FIX: Extracted the SVG stroke color into a standard variable
     const ringEmptyColor = isDark ? colors.border : '#F3EFE6';
 
     const dynamicStyles = StyleSheet.create({

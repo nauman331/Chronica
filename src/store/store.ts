@@ -24,7 +24,7 @@ const persistedSettingsConfig = {
 
 const persistedAuthReducer = persistReducer(persistedAuthConfig, authReducer);
 const persistedThemeReducer = persistReducer(persistedThemeConfig, themeReducer);
-const persistedSettingsReducer = persistReducer(persistedSettingsConfig, settingsReducer); // <-- Create persisted reducer
+const persistedSettingsReducer = persistReducer(persistedSettingsConfig, settingsReducer);
 
 export const store = configureStore({
     reducer: {

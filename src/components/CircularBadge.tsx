@@ -3,7 +3,6 @@ import DropShadow from 'react-native-drop-shadow';
 import React from 'react';
 import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
 
-// Keep brand defaults
 import { white, yellow } from '../utils/colors';
 
 type BadgeIconProps = {
@@ -86,7 +85,6 @@ const CircularBadge = ({
 
 export default CircularBadge;
 
-// --- Static Layout Styles (Colors handled via props) ---
 const styles = StyleSheet.create({
     outerGlow: {
         shadowOffset: { width: 0, height: 14 },

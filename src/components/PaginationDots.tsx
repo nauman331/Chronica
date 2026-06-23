@@ -21,7 +21,6 @@ const PaginationDots: React.FC<PaginationDotsProps> = ({ activeIndex = 0, total 
                         style={[
                             styles.dot,
                             isActive ? styles.activeDot : [styles.inactiveDot, {
-                                // High-contrast gray for light mode, muted surface for dark mode
                                 backgroundColor: isDark ? '#3D2D5E' : '#E5E5EA'
                             }]
                         ]}
@@ -39,7 +38,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 8, // Slightly increased gap for better readability
+        gap: 8,
     },
     dot: {
         height: 6,
@@ -49,7 +48,7 @@ const styles = StyleSheet.create({
         width: 6,
     },
     activeDot: {
-        width: 24, // Pill shape for active
+        width: 24,
         backgroundColor: yellow,
     },
 });

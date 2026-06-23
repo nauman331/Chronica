@@ -50,7 +50,6 @@ const SubscriptionScreen = ({ navigation }: any) => {
         planPrice: { color: colors.text },
         planDuration: { color: colors.textSecondary },
 
-        // The radio circle
         radioOuterUnselected: { borderColor: colors.border },
         radioOuterSelected: { borderColor: yellow },
 
@@ -68,7 +67,6 @@ const SubscriptionScreen = ({ navigation }: any) => {
     return (
         <SafeAreaView style={[styles.container, dynamicStyles.container]}>
 
-            {/* --- Header --- */}
             <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.backButton}
@@ -85,7 +83,6 @@ const SubscriptionScreen = ({ navigation }: any) => {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* --- Hero Text --- */}
                 <View style={styles.heroSection}>
                     <Text style={[styles.mainTitle, dynamicStyles.mainTitle]}>
                         You have 18,547{'\n'}days remaining.
@@ -95,7 +92,6 @@ const SubscriptionScreen = ({ navigation }: any) => {
                     </Text>
                 </View>
 
-                {/* --- Quote Card (Now using Settings Gradient) --- */}
                 <View style={styles.quoteCardContainer}>
                     <LinearGradient
                         colors={[lightPurple, darkPurple]}
@@ -109,7 +105,6 @@ const SubscriptionScreen = ({ navigation }: any) => {
                     <Text style={styles.quoteAuthor}>— Seneca</Text>
                 </View>
 
-                {/* --- Value Proposition --- */}
                 <View style={styles.valuePropSection}>
                     <Text style={[styles.valuePropTitle, dynamicStyles.valuePropTitle]}>
                         Chronica helps you live intentionally
@@ -119,10 +114,8 @@ const SubscriptionScreen = ({ navigation }: any) => {
                     </Text>
                 </View>
 
-                {/* --- Subscription Plans --- */}
                 <View style={styles.plansSection}>
 
-                    {/* Monthly Plan */}
                     <TouchableOpacity
                         activeOpacity={0.9}
                         style={[
@@ -143,7 +136,6 @@ const SubscriptionScreen = ({ navigation }: any) => {
                         ]} />
                     </TouchableOpacity>
 
-                    {/* Yearly Plan */}
                     <TouchableOpacity
                         activeOpacity={0.9}
                         style={[
@@ -171,7 +163,6 @@ const SubscriptionScreen = ({ navigation }: any) => {
 
                 </View>
 
-                {/* --- Call To Action --- */}
                 <View style={styles.ctaSection}>
                     <TouchableOpacity
                         style={[styles.ctaButton, dynamicStyles.ctaButton]}
@@ -226,7 +217,6 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
 
-    // Hero
     heroSection: {
         alignItems: 'center',
         marginTop: 4,
@@ -246,7 +236,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 
-    // Quote Card
     quoteCardContainer: {
         borderRadius: 24,
         paddingVertical: 36,
@@ -275,7 +264,6 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
 
-    // Value Prop
     valuePropSection: {
         alignItems: 'center',
         marginBottom: 32,
@@ -294,7 +282,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
     },
 
-    // Plans
     plansSection: {
         gap: 16,
         marginBottom: 32,

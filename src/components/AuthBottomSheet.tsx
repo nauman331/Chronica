@@ -157,7 +157,6 @@ const AuthBottomSheet: React.FC<AuthBottomSheetProps> = ({
                             </Text>
                         </View>
 
-                        {/* SIGN UP ONLY FIELDS */}
                         {mode === 'signup' && (
                             <>
                                 <View style={styles.formGroup}>
@@ -211,7 +210,6 @@ const AuthBottomSheet: React.FC<AuthBottomSheetProps> = ({
                             />
                         </View>
 
-                        {/* SIGN UP ONLY FIELDS */}
                         {mode === 'signup' && (
                             <View style={styles.formGroup}>
                                 <Text style={[styles.inputLabel, dynamicStyles.inputLabel]}>Birthplace</Text>

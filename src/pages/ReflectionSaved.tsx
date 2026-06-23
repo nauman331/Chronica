@@ -15,7 +15,6 @@ import CircularBadge from '../components/CircularBadge';
 const ReflectionSaved: React.FC<any> = ({ navigation }) => {
     const { colors } = useAppTheme();
 
-    // Dynamically calculate today's date to match Figma design perfectly
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-US', {
         month: 'long',

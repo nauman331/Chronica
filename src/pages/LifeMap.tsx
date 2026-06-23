@@ -25,7 +25,6 @@ import {
     COLOR_FUTURE,
 } from '../utils/colors';
 
-// --- Configuration Constants ---
 const NODES_PER_ROW = 26;
 const RADIUS = 2.5;
 const SPACING = 4;
@@ -247,7 +246,6 @@ const LifeMap = ({ navigation }: any) => {
             });
         }
 
-        // Slice into virtualized chunks
         const chunks: YearChunk[] = [];
         let offsetY = 0;
 

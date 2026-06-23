@@ -50,7 +50,7 @@ const switchStyles = StyleSheet.create({
         width: 20,
         height: 20,
         borderRadius: 10,
-        backgroundColor: '#FFFFFF', // Thumb stays white in both themes for standard UI contrast
+        backgroundColor: '#FFFFFF',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,

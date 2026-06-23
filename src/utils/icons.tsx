@@ -43,7 +43,6 @@ export const UserIcon = ({ color }: { color: string }) => (
     </Svg>
 );
 
-// Added size prop so it can be scaled down in WidgetsScreen
 export const BadgeIcon = ({ color = "#FFFFFF", size = 54 }: { color?: string, size?: number }) => (
     <Svg
         width={size}

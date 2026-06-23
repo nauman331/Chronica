@@ -19,7 +19,6 @@ const toastConfig = {
         <Text style={styles.toastBody}>{text2}</Text>
       </View>
 
-      {/* The OK Action Button */}
       <TouchableOpacity
         style={styles.actionButton}
         activeOpacity={0.7}
@@ -35,11 +34,9 @@ const toastConfig = {
 const AppContent: React.FC = () => {
   const dispatch = useDispatch();
   const { token } = useSelector((state: RootState) => state.auth);
-  const [loading, setLoading] = useState(false);
 
   const getUser = async () => {
     try {
-      setLoading(true);
       const response = await fetch(`${apiURL}auth/me`, {
         method: "GET",
         headers: {
@@ -69,8 +66,6 @@ const AppContent: React.FC = () => {
       });
       console.error("Error fetching user data:", error);
       dispatch(logout());
-    } finally {
-      setLoading(false);
     }
   }
 

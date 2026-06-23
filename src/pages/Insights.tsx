@@ -38,13 +38,11 @@ const Insights = ({ navigation }: any) => {
 
     const { start_date, end_date } = useMemo(() => getCurrentWeekDates(), []);
 
-    // Call reflections API filtered by this week
     const { data: reflectionsData, loading } = useFetch(
         `reflections/?start_date=${start_date}&end_date=${end_date}`,
         { isAuth: true }
     );
 
-    // 1. Calculate Ritual Count
     const weeklyRituals = useMemo(() => {
         if (!reflectionsData) return 0;
         if (Array.isArray(reflectionsData)) return reflectionsData.length;
@@ -52,7 +50,6 @@ const Insights = ({ navigation }: any) => {
         return 0;
     }, [reflectionsData]);
 
-    // 2. Extract Dynamic Reflection Text for Quote Card
     const latestReflection = useMemo(() => {
         if (Array.isArray(reflectionsData) && reflectionsData.length > 0) return reflectionsData[0];
         if ((reflectionsData as any)?.results && (reflectionsData as any).results.length > 0) return (reflectionsData as any).results[0];
@@ -102,7 +99,6 @@ const Insights = ({ navigation }: any) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Main Momentum Card */}
                 <View style={[styles.card, dynamicStyles.card]}>
                     <View style={styles.momentumContainer}>
                         <View style={[styles.iconCircle, dynamicStyles.iconCircle]}>
@@ -138,7 +134,6 @@ const Insights = ({ navigation }: any) => {
                     </View>
                 </View>
 
-                {/* Dynamic Quote Card */}
                 <View style={[styles.quoteCard, dynamicStyles.quoteCard]}>
                     <View style={styles.quoteContainer}>
                         <Text style={[styles.quoteText, dynamicStyles.quoteText]}>

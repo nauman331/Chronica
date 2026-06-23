@@ -9,13 +9,11 @@ import {
     ActivityIndicator,
     Platform,
     PermissionsAndroid,
-    Alert
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import Toast from 'react-native-toast-message';
 
-// Standard native integrations for capture and share
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
@@ -29,7 +27,6 @@ import { lightyellow, yellow } from '../utils/colors';
 
 type ShareMode = 'day' | 'weekly' | 'lifemap';
 
-// --- CUSTOM EXACT FIGMA ICONS ---
 const ExactCopyIcon = ({ color = '#8C8B9C', size = 20 }) => (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <Rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -77,7 +74,6 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
 
     const viewShotRef = useRef<any>(null);
 
-    // --- Clean API Calls ---
     const { data: shareData, loading: loadingShare } = useFetch('share/progress-summary', { isAuth: true });
     const { data: lifeMapData, loading: loadingLifeMap } = useFetch('life-map/', { isAuth: true });
 
@@ -89,7 +85,6 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
     const currentMonthName = now.toLocaleDateString('en-US', { month: 'long' });
     const currentWeekOfMonth = Math.ceil(now.getDate() / 7);
 
-    // --- Dynamic UI Calculations ---
 
     const weeklyCells = useMemo(() => {
         const cells = Array(28).fill(false);
@@ -118,7 +113,7 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
     }, [safeLifeMapData]);
 
     const lifeMapDots = useMemo(() => {
-        const totalVisualDots = 17 * 14; // 238 total proxy dots
+        const totalVisualDots = 17 * 14;
         const lifePercentage = safeShareData.life_percentage || 0;
         const filledDotsCount = Math.floor((lifePercentage / 100) * totalVisualDots);
         return Array.from({ length: totalVisualDots }, (_, idx) => idx < filledDotsCount);
@@ -127,7 +122,6 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
     const currentWeekCount = useMemo(() => weeklyCells.slice(-7).filter(Boolean).length, [weeklyCells]);
     const rhythmDays = useMemo(() => weeklyCells.filter(Boolean).length, [weeklyCells]);
 
-    // --- Action Handlers ---
     const captureImage = async () => {
         if (viewShotRef.current && viewShotRef.current.capture) {
             return await viewShotRef.current.capture();
@@ -148,7 +142,6 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
         }
     };
 
-    // --- Bulletproof Download Handler ---
     const handleDownload = async () => {
         try {
             const uri = await captureImage();
@@ -171,9 +164,6 @@ const ShareProgress: React.FC<{ navigation: any }> = ({ navigation }) => {
 
         } catch (error) {
             console.error("CameraRoll Error:", error);
-
-            // iOS Simulator Crash Fallback: If direct save fails, open the native Share Sheet
-            // so the user can just tap "Save Image" natively.
             try {
                 const uriFallback = await captureImage();
                 await Share.open({

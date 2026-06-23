@@ -11,7 +11,7 @@ import {
     COLOR_PAST,
 } from '../utils/colors';
 
-import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SolidSparkleIcon } from '../utils/icons';
+import { ArrowLeftIcon, SolidSparkleIcon } from '../utils/icons';
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -24,7 +24,6 @@ const MonthViewScreen = ({ navigation, route }: any) => {
     const formattedMonth = monthNum.toString().padStart(2, '0');
     const lastDay = new Date(year, monthNum, 0).getDate();
 
-    // Fetch all life days for this specific month
     const { data: apiData, loading } = useFetch(
         `life-days/?start_date=${year}-${formattedMonth}-01&end_date=${year}-${formattedMonth}-${lastDay}`,
         { isAuth: true }
@@ -34,10 +33,8 @@ const MonthViewScreen = ({ navigation, route }: any) => {
         const days = [];
         const firstDayOfWeek = new Date(year, monthNum - 1, 1).getDay();
 
-        // Add empty offset slots
         for (let i = 0; i < firstDayOfWeek; i++) days.push(null);
 
-        // Normalize DRF list responses
         const rawEntries = Array.isArray(apiData) ? apiData : (apiData as any)?.results || [];
         const entriesMap: Record<string, any> = {};
         rawEntries.forEach((entry: any) => { entriesMap[entry.date] = entry; });
@@ -65,20 +62,15 @@ const MonthViewScreen = ({ navigation, route }: any) => {
             }
             days.push({ day: i, state, dateStr });
         }
-
-        // Calculate accurate pastDays for the viewed month (handles past, current, and future months)
         let pastDays = 0;
         const nowYear = now.getFullYear();
-        const nowMonth = now.getMonth() + 1; // 1-based month
+        const nowMonth = now.getMonth() + 1;
 
         if (year < nowYear || (year === nowYear && monthNum < nowMonth)) {
-            // The viewed month is in the past
             pastDays = lastDay;
         } else if (year === nowYear && monthNum === nowMonth) {
-            // The viewed month is the current month
             pastDays = now.getDate();
         } else {
-            // The viewed month is in the future
             pastDays = 0;
         }
 
@@ -177,7 +169,7 @@ const MonthViewScreen = ({ navigation, route }: any) => {
                                                     day: item.day, month, year,
                                                     dayOfWeek: DAYS_OF_WEEK[new Date(year, monthNum - 1, item.day).getDay()],
                                                     status: statusText,
-                                                    dateStr: item.dateStr // Passing the clean date string forward
+                                                    dateStr: item.dateStr
                                                 });
                                             }}
                                         >

@@ -11,12 +11,8 @@ import {
 } from 'react-native';
 import React, { useEffect } from 'react';
 import BottomTabBar from '../components/BottomTabBar';
-
-// Hooks
 import { useAppTheme } from '../hooks/useAppTheme';
 import useFetch from '../hooks/useFetch';
-
-// Assets
 import { yellow, lightBlue, lightGreen } from '../utils/colors';
 import { BellIcon, SparkIcon, ReflectionIcon, ArrowUpIcon } from '../utils/icons';
 
@@ -31,7 +27,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
         return () => task.cancel();
     }, []);
 
-    // 1. Date Math for Navigation & API Payload
     const today = new Date();
     const year = today.getFullYear();
     const day = today.getDate();
@@ -41,7 +36,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
 
     const dateStr = `${year}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 
-    // 2. Fetch today's data to check if it's already documented or crowned
     const { data: apiData, loading } = useFetch(`life-days/${dateStr}`, { isAuth: true });
 
     const dayData = (apiData as any)?.life_day || apiData;
@@ -69,7 +63,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
         <SafeAreaView style={[styles.safeArea, dynamicStyles.safeArea]}>
             <View style={[styles.container, dynamicStyles.container]}>
 
-                {/* Header */}
                 <View style={styles.header}>
                     <View>
                         <Text style={[styles.headerSubtitle, dynamicStyles.headerSubtitle]}>Today's Ritual</Text>
@@ -87,7 +80,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
 
                 <View style={[styles.divider, dynamicStyles.divider]} />
 
-                {/* Scrollable Content */}
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
                     <View style={styles.contentWrapper}>
@@ -124,7 +116,6 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
 
                 </ScrollView>
 
-                {/* Bottom Action Area */}
                 <View style={[styles.bottomActionContainer, dynamicStyles.bottomActionContainer]}>
                     <View style={[styles.divider, dynamicStyles.divider]} />
                     <Pressable
@@ -137,7 +128,7 @@ const EnhanceCrown: React.FC<{ navigation: any }> = ({ navigation }) => {
                             dayOfWeek: dayName,
                             dateStr,
                             status: isCrowned ? 'Crowned' : isDocumented ? 'Documented' : 'Not documented',
-                            existingData: dayData // Passes forward any existing text from today
+                            existingData: dayData
                         })}
                     >
                         {loading ? (

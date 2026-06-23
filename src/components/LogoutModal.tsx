@@ -7,10 +7,8 @@ import {
     TouchableOpacity,
 } from 'react-native';
 
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
-// Keep white for text on the solid red danger button
 import { white } from '../utils/colors';
 
 interface LogoutModalProps {
@@ -20,10 +18,8 @@ interface LogoutModalProps {
 }
 
 const LogoutModal: React.FC<LogoutModalProps> = ({ visible, onClose, onConfirm }) => {
-    // --- 1. Get dynamic colors ---
     const { colors } = useAppTheme();
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         modalContent: {
             backgroundColor: colors.surface
@@ -80,11 +76,9 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ visible, onClose, onConfirm }
 
 export default LogoutModal;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
-        // The dimming overlay stays standard across both themes
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
         justifyContent: 'center',
         alignItems: 'center',
@@ -137,6 +131,6 @@ const styles = StyleSheet.create({
     confirmButtonText: {
         fontSize: 15,
         fontWeight: '600',
-        color: white, // Forces white text against the red background for contrast
+        color: white,
     },
 });

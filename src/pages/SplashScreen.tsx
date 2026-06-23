@@ -2,14 +2,11 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useSelector } from "react-redux";
 
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
-// Keep brand yellow for the logo
 import { yellow } from '../utils/colors';
 
 const SplashScreen: React.FC<any> = ({ navigation }) => {
-    // --- 1. Get dynamic colors ---
     const { colors } = useAppTheme();
 
     const token = useSelector((state: any) => state.auth.token);
@@ -26,7 +23,6 @@ const SplashScreen: React.FC<any> = ({ navigation }) => {
         return () => clearTimeout(timer);
     }, [navigation, token]);
 
-    // --- 2. Dynamic Styles based on active theme ---
     const dynamicStyles = StyleSheet.create({
         container: { backgroundColor: colors.background },
         footerText: { color: colors.textSecondary },
@@ -44,7 +40,6 @@ const SplashScreen: React.FC<any> = ({ navigation }) => {
 
 export default SplashScreen;
 
-// --- 3. Static Layout Styles (No Colors Here) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -55,7 +50,7 @@ const styles = StyleSheet.create({
     logoText: {
         fontSize: 32,
         fontWeight: 'bold',
-        color: yellow, // Stays yellow
+        color: yellow,
         letterSpacing: 2,
     },
     footerText: {

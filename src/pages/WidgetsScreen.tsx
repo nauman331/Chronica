@@ -6,14 +6,13 @@ import {
     View,
     ScrollView,
     TouchableOpacity,
-    Platform,
     Pressable,
     ActivityIndicator
 } from 'react-native';
 
 import { useAppTheme } from '../hooks/useAppTheme';
 import useFetch from '../hooks/useFetch';
-import { yellow, white, lightyellow, COLOR_CROWNED } from '../utils/colors';
+import { yellow, lightyellow, COLOR_CROWNED } from '../utils/colors';
 
 import {
     ArrowLeftIcon,
@@ -37,7 +36,6 @@ const WidgetsScreen = ({ navigation }: any) => {
     const { colors, isDark } = useAppTheme();
     const [todayState, setTodayState] = useState<'empty' | 'progress' | 'crowned'>('empty');
 
-    // --- API Calls (Fetching concurrently) ---
     const { data: todayData, loading: loadToday } = useFetch('widgets/today', { isAuth: true });
     const { data: progressData, loading: loadProgress } = useFetch('widgets/life-progress', { isAuth: true });
     const { data: streakData, loading: loadStreak } = useFetch('widgets/streak', { isAuth: true });
@@ -45,11 +43,9 @@ const WidgetsScreen = ({ navigation }: any) => {
 
     const isLoading = loadToday || loadProgress || loadStreak || loadMap;
 
-    // --- Dynamic Formatting ---
     const now = new Date();
     const todayStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 
-    // Sync the Today toggle with real API data on load
     useEffect(() => {
         if (todayData) {
             const status = (todayData as any).status;
@@ -59,13 +55,11 @@ const WidgetsScreen = ({ navigation }: any) => {
         }
     }, [todayData]);
 
-    // Build the dynamic 7-day rolling week blocks for the Streak widget
     const dynamicWeekData = useMemo(() => {
         const days = [];
         const statesMap = (lifeMapData as any)?.states || {};
         const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-        // Go backwards 7 days to end exactly on today
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
             d.setDate(now.getDate() - i);
@@ -77,7 +71,7 @@ const WidgetsScreen = ({ navigation }: any) => {
             days.push({
                 day: dayNames[d.getDay()],
                 crowned: isCrowned,
-                isToday: i === 0 // Mark the last item as today
+                isToday: i === 0
             });
         }
         return days;
@@ -143,7 +137,6 @@ const WidgetsScreen = ({ navigation }: any) => {
             ) : (
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                    {/* ================= SECTION 1: TODAY WIDGET ================= */}
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionTitleBlock}>
                             <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Today Widget</Text>
@@ -170,7 +163,6 @@ const WidgetsScreen = ({ navigation }: any) => {
                         </View>
                     </View>
 
-                    {/* TODAY WIDGET PREVIEW CARD */}
                     <View style={[styles.widgetCard, dynamicStyles.card]}>
 
                         {todayState === 'empty' && (
@@ -238,7 +230,6 @@ const WidgetsScreen = ({ navigation }: any) => {
                         )}
                     </View>
 
-                    {/* ================= SECTION 2: PROGRESS WIDGET ================= */}
                     <View style={[styles.sectionHeader, { marginTop: 40 }]}>
                         <View style={styles.sectionTitleBlock}>
                             <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Progress Widget</Text>
@@ -278,7 +269,6 @@ const WidgetsScreen = ({ navigation }: any) => {
                         </View>
                     </View>
 
-                    {/* ================= SECTION 3: STREAK WIDGET ================= */}
                     <View style={[styles.sectionHeader, { marginTop: 40 }]}>
                         <View style={styles.sectionTitleBlock}>
                             <Text style={[styles.sectionTitle, dynamicStyles.textMain]}>Streak & Consistency</Text>
@@ -336,7 +326,6 @@ const WidgetsScreen = ({ navigation }: any) => {
                         </View>
                     </View>
 
-                    {/* --- Footer Note --- */}
                     <View style={styles.footerNoteContainer}>
                         <Text style={[styles.footerNote, dynamicStyles.footerText]}>
                             ✦ Widgets reflect your days as you document them. Add Chronica to your home screen via the system share menu — your life, always in view.
@@ -365,23 +354,15 @@ const styles = StyleSheet.create({
     headerSubtitle: { fontSize: 12.5, color: '#8C8B9C' },
     headerDivider: { height: 1 },
     scrollContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 24 },
-
-    // Sections
     sectionHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 },
     sectionTitleBlock: { flex: 1 },
     sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
     sectionSubtitle: { fontSize: 12.5 },
-
-    // Toggle
     toggleContainer: { flexDirection: 'row', borderRadius: 18, padding: 4, marginLeft: 12 },
     toggleBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 14 },
     toggleActive: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
     toggleText: { fontSize: 11, fontWeight: '500' },
-
-    // Base Widget Card
     widgetCard: { borderRadius: 24, padding: 24, borderWidth: 1 },
-
-    // Today Widget Internal
     widgetInner: { width: '100%' },
     widgetDateText: { fontSize: 13, marginBottom: 20 },
     todayRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
@@ -393,8 +374,6 @@ const styles = StyleSheet.create({
     pillBorder: { borderWidth: 1 },
     progressRingWrapper: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
     progressRingText: { position: 'absolute', fontSize: 12, fontWeight: '700' },
-
-    // Crowned State
     crownedInner: { alignItems: 'flex-start', overflow: 'hidden' },
     patternContainer: { position: 'absolute', right: -30, top: -30, width: 150, height: 150 },
     crownedHeader: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
@@ -404,8 +383,6 @@ const styles = StyleSheet.create({
     crownIconBg: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
     crownedMainText: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
     crownedSubText: { fontSize: 12.5 },
-
-    // Progress Widget Internal
     progressLabel: { fontSize: 11, fontWeight: '500', marginBottom: 10 },
     progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 },
     progressBigValue: { fontSize: 34, fontWeight: '800', letterSpacing: -1, marginBottom: 2 },
@@ -419,8 +396,6 @@ const styles = StyleSheet.create({
     linearFill: { height: '100%', backgroundColor: yellow, borderRadius: 2 },
     linearLabels: { flexDirection: 'row', justifyContent: 'space-between' },
     linearLabelText: { fontSize: 11 },
-
-    // Streak Widget Internal
     streakHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
     streakBigValue: { fontSize: 28, fontWeight: '800', letterSpacing: -0.5 },
     streakSubText: { fontSize: 14, fontWeight: '500' },
@@ -435,8 +410,6 @@ const styles = StyleSheet.create({
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     legendDot: { width: 8, height: 8, borderRadius: 4 },
     legendText: { fontSize: 11.5 },
-
-    // Footer Note
     footerNoteContainer: { borderRadius: 20, borderWidth: 1, borderColor: '#F3EFE6', padding: 16, marginTop: 32 },
     footerNote: { fontSize: 12.5, lineHeight: 18 },
     bottomTabContainer: { borderTopWidth: 1, justifyContent: 'flex-end' },

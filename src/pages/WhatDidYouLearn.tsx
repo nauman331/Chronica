@@ -29,7 +29,6 @@ const WhatDidYouLearn = ({ navigation, route }: any) => {
     const reflectionId = existingData?.id || existingData?.pk;
     const apiPrompt = existingData?.prompt;
 
-    // 1. Deadline & Lock Checker
     const isLocked = useMemo(() => {
         if (!existingData) return false;
         if (existingData.is_locked) return true;
@@ -41,7 +40,6 @@ const WhatDidYouLearn = ({ navigation, route }: any) => {
 
     const [text, setText] = useState('');
 
-    // 2. Pre-fill existing Data
     useEffect(() => {
         if (existingData?.reflection_text) {
             setText(existingData.reflection_text);
@@ -49,7 +47,6 @@ const WhatDidYouLearn = ({ navigation, route }: any) => {
     }, [existingData]);
 
     const handleComplete = async () => {
-        // Allow navigation without patching if it's locked
         if (isLocked) {
             navigation.navigate('ReflectionSaved');
             return;
@@ -149,7 +146,7 @@ const WhatDidYouLearn = ({ navigation, route }: any) => {
                                     style={[
                                         styles.continueButton,
                                         (text.trim().length === 0 && !isLocked) && { opacity: 0.5 },
-                                        isLocked && { backgroundColor: colors.surfaceMuted, shadowOpacity: 0 } // Gray out if locked
+                                        isLocked && { backgroundColor: colors.surfaceMuted, shadowOpacity: 0 }
                                     ]}
                                     activeOpacity={0.8}
                                     onPress={handleComplete}
@@ -160,7 +157,7 @@ const WhatDidYouLearn = ({ navigation, route }: any) => {
                                     ) : (
                                         <Text style={[
                                             styles.continueButtonText,
-                                            isLocked && { color: colors.textSecondary } // Gray text if locked
+                                            isLocked && { color: colors.textSecondary }
                                         ]}>
                                             {isLocked ? "Reflection Locked" : "Complete Reflection"}
                                         </Text>

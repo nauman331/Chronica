@@ -19,12 +19,10 @@ const DayDetailScreen = ({ navigation, route }: any) => {
 
     const {
         day, month, year, dayOfWeek, status,
-        dateStr // Pushed from MonthView
+        dateStr
     } = route?.params || {};
 
     const { data: entry, loading } = useFetch(`life-days/${dateStr}`, { isAuth: true });
-
-    // Safety unwrap: Handles both { date: "..." } and { life_day: { date: "..." } }
     const dayData = (entry as any)?.life_day || entry;
     const isDocumented = !!dayData && Object.keys(dayData).length > 0;
 
@@ -111,7 +109,7 @@ const DayDetailScreen = ({ navigation, route }: any) => {
                         style={[styles.documentButton, dynamicStyles.documentButton]}
                         onPress={() => navigation.navigate('DocumentDay', {
                             day, month, year, dayOfWeek, status, dateStr,
-                            existingData: dayData // Pass forward unwrapped data!
+                            existingData: dayData
                         })}
                     >
                         <Text style={[styles.documentButtonText, dynamicStyles.documentButtonText]}>

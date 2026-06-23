@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions, SafeAreaView, InteractionManager } from 'react-native';
-
-// Import custom theme hook
 import { useAppTheme } from '../hooks/useAppTheme';
 
 import PaginationDots from '../components/PaginationDots';
@@ -42,7 +40,6 @@ const Onboarding: React.FC<any> = ({ navigation, route }) => {
     };
 
     const skipOnboarding = () => {
-        // Open register bottom sheet on GetStarted with the selected birthDate
         navigation.navigate('GetStarted', { openAuth: 'signup', birthDate });
     };
 

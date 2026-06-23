@@ -3,7 +3,6 @@ import { SafeAreaView, View, Text, StyleSheet, Pressable, Platform, Image } from
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Toast from 'react-native-toast-message';
 
-// Components & Hooks
 import { useAppTheme } from '../hooks/useAppTheme';
 import AuthBottomSheet from '../components/AuthBottomSheet';
 
@@ -19,7 +18,6 @@ const GetStarted: React.FC<any> = ({ navigation, route }) => {
     const [showPicker, setShowPicker] = useState(false);
     const [isDateSelected, setIsDateSelected] = useState(false);
 
-    // Bottom Sheet States
     const [isSheetVisible, setIsSheetVisible] = useState(false);
     const [authMode, setAuthMode] = useState<'signup' | 'login'>('signup');
 
@@ -58,7 +56,6 @@ const GetStarted: React.FC<any> = ({ navigation, route }) => {
             });
             return;
         }
-        // Navigate to onboarding and pass the selected date
         navigation.navigate('Onboarding', { birthDate: formatDjangoDate(date) });
     };
 
@@ -67,7 +64,6 @@ const GetStarted: React.FC<any> = ({ navigation, route }) => {
         setIsSheetVisible(true);
     };
 
-    // If navigated back from onboarding with params, open the auth sheet
     useEffect(() => {
         const params = route?.params;
         if (params?.openAuth) {
@@ -80,7 +76,6 @@ const GetStarted: React.FC<any> = ({ navigation, route }) => {
             }
             setAuthMode(params.openAuth);
             setIsSheetVisible(true);
-            // clear params to avoid re-triggering
             navigation.setParams({ openAuth: undefined, birthDate: undefined });
         }
     }, [route?.params]);

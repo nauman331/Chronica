@@ -46,7 +46,6 @@ const WriteReflection = ({ navigation }: any) => {
 
     const { period_start_date, period_end_date } = useMemo(() => getCurrentWeekDates(), []);
 
-    // 1. Fetch to check if a reflection already exists for this week
     const { data: existingReflections, loading: fetching } = useFetch(
         `reflections/?start_date=${period_start_date}&end_date=${period_end_date}`,
         { isAuth: true }
@@ -58,7 +57,6 @@ const WriteReflection = ({ navigation }: any) => {
         return null;
     }, [existingReflections]);
 
-    // 2. Deadline & Lock Checker
     const isLocked = useMemo(() => {
         if (!existingRef) return false;
         if (existingRef.is_locked) return true;
@@ -70,7 +68,6 @@ const WriteReflection = ({ navigation }: any) => {
 
     const [text, setText] = useState('');
 
-    // Pre-fill using the correct database key: reflection_text
     useEffect(() => {
         if (existingRef && existingRef.reflection_text) {
             setText(existingRef.reflection_text);
@@ -78,7 +75,6 @@ const WriteReflection = ({ navigation }: any) => {
     }, [existingRef]);
 
     const handleSave = async () => {
-        // If it's locked, just navigate away
         if (isLocked) {
             navigation.navigate('ReflectionSaved');
             return;
@@ -123,7 +119,6 @@ const WriteReflection = ({ navigation }: any) => {
                             <TouchableOpacity style={[styles.backButton, dynamicStyles.backButton]} onPress={() => navigation.goBack()}>
                                 <ArrowLeftIcon color={colors.text} />
                             </TouchableOpacity>
-                            {/* Empty view for flex alignment since dots are removed */}
                             <View style={{ width: 40 }} />
                         </View>
 

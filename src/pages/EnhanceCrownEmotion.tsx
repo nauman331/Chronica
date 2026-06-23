@@ -84,7 +84,6 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation, route }: { navigation:
         <SafeAreaView style={[styles.container, dynamicStyles.container]}>
             <View style={styles.content}>
 
-                {/* Badge implementation with strict Figma Soft Glow */}
                 <View style={styles.badgeContainer}>
                     <View style={styles.glow} />
                     <View style={styles.iconCircle}>
@@ -92,26 +91,21 @@ const EnhanceCrownEmotion: React.FC<any> = ({ navigation, route }: { navigation:
                     </View>
                 </View>
 
-                {/* Title */}
                 <Text style={[styles.title, dynamicStyles.title]}>Day Crowned</Text>
 
-                {/* Dynamic Date Pill */}
                 <View style={[styles.datePill, dynamicStyles.datePill]}>
                     <View style={styles.dot} />
                     <Text style={styles.dateText}>{month} {day}, {year}</Text>
                 </View>
 
-                {/* Body Text */}
                 <Text style={[styles.bodyText, dynamicStyles.bodyText]}>
                     This day is now preserved in{"\n"}your life story forever.
                 </Text>
 
-                {/* Quote */}
                 <Text style={[styles.quoteText, dynamicStyles.quoteText]}>
                     "Every documented day is a{"\n"}gift to your future self."
                 </Text>
 
-                {/* Action Buttons */}
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={[styles.primaryButton, dynamicStyles.primaryButton]}
