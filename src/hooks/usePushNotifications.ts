@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Platform, PermissionsAndroid } from 'react-native';
+import { Platform, PermissionsAndroid, Alert } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import useSubmit from './useSubmit';
 
@@ -9,7 +9,6 @@ export const usePushNotifications = () => {
     useEffect(() => {
         const requestUserPermission = async () => {
             try {
-                // 1. Android 13+ Permission handling
                 if (Platform.OS === 'android' && Platform.Version >= 33) {
                     const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
                     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
@@ -18,18 +17,15 @@ export const usePushNotifications = () => {
                     }
                 }
 
-                // 2. iOS Permission handling (also grabs the token on Android)
                 const authStatus = await messaging().requestPermission();
                 const enabled =
                     authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
                     authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
                 if (enabled) {
-                    // 3. Get the FCM Token
                     const token = await messaging().getToken();
-
-                    // 4. Register it with your Django backend
                     if (token) {
+                        // REMOVED TRAILING SLASH
                         await submit('notifications/device-tokens', { token }, { method: 'POST' });
                         console.log("Token registered successfully");
                     }
@@ -41,11 +37,23 @@ export const usePushNotifications = () => {
 
         requestUserPermission();
 
-        // 5. Listen for token refreshes (if token expires, send new one to backend)
-        const unsubscribe = messaging().onTokenRefresh(async (newToken) => {
-            await submit('notifications/device-tokens/', { token: newToken }, { method: 'POST' });
+        // 1. Refresh Listener
+        const unsubscribeTokenRefresh = messaging().onTokenRefresh(async (newToken) => {
+            // REMOVED TRAILING SLASH
+            await submit('notifications/device-tokens', { token: newToken }, { method: 'POST' });
         });
 
-        return unsubscribe;
+        // 2. NEW: Foreground Listener (App is open)
+        const unsubscribeForeground = messaging().onMessage(async remoteMessage => {
+            console.log('A new FCM message arrived in the foreground!', remoteMessage);
+            const title = remoteMessage.notification?.title || 'Chronica';
+            const body = remoteMessage.notification?.body || 'You have a new update.';
+            Alert.alert(title, body);
+        });
+
+        return () => {
+            unsubscribeTokenRefresh();
+            unsubscribeForeground();
+        };
     }, []);
 };
