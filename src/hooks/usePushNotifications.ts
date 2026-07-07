@@ -10,6 +10,10 @@ export const usePushNotifications = () => {
     const navigation = useNavigation<any>();
 
     useEffect(() => {
+        if (Platform.OS === 'ios') {
+            console.log("Firebase Push Notifications are temporarily disabled on iOS.");
+            return;
+        }
         const requestUserPermission = async () => {
             try {
                 if (Platform.OS === 'android' && Platform.Version >= 33) {

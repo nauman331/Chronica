@@ -16,7 +16,6 @@ end
 
 target 'Chronica' do
   use_modular_headers!
-  
   config = use_native_modules!
 
   use_react_native!(
@@ -32,5 +31,18 @@ target 'Chronica' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+    
+    # --- ADDED: Fix for Xcode 15+ Error 65 ---
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        # Disables strict script sandboxing which breaks Firebase and MMKV build scripts
+        config.build_settings['USER_SCRIPT_SANDBOXING'] = 'NO'
+        
+        # BUMPED TO 14.0 to support MMKV Nitro Swift features!
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      end
+    end
+    # --- END FIX ---
+
   end
 end
