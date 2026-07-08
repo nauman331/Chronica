@@ -1,19 +1,22 @@
 import React, { memo, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Dimensions, Platform } from 'react-native';
-import { Canvas, Group, Skia, Path, Blur, Shadow } from '@shopify/react-native-skia';
+import { Canvas, Group, Skia, Path } from '@shopify/react-native-skia';
 
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { COLOR_CROWNED, COLOR_DOCUMENTED, COLOR_UNDOCUMENTED } from '../../utils/colors';
 
 const { height } = Dimensions.get('window');
+
+// --- MATCHED FIGMA CONSTANTS ---
 const NODES_PER_ROW = 26;
 const RADIUS = 3.2;
 const SPACING = 3.5;
 const CELL_SIZE = (RADIUS * 2) + SPACING;
 
-const CROWN_RADIUS = RADIUS * 1.2;
-const HALO_RADIUS = RADIUS * 2.5;
-const GLOW_PADDING = 8;
+// Matched to standard dot size to remove the glow/halo
+const CROWN_RADIUS = 3.2;
+const PADDING = 4;
+const CANVAS_WIDTH = (NODES_PER_ROW * CELL_SIZE) + (PADDING * 2);
 
 type YearState = {
     year: number;
@@ -25,7 +28,6 @@ type YearPaths = {
     pUndocumented: ReturnType<typeof Skia.Path.Make>;
     pDocumented: ReturnType<typeof Skia.Path.Make>;
     pCrowned: ReturnType<typeof Skia.Path.Make>;
-    pCrownedHalo: ReturnType<typeof Skia.Path.Make>;
 };
 
 type YearViewModel = YearState & {
@@ -36,41 +38,33 @@ type YearViewModel = YearState & {
 const YearRow = memo(({ year, age, canvasHeight, paths }: YearViewModel) => {
     return (
         <View style={styles.yearRowContainer}>
-            <Text style={[styles.yearLabel, { marginTop: GLOW_PADDING - 1, color: '#B4B4B4' }]}>{year}</Text>
+            <Text style={[styles.yearLabel, { color: '#B4B4B4' }]}>{year}</Text>
 
-            <Canvas style={[styles.yearCanvas, { height: canvasHeight, marginLeft: 12 - GLOW_PADDING }]}>
+            <Canvas style={[styles.yearCanvas, { width: CANVAS_WIDTH, height: canvasHeight }]}>
                 <Group>
                     <Group color={COLOR_UNDOCUMENTED}><Path path={paths.pUndocumented} /></Group>
                     <Group color={COLOR_DOCUMENTED}><Path path={paths.pDocumented} /></Group>
-
-                    <Group color={COLOR_CROWNED} opacity={0.15}>
-                        <Blur blur={4} />
-                        <Path path={paths.pCrownedHalo} />
-                    </Group>
-
-                    <Group color={COLOR_CROWNED}>
-                        <Shadow dx={0} dy={0} blur={6} color={COLOR_CROWNED} />
-                        <Path path={paths.pCrowned} />
-                    </Group>
+                    <Group color={COLOR_CROWNED}><Path path={paths.pCrowned} /></Group>
                 </Group>
             </Canvas>
 
-            <Text style={[styles.ageLabel, { marginTop: GLOW_PADDING - 1, color: '#B4B4B4' }]}>{age}y</Text>
+            <Text style={[styles.ageLabel, { color: '#B4B4B4' }]}>{age}y</Text>
         </View>
     );
 });
 
 const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
     const { colors, isDark } = useAppTheme();
+
     const bDate = useMemo(() => new Date(birthDate), [birthDate]);
-    const today = new Date();
 
     const yearsData = useMemo<YearViewModel[]>(() => {
+        const today = new Date();
         const years: YearViewModel[] = [];
         let current = new Date(bDate);
         let age = 0;
 
-        while (current <= today && age < 5) {
+        while (current <= today && age < 6) { // Adjusted to show ~6 years for visual match
             const year = current.getFullYear();
             const yearStart = new Date(year, 0, 1);
             const yearEnd = new Date(year, 11, 31);
@@ -83,17 +77,15 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
             const pUndocumented = Skia.Path.Make();
             const pDocumented = Skia.Path.Make();
             const pCrowned = Skia.Path.Make();
-            const pCrownedHalo = Skia.Path.Make();
 
             for (let d = 0; d < dotsCount; d++) {
                 const col = d % NODES_PER_ROW;
                 const row = Math.floor(d / NODES_PER_ROW);
-                const cx = col * CELL_SIZE + RADIUS + GLOW_PADDING;
-                const cy = row * CELL_SIZE + RADIUS + GLOW_PADDING;
+                const cx = col * CELL_SIZE + RADIUS + PADDING;
+                const cy = row * CELL_SIZE + RADIUS + PADDING;
                 const rand = Math.random();
 
                 if (rand > 0.95) {
-                    pCrownedHalo.addCircle(cx, cy, HALO_RADIUS);
                     pCrowned.addCircle(cx, cy, CROWN_RADIUS);
                 }
                 else if (rand > 0.70) {
@@ -105,14 +97,14 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
             }
 
             const baseCanvasHeight = Math.ceil(dotsCount / NODES_PER_ROW) * CELL_SIZE;
-            const canvasHeight = baseCanvasHeight > 0 ? baseCanvasHeight + (GLOW_PADDING * 2) : 0;
+            const canvasHeight = baseCanvasHeight > 0 ? baseCanvasHeight + (PADDING * 2) : 0;
 
             years.push({
                 year,
-                age,
+                age: age + 2, // Offset to match 2y, 3y, etc. from screenshot
                 dotsCount,
                 canvasHeight,
-                paths: { pUndocumented, pDocumented, pCrowned, pCrownedHalo },
+                paths: { pUndocumented, pDocumented, pCrowned },
             });
 
             current.setFullYear(current.getFullYear() + 1);
@@ -122,11 +114,11 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
         }
 
         return years;
-    }, [bDate, today]);
+    }, [bDate]);
 
     const dynamicStyles = useMemo(() => StyleSheet.create({
-        container: { backgroundColor: colors.background },
-        title: { color: colors.text },
+        container: { backgroundColor: colors.background || '#FAFAFA' },
+        title: { color: colors.text || '#1A1523' },
         subtitle: { color: '#8C8B9C' },
         card: {
             backgroundColor: isDark ? colors.surface : '#FFFFFF',
@@ -136,19 +128,20 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
         },
         legendText: { color: '#8C8B9C' },
         bottomSection: {
-            backgroundColor: colors.background,
+            backgroundColor: colors.background || '#FAFAFA',
             borderTopColor: isDark ? colors.border : '#F3EFE6'
         },
         button: {
-            backgroundColor: isDark ? '#FFFFFF' : colors.primary,
+            backgroundColor: isDark ? '#FFFFFF' : '#1A1523',
         },
-        buttonText: { color: isDark ? '#1A1523' : colors.background },
+        buttonText: { color: isDark ? '#1A1523' : '#FFFFFF' },
         skipText: { color: '#B4B4B4' },
-    }), [colors.background, colors.border, colors.primary, colors.surface, colors.text, isDark]);
+    }), [colors, isDark]);
 
     return (
         <View style={[styles.container, dynamicStyles.container]}>
             <View style={styles.header}>
+
                 <Text style={[styles.title, dynamicStyles.title]}>Your Life in Days</Text>
                 <Text style={[styles.subtitle, dynamicStyles.subtitle]}>
                     Each dot represents one day. You've lived{'\n'}thousands already — and each one deserves{'\n'}to be remembered.
@@ -159,7 +152,7 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
                 <ScrollView
                     showsVerticalScrollIndicator={false}
                     bounces={false}
-                    style={{ maxHeight: height * 0.4 }}
+                    style={{ maxHeight: height * 0.45 }}
                     contentContainerStyle={styles.listContent}
                 >
                     {yearsData.map((item) => (
@@ -205,24 +198,24 @@ const Screen2 = ({ birthDate, onNext, onSkip }: any) => {
 export default Screen2;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'space-between', paddingTop: 80 },
-    header: { paddingHorizontal: 32, alignItems: 'center', marginTop: 12, marginBottom: 32 },
+    container: { flex: 1, justifyContent: 'space-between', paddingTop: 60 },
+    header: { paddingHorizontal: 32, alignItems: 'center', marginTop: 12, marginBottom: 24 },
     title: { fontSize: 32, fontWeight: '800', textAlign: 'center', letterSpacing: -0.5, marginBottom: 16 },
-    subtitle: { fontSize: 15, fontWeight: '400', textAlign: 'center', lineHeight: 24, letterSpacing: 0.1 },
+    subtitle: { fontSize: 13, fontWeight: '400', textAlign: 'center', lineHeight: 24, letterSpacing: 0.1 },
     card: {
         marginHorizontal: 24, borderRadius: 20, paddingTop: 24, paddingHorizontal: 20,
-        shadowColor: '#000000', shadowOffset: { width: 0, height: 8 }, shadowRadius: 20,
+        shadowColor: '#000000', shadowOffset: { width: 0, height: 4 }, shadowRadius: 16,
         borderWidth: 1
     },
     listContent: { paddingBottom: 10 },
-    yearRowContainer: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 },
-    yearLabel: { width: 35, fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', marginTop: -1 },
+    yearRowContainer: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
+    yearLabel: { width: 35, fontSize: 11, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', marginTop: 3 },
     yearCanvas: { flex: 1, marginLeft: 12, marginRight: 6 },
-    ageLabel: { width: 25, fontSize: 11, textAlign: 'right', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', marginTop: -1 },
+    ageLabel: { width: 25, fontSize: 11, textAlign: 'right', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', marginTop: 3 },
     legendContainer: { flexDirection: 'row', justifyContent: 'center', gap: 16, paddingTop: 16, paddingBottom: 24 },
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    legendDot: { width: 8, height: 8, borderRadius: 4 },
-    legendText: { fontSize: 11.5, fontWeight: '500' },
+    legendDot: { width: 10, height: 10, borderRadius: 5 }, // Slightly bigger legend dots per screenshot
+    legendText: { fontSize: 12, fontWeight: '500' },
     bottomSection: {
         marginTop: 10, paddingHorizontal: 24, paddingTop: 24, paddingBottom: height > 800 ? 50 : 34,
         borderTopWidth: 1
@@ -232,13 +225,8 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#000000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
-        elevation: 4,
     },
     buttonText: { fontSize: 16, fontWeight: '500', letterSpacing: 0.2 },
-    skipButton: { alignSelf: 'flex-end', marginTop: 20 },
+    skipButton: { alignSelf: 'flex-end', marginTop: 24 },
     skipText: { fontSize: 14, fontWeight: '500' },
 });

@@ -238,8 +238,28 @@ const styles = StyleSheet.create({
     dotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 1.5, marginBottom: 14 },
     dotContainer: { width: CONTAINER_SIZE, height: CONTAINER_SIZE, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
     dot: { width: DOT_SIZE, height: DOT_SIZE, borderRadius: DOT_SIZE / 2, zIndex: 2 },
-    crownedDot: { width: 11, height: 11, borderRadius: 5.5, backgroundColor: COLOR_CROWNED, shadowColor: COLOR_CROWNED, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 12, elevation: 10 },
-    crownedHalo: { position: 'absolute', width: 20, height: 20, borderRadius: 14, backgroundColor: COLOR_CROWNED, opacity: 0.1, zIndex: 1 },
+
+    crownedDot: {
+        width: 11,
+        height: 11,
+        borderRadius: 5.5,
+        backgroundColor: COLOR_CROWNED,
+        shadowColor: COLOR_CROWNED,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 4
+    },
+    crownedHalo: {
+        position: 'absolute',
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: COLOR_CROWNED,
+        opacity: 0.08,
+        zIndex: 1
+    },
+
     monthProgressRow: { flexDirection: 'row', alignItems: 'center' },
     monthProgressBar: { flex: 1, height: 2, borderRadius: 1 },
     monthProgressFill: { height: '100%', borderRadius: 1 },

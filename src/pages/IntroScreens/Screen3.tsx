@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     bodyText: {
-        fontSize: 15.5,
+        fontSize: 13,
         fontWeight: '400',
         textAlign: 'center',
         lineHeight: 26,
