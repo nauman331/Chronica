@@ -17,6 +17,7 @@ import { useAppTheme } from '../hooks/useAppTheme';
 import useSubmit from '../hooks/useSubmit';
 
 import { yellow, lightBlue, lightGreen, gray } from '../utils/colors';
+import Toast from 'react-native-toast-message';
 
 const DocumentDayScreen = ({ navigation, route }: any) => {
     const { colors } = useAppTheme();
@@ -61,6 +62,13 @@ const DocumentDayScreen = ({ navigation, route }: any) => {
 
     const handleSave = async () => {
         if (!isEditable) return;
+        if (!intention.trim() && !reflection.trim() && !achievement.trim()) {
+            Toast.show({
+                type: 'error',
+                text1: 'Please fill in at least one field before saving.'
+            });
+            return;
+        }
 
         const payload = {
             date: dateStr,

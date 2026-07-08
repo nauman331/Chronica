@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MapIcon, CalendarIcon, ChartIcon, UserIcon } from '../utils/icons';
-import { usePushNotifications } from '../hooks/usePushNotifications';
 
 import { useAppTheme } from '../hooks/useAppTheme';
 
@@ -11,7 +10,6 @@ interface BottomTabBarProps {
 }
 
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab }) => {
-    usePushNotifications();
     const navigation = useNavigation<any>();
 
     const { colors } = useAppTheme();

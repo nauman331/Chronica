@@ -19,6 +19,7 @@ import SubscriptionScreen from '../pages/SubscriptionScreen'
 import WidgetsScreen from '../pages/WidgetsScreen'
 import Notifications from '../pages/Notifications'
 import ShareProgress from '../pages/ShareProgress'
+import { usePushNotifications } from '../hooks/usePushNotifications'
 
 
 type AuthStackParamList = {
@@ -45,6 +46,7 @@ type AuthStackParamList = {
 const Stack = createStackNavigator<AuthStackParamList>()
 
 const AuthNav: React.FC = () => {
+    usePushNotifications();
     return (
         <Stack.Navigator
             initialRouteName="SplashScreen"

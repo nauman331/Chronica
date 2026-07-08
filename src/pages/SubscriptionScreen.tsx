@@ -46,9 +46,9 @@ const SubscriptionScreen = ({ navigation }: any) => {
             elevation: 4,
         },
 
-        planTitle: { color: colors.text },
-        planPrice: { color: colors.text },
-        planDuration: { color: colors.textSecondary },
+        planTitle: { color: "#555" },
+        planPrice: { color: "#555" },
+        planDuration: { color: "#555" },
 
         radioOuterUnselected: { borderColor: colors.border },
         radioOuterSelected: { borderColor: yellow },
