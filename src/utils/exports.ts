@@ -1,1 +1,1 @@
-export const apiURL = "http://98.94.224.3:8000/api/v1/";
+export const apiURL = "https://api.chronica.so/api/v1/";
