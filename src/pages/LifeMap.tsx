@@ -86,9 +86,11 @@ function buildPaths(weeks: WeekState[], todayWeekIndex: number): YearPaths {
         const cy = GLOW_PADDING + RADIUS + (row * STEP_Y);
 
         if (d === todayWeekIndex) {
-            const pillW = 11;
+            const pillW = 10;
             const pillH = 24;
-            const rect = Skia.XYWHRect(cx - pillW / 2, cy - pillH / 2, pillW, pillH);
+            const yOffset = row === 0 ? -6 : 6;
+
+            const rect = Skia.XYWHRect(cx - pillW / 2, (cy + yOffset) - pillH / 2, pillW, pillH);
             const rrect = Skia.RRectXY(rect, pillW / 2, pillW / 2);
             pTodayPill.addRRect(rrect);
         }
@@ -116,10 +118,11 @@ function buildPaths(weeks: WeekState[], todayWeekIndex: number): YearPaths {
 interface YearChunkProps {
     chunk: YearChunk;
     textSecondaryColor: string;
+    primaryColor: string; // Passed to distinctively color the today indicator
     onPress: (year: number, age: number) => void;
 }
 
-const YearChunkSection = memo(({ chunk, textSecondaryColor, onPress }: YearChunkProps) => {
+const YearChunkSection = memo(({ chunk, textSecondaryColor, primaryColor, onPress }: YearChunkProps) => {
     const textAlignmentTop = GLOW_PADDING + (STEP_Y / 2) - 6;
 
     return (
@@ -148,6 +151,13 @@ const YearChunkSection = memo(({ chunk, textSecondaryColor, onPress }: YearChunk
                         const rowOffset = rowIndex * YEAR_ROW_STRIDE;
                         return (
                             <Group key={item.year} transform={[{ translateY: rowOffset }]}>
+                                <Group color="#FFF9E7">
+                                    <Path path={item.paths.pTodayPill} />
+                                </Group>
+                                <Group color="#E3E3E3" style="stroke" strokeWidth={2}>
+                                    <Path path={item.paths.pTodayPill} />
+                                </Group>
+
                                 <Group color={COLOR_PAST}><Path path={item.paths.pPast} /></Group>
                                 <Group color={COLOR_DOCUMENTED}><Path path={item.paths.pDocumented} /></Group>
                                 <Group color="#E5E5E5"><Path path={item.paths.pFuture} /></Group>
@@ -380,6 +390,11 @@ const LifeMap = ({ navigation }: any) => {
                     <View style={[styles.legendDot, { backgroundColor: COLOR_CROWNED }]} />
                     <Text style={[styles.legendText, { color: colors.textSecondary }]}>Crowned</Text>
                 </View>
+                {/* Added Future to Legend */}
+                <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: "#E5E5E5" }]} />
+                    <Text style={[styles.legendText, { color: colors.textSecondary }]}>Future</Text>
+                </View>
             </View>
 
             <View style={[styles.divider, dynamicDivider]} />
@@ -404,6 +419,7 @@ const LifeMap = ({ navigation }: any) => {
                             key={chunk.index}
                             chunk={chunk}
                             textSecondaryColor={colors.textSecondary}
+                            primaryColor={colors.primary}
                             onPress={handleYearPress}
                         />
                     ))}
