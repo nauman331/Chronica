@@ -177,7 +177,9 @@ const SubscriptionScreen = ({ navigation }: any) => {
                         <Text style={[styles.ctaButtonText, dynamicStyles.ctaButtonText]}>Start 7-Day Free Trial</Text>
                     </TouchableOpacity>
                     <Text style={[styles.footerText, dynamicStyles.footerText]}>
-                        Then $89/year. Cancel anytime.
+                        {selectedPlan === 'monthly'
+                            ? 'Then $4.99/month. Cancel anytime.'
+                            : 'Then $39.99/year. Cancel anytime.'}
                     </Text>
                 </View>
 
