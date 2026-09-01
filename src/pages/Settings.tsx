@@ -22,6 +22,7 @@ import useSubmit from '../hooks/useSubmit';
 import { CustomSwitch } from '../components/CustomSwith';
 import LogoutModal from '../components/LogoutModal';
 import EditProfileModal from '../components/EditProfileModal';
+import DeleteAccountModal from '../components/DeleteAccountModal';
 import { ChevronLeftIcon, ChevronRightIcon } from '../utils/icons';
 import messaging from '@react-native-firebase/messaging';
 
@@ -73,6 +74,7 @@ const Settings = ({ navigation }: any) => {
     };
 
     const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+    const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [isThemeModalVisible, setIsThemeModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
@@ -283,12 +285,24 @@ const Settings = ({ navigation }: any) => {
                     <Text style={[styles.cardTitle, { color: gray }]}>Log Out</Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity
+                    style={[styles.cardBase, dynamicStyles.cardBase, { justifyContent: 'center', marginTop: 10, borderColor: colors.danger || '#E53935' }]}
+                    onPress={() => setIsDeleteModalVisible(true)}
+                >
+                    <Text style={[styles.cardTitle, { color: colors.danger || '#E53935' }]}>Delete Account</Text>
+                </TouchableOpacity>
+
             </ScrollView>
 
             <LogoutModal
                 visible={isLogoutModalVisible}
                 onClose={() => setIsLogoutModalVisible(false)}
                 onConfirm={handleConfirmLogout}
+            />
+
+            <DeleteAccountModal
+                visible={isDeleteModalVisible}
+                onClose={() => setIsDeleteModalVisible(false)}
             />
 
             <EditProfileModal
